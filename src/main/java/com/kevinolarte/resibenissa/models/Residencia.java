@@ -6,6 +6,14 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * Entidad que representa una residencia en la base de datos.
+ * <p>
+ * Cada residencia tiene un identificador, un nombre, un correo electrónico
+ * y una lista de usuarios asociados.
+ *
+ * @author Kevin Olarte
+ */
 @Entity
 @Table(name = "residencias")
 @Getter

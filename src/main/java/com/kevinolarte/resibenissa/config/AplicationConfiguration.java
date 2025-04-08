@@ -12,13 +12,28 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+/**
+ * Configuración de seguridad de la aplicación.
+ * <p>
+ * Define los beans necesarios para la autenticación de usuarios,
+ * incluyendo el codificador de contraseñas, el proveedor de autenticación
+ * y el servicio de obtención de detalles de usuario.
+ *
+ * @author Kevin Olarte
+ */
 @Configuration
 @AllArgsConstructor
 public class AplicationConfiguration {
 
     private final UserRepository userRepository;
 
-UserDetailsService userDetailsService(){
+    /**
+     * Devuelve un UserDetailsService que busca usuarios por email en la base de datos.
+     *
+     * @return Implementación de UserDetailsService personalizada.
+     * @throws UsernameNotFoundException si el usuario no existe.
+     */
+    UserDetailsService userDetailsService(){
     return email -> userRepository.findByEmail(email).
             orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 }
@@ -32,6 +47,12 @@ UserDetailsService userDetailsService(){
         return config.getAuthenticationManager();
     }
 
+    /**
+     * Crea un bean de {@link AuthenticationProvider} personalizado que usa
+     * el {@link UserDetailsService} y el codificador de contraseñas definidos.
+     *
+     * @return el proveedor de autenticación configurado.
+     */
     @Bean
     AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();

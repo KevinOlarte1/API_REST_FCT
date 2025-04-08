@@ -10,6 +10,15 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Entidad que representa un usuario del sistema.
+ * <p>
+ * Implementa la interfaz {@link UserDetails} de Spring Security para integrarse
+ * con el sistema de autenticación.
+ * Cada usuario está asociado a una residencia.
+ *
+ * @author Kevin Olarte
+ */
 @Entity
 @Table(name = "usuarios")
 @Setter
