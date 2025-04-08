@@ -21,4 +21,9 @@ public class Juego {
     @JoinColumn(name = "fk_residencia")
     private Residencia residencia;
 
+    public Juego(String nombre){
+        this.nombre = nombre;
+    }
+    public Juego(){}
+
 }
