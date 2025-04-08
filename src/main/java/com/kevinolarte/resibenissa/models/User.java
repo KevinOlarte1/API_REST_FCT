@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,10 +50,27 @@ public class User implements UserDetails {
 
     private boolean enabled;
 
+    @JsonIgnore
+    private boolean accountNonExpired;
+    @JsonIgnore
+    private boolean credentialsNonExpired;
+    @JsonIgnore
+    private boolean accountNonLocked;
+
+
+
     @ManyToOne
     @JoinColumn(name = "fk_residencia")
     private Residencia residencia;
 
+    public User() {}
+    public User(String nombre, String apellido, String email, String password){
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.password = password;
+
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
