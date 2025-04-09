@@ -15,8 +15,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Entidad que representa una residencia en la base de datos.
  * <p>
- * Cada residencia tiene un identificador, un nombre, un correo electrónico
- * y una lista de usuarios asociados.
+ * Cada residencia tiene un identificador, un nombre único y un correo electrónico.
+ * Está relacionada con múltiples usuarios del sistema (como cuidadores o administradores),
+ * así como con los residentes (personas mayores) que viven en ella.
  *
  * @author Kevin Olarte
  */
@@ -29,16 +30,30 @@ public class Residencia {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    /**
+     * Nombre de la residencia. Debe ser único.
+     */
     @Column(nullable = false, unique = true)
     private String nombre;
 
+    /**
+     * Correo electrónico de contacto de la residencia. También debe ser único.
+     */
     @Column(unique = true, nullable = false)
     private String email;
 
+    /**
+     * Usuarios asociados a esta residencia (por ejemplo, personal que la gestiona).
+     * Relación uno a muchos.
+     */
     @OneToMany(mappedBy = "residencia")
     @JsonIgnore
     private Set<User> usuarios = new LinkedHashSet<>();
 
+    /**
+     * Residentes (personas mayores) que viven en esta residencia.
+     * Relación uno a muchos.
+     */
     @OneToMany(mappedBy = "residencia")
     @JsonIgnore
     private Set<Residente> residentes = new LinkedHashSet<>();

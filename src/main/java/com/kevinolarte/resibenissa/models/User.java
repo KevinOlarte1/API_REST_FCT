@@ -36,20 +36,36 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String apellido;
 
+    /**
+     * Correo electrónico del usuario, usado como username para iniciar sesión.
+     * Debe ser único en el sistema.
+     */
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
+    /**
+     * Código de verificación utilizado en el proceso de activación de la cuenta.
+     */
     @Column(name = "verification_code")
     private String verificationCode;
 
+    /**
+     * Fecha y hora de expiración del código de verificación.
+     */
     @Column(name = "verification_expiration")
     private LocalDateTime verificationExpiration;
 
+    /**
+     * Indica si el usuario está habilitado para acceder al sistema.
+     */
     private boolean enabled;
 
+    /**
+     * Roles o permisos del usuario. En este caso no se están usando, se devuelve una lista vacía.
+     */
     @JsonIgnore
     private boolean accountNonExpired;
     @JsonIgnore
@@ -57,8 +73,10 @@ public class User implements UserDetails {
     @JsonIgnore
     private boolean accountNonLocked;
 
-
-
+    /**
+     * Relación con la residencia a la que pertenece el usuario.
+     * Varios usuarios pueden estar asociados a la misma residencia.
+     */
     @ManyToOne
     @JoinColumn(name = "fk_residencia")
     private Residencia residencia;
