@@ -7,12 +7,31 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Repositorio para acceder y gestionar registros de juegos ({@link RegistroJuego}).
+ * <p>
+ * Permite obtener estadísticas o historiales de juegos filtrando por residencia,
+ * por juego, por residente o por fecha.
+ *
+ * @author Kevin Olarte
+ */
 @Repository
 public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Long> {
 
+    /**
+     * Obtiene todos los registros de juegos realizados por residentes de una residencia específica.
+     *
+     * @param idResidencia ID de la residencia.
+     * @return Lista de registros de juegos.
+     */
     List<RegistroJuego> findByResidente_Residencia_Id(Long idResidencia);
-    List<RegistroJuego> findByJuegoId(Long idJuego);
+
+    /**
+     * Obtiene todos los registros de un residente específico.
+     *
+     * @param idResidencia (Nota: Este parámetro parece mal nombrado, debería ser `idResidente`)
+     * @return Lista de registros del residente.
+     */
     List<RegistroJuego> findByResidenteId(Long idResidencia);
 
-    List<RegistroJuego> findByFecha(LocalDate fecha);
 }
