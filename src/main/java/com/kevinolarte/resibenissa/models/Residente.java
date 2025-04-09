@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +33,7 @@ public class Residente {
     private Residencia residencia;
 
     @OneToMany(mappedBy = "residente")
+    @JsonIgnore
     private Set<RegistroJuego> registros = new LinkedHashSet<>();
 
     public Residente(String nombre, String apellido, LocalDate fechaNacimiento){

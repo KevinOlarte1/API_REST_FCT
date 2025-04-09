@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +30,8 @@ public class Juego {
     @JoinColumn(name = "fk_residencia", nullable = false)
     private Residencia residencia;
 
-    @OneToMany(mappedBy = "residente")
+    @OneToMany(mappedBy = "juego")
+    @JsonIgnore
     private Set<RegistroJuego> registro = new LinkedHashSet<>();
 
     public Juego(String nombre){

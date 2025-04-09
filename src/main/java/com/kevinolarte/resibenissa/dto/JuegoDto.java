@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class JuegoDto {
     private String nombre;
-    private Long residenteId;
+    private Long idResidencia;
 }

@@ -62,10 +62,15 @@ public class RegistroJuegoService {
                     .toList();
         }
 
-        if (year != null && month != null && day != null) {
-            LocalDate date = LocalDate.of(year, month, day);
+        if (year != null || month != null || day != null) {
             baseList = baseList.stream()
-                    .filter(r -> r.getFecha().isEqual(date))
+                    .filter(r -> {
+                        boolean match = true;
+                        if (year != null) match = match && r.getFecha().getYear() == year;
+                        if (month != null) match = match && r.getFecha().getMonthValue() == month;
+                        if (day != null) match = match && r.getFecha().getDayOfMonth() == day;
+                        return match;
+                    })
                     .toList();
         }
 

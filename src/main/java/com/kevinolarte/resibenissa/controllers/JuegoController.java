@@ -10,13 +10,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("/resi/juego")
+@RequestMapping("/resi/juegos")
+@RestController
 @AllArgsConstructor
 public class JuegoController {
     private final JuegoService juegoService;
 
     @PostMapping("/add")
     public ResponseEntity<?> addJuego(@RequestBody JuegoDto juegoDto) {
+        System.out.println("ENTRA AL MENOS");
         try{
             Juego juego = juegoService.save(juegoDto);
             return ResponseEntity.ok(juego);

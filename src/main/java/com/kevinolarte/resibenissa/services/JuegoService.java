@@ -19,10 +19,10 @@ public class JuegoService {
 
 
     public Juego save(JuegoDto juegoDto)throws RuntimeException{
-        if (juegoDto.getNombre() == null || juegoDto.getNombre().isEmpty() || juegoDto.getResidenteId() == null){
+        if (juegoDto.getNombre() == null || juegoDto.getNombre().isEmpty() || juegoDto.getIdResidencia() == null){
             throw new RuntimeException("Ningún campo puede ser nulo o vacio");
         }
-        Residencia residencia = residenciaService.findById(juegoDto.getResidenteId());
+        Residencia residencia = residenciaService.findById(juegoDto.getIdResidencia());
         if (residencia == null){
             throw new RuntimeException("La residencia no existe");
         }
