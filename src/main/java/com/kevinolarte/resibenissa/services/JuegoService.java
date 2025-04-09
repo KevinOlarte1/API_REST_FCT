@@ -9,6 +9,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Servicio encargado de la lógica relacionada con los juegos.
+ * <p>
+ * Permite registrar nuevos juegos, obtenerlos por ID o por residencia,
+ * y verificar restricciones como la unicidad del nombre dentro de una residencia.
+ *
+ * @author Kevin Olarte
+ */
 @Service
 @AllArgsConstructor
 public class JuegoService {
@@ -17,11 +25,18 @@ public class JuegoService {
     private final ResidenciaService residenciaService;
 
 
-
+    /**
+     * Guarda un nuevo juego en la base de datos a partir de los datos recibidos en el DTO.
+     *
+     * @param juegoDto DTO con la información del juego a registrar.
+     * @return El juego creado y persistido.
+     * @throws RuntimeException si faltan datos, la residencia no existe o el juego ya está registrado en esa residencia.
+     */
     public Juego save(JuegoDto juegoDto)throws RuntimeException{
         if (juegoDto.getNombre() == null || juegoDto.getNombre().isEmpty() || juegoDto.getIdResidencia() == null){
             throw new RuntimeException("Ningún campo puede ser nulo o vacio");
         }
+
         Residencia residencia = residenciaService.findById(juegoDto.getIdResidencia());
         if (residencia == null){
             throw new RuntimeException("La residencia no existe");
@@ -40,14 +55,24 @@ public class JuegoService {
 
     }
 
-    public List<Juego> findAll(){
-        return (List<Juego>) juegoRepository.findAll();
-    }
-
+    /**
+     * Busca un juego por su ID.
+     *
+     * @param id ID del juego.
+     * @return El juego si existe, o null si no se encuentra.
+     */
     public Juego findById(Long id){
         return juegoRepository.findById(id).orElse(null);
     }
 
+    /**
+     * Devuelve una lista de juegos filtrada por ID de juego o ID de residencia.
+     * Si ambos parámetros son nulos, devuelve todos los juegos.
+     *
+     * @param idJuego     ID específico del juego.
+     * @param idResidencia ID de la residencia.
+     * @return Lista de juegos correspondiente al filtro aplicado.
+     */
     public List<Juego> getJuegos(Long idJuego, Long idResidencia) {
         if (idJuego != null) {
             Juego juego = findById(idJuego);

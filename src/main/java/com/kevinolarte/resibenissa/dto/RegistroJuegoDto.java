@@ -17,7 +17,7 @@ import lombok.Setter;
 public class RegistroJuegoDto {
 
     private Long idJuego;
-    private Long idResidencia;
+    private Long idResidente;
     private Integer fallos;
     private Double duracion;
 }
