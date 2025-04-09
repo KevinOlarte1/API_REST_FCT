@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("/resi/juego/stats")
+@RequestMapping("/resi/juegos/stats")
 @RestController
 @AllArgsConstructor
 public class RegistroJuegoController {
