@@ -7,6 +7,7 @@ import com.kevinolarte.resibenissa.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -39,4 +40,32 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
+    public List<User> getUsers(Long idResidencia, Boolean enable, String email) {
+        List<User> baseList;
+
+        // Primero comprobamos si hay residencia
+        if (idResidencia != null) {
+            baseList = userRepository.findByResidenciaId(idResidencia);
+        } else {
+            baseList = userRepository.findAll();
+        }
+
+        // Luego filtramos en memoria si se indica el email
+        if (email != null && !email.isEmpty()) {
+            baseList = baseList.stream()
+                    .filter(user -> user.getEmail().equalsIgnoreCase(email))
+                    .toList();
+        }
+
+        // Por último filtramos si enable no es null
+        if (enable != null) {
+            baseList = baseList.stream()
+                    .filter(user -> user.isEnabled() == enable)
+                    .toList();
+        }
+
+        return baseList;
+    }
+
 }

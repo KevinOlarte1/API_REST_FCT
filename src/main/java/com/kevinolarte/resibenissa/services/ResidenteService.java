@@ -50,8 +50,8 @@ public class ResidenteService {
         if(residencia == null){
             throw new RuntimeException("Residencia no encontrada");
         }
-        List<Residente> residentes = residenteRepository.findByResidencia(residencia);
 
-        return residentes;
+
+        return residenteRepository.findByResidencia(residencia);
     }
 }

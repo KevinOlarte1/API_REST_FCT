@@ -47,4 +47,18 @@ public class JuegoService {
     public Juego findById(Long id){
         return juegoRepository.findById(id).orElse(null);
     }
+
+    public List<Juego> getJuegos(Long idJuego, Long idResidencia) {
+        if (idJuego != null) {
+            Juego juego = findById(idJuego);
+            return juego != null ? List.of(juego) : List.of();
+        }
+
+        if (idResidencia != null) {
+            return juegoRepository.findByResidenciaId(idResidencia);
+        }
+
+        return juegoRepository.findAll();
+    }
+
 }

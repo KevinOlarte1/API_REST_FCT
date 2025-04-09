@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.OptionalInt;
 
 @RequestMapping("/resi/users")
@@ -27,6 +28,20 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @GetMapping()
+    public ResponseEntity<?> getUsers(
+            @RequestParam(required = false) Long idResidencia,
+            @RequestParam(required = false) Boolean enable,
+            @RequestParam(required = false) String email) {
+        try {
+            List<User> users = userService.getUsers(idResidencia, enable, email);
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 
 
 }
