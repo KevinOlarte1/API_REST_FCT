@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "residentes")
@@ -28,6 +30,9 @@ public class Residente {
     @ManyToOne
     @JoinColumn(name = "fk_residencia")
     private Residencia residencia;
+
+    @OneToMany(mappedBy = "residente")
+    private Set<RegistroJuego> registros = new LinkedHashSet<>();
 
     public Residente(String nombre, String apellido, LocalDate fechaNacimiento){
         this.nombre = nombre;

@@ -25,14 +25,24 @@ public class ResidenteController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getResidente(@PathVariable long id) {
+    @GetMapping()
+    public ResponseEntity<?> getResidente(
+            @RequestParam(required = false) Long resindeciaId,
+            @RequestParam(required = false) Long residenteId) {
         try {
-            Residente residente = residenteService.findById(id);
-            return ResponseEntity.ok().body(residente);
+            if (residenteId != null)
+                return ResponseEntity.ok(residenteService.findById(residenteId));
+
+            if (resindeciaId != null)
+                return ResponseEntity.ok(residenteService.findByResidencia(resindeciaId));
+            else
+                return ResponseEntity.ok(residenteService.findAll());
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+
+
 
 }

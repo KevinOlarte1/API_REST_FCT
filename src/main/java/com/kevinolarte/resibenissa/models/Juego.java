@@ -4,8 +4,16 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 @Entity
-@Table(name = "juego")
+@Table(
+        name = "juego",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"nombre", "fk_residencia"})
+        }
+)
 @Getter
 @Setter
 public class Juego {
@@ -18,8 +26,11 @@ public class Juego {
     private String nombre;
 
     @ManyToOne
-    @JoinColumn(name = "fk_residencia")
+    @JoinColumn(name = "fk_residencia", nullable = false)
     private Residencia residencia;
+
+    @OneToMany(mappedBy = "residente")
+    private Set<RegistroJuego> registro = new LinkedHashSet<>();
 
     public Juego(String nombre){
         this.nombre = nombre;

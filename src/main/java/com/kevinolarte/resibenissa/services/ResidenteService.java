@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -36,7 +37,21 @@ public class ResidenteService {
     }
 
     public Residente findById(long id) {
-        Optional<Residente> residente = residenteRepository.findById(id);
-        return residente.orElse(null);
+
+        return residenteRepository.findById(id).orElse(null);
+    }
+
+    public List<Residente> findAll() {
+        return (List<Residente>) residenteRepository.findAll();
+    }
+
+    public List<Residente> findByResidencia(Long id)throws RuntimeException {
+        Residencia residencia = residenciaService.findById(id);
+        if(residencia == null){
+            throw new RuntimeException("Residencia no encontrada");
+        }
+        List<Residente> residentes = residenteRepository.findByResidencia(residencia);
+
+        return residentes;
     }
 }
