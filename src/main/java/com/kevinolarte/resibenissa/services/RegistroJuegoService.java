@@ -1,15 +1,13 @@
 package com.kevinolarte.resibenissa.services;
 
-import com.kevinolarte.resibenissa.dto.RegistroJuegoDto;
+import com.kevinolarte.resibenissa.dto.in.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.models.Juego;
 import com.kevinolarte.resibenissa.models.RegistroJuego;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.repositories.RegistroJuegoRepository;
-import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 

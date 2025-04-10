@@ -1,9 +1,9 @@
 package com.kevinolarte.resibenissa.services;
 
-import com.kevinolarte.resibenissa.dto.ResidenciaDto;
+import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
+import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
-import com.kevinolarte.resibenissa.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -73,5 +73,17 @@ public class ResidenciaService {
     public Residencia findById(Long id){
         Optional<Residencia> residenciaTmp = residenciaRepository.findById(id);
         return residenciaTmp.orElse(null);
+    }
+
+    public List<ResidenciaResponseDto> getResidencias(Long idResidencia) {
+        List<Residencia> resi;
+        if (idResidencia == null)
+            resi = residenciaRepository.findAll();
+        else
+            resi = residenciaRepository.findById(idResidencia).stream().toList();
+
+        return resi.stream()
+                .map(ResidenciaResponseDto::new)
+                .toList();
     }
 }

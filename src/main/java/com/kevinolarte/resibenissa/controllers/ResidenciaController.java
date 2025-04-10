@@ -1,8 +1,8 @@
 package com.kevinolarte.resibenissa.controllers;
 
-import com.kevinolarte.resibenissa.dto.ResidenciaDto;
+import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
+import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.models.Residencia;
-import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.services.ResidenciaService;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
@@ -33,12 +33,11 @@ public class ResidenciaController {
 
     @GetMapping()
     public ResponseEntity<?> getResidencia(
-            @RequestParam(required = false) Long resindeciaId) {
+            @RequestParam(required = false) Long idResidencia) {
         try {
-            if (resindeciaId != null)
-                return ResponseEntity.ok(residenciaService.findById(resindeciaId));
-            else
-                return ResponseEntity.ok(residenciaService.findAll());
+            List<ResidenciaResponseDto> residencias = residenciaService.getResidencias(idResidencia);
+            return ResponseEntity.ok(residencias);
+
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

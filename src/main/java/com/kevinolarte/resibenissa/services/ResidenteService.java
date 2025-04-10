@@ -1,7 +1,7 @@
 package com.kevinolarte.resibenissa.services;
 
 
-import com.kevinolarte.resibenissa.dto.ResidenteDto;
+import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;

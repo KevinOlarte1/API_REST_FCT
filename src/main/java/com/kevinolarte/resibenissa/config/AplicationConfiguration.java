@@ -1,6 +1,8 @@
 package com.kevinolarte.resibenissa.config;
 
 import com.kevinolarte.resibenissa.repositories.UserRepository;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,4 +63,7 @@ public class AplicationConfiguration {
         authProvider.setUserDetailsService(userDetailsService());
         return authProvider;
     }
+
+
+
 }

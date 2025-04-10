@@ -1,7 +1,6 @@
 package com.kevinolarte.resibenissa.controllers;
 
-import com.kevinolarte.resibenissa.dto.ResidenciaDto;
-import com.kevinolarte.resibenissa.dto.ResidenteDto;
+import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package com.kevinolarte.resibenissa.controllers;
 
-import com.kevinolarte.resibenissa.dto.JuegoDto;
+import com.kevinolarte.resibenissa.dto.in.JuegoDto;
 import com.kevinolarte.resibenissa.models.Juego;
 import com.kevinolarte.resibenissa.services.JuegoService;
 import lombok.AllArgsConstructor;

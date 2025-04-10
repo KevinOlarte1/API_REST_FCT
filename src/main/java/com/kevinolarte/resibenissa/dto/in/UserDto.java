@@ -1,4 +1,4 @@
-package com.kevinolarte.resibenissa.dto;
+package com.kevinolarte.resibenissa.dto.in;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -18,5 +18,5 @@ public class UserDto {
     private String apellido;
     private String email;
     private String password;
-    private Long residenciaId;
+    private Long idResidencia;
 }

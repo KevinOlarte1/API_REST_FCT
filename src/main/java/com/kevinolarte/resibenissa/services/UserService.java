@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.services;
 
-import com.kevinolarte.resibenissa.dto.UserDto;
+import com.kevinolarte.resibenissa.dto.in.UserDto;
+import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
@@ -8,7 +9,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Servicio que gestiona la lógica relacionada con los usuarios del sistema.
@@ -35,7 +35,7 @@ public class UserService {
 
         if (input.getNombre() == null || input.getApellido() == null || input.getEmail() == null || input.getPassword() == null ||
                 input.getNombre().isEmpty() || input.getApellido().isEmpty() || input.getEmail().isEmpty() || input.getPassword().isEmpty() ||
-                input.getResidenciaId() == null){
+                input.getIdResidencia() == null){
             throw new RuntimeException("No puede faltar ningun campo");
         }
 
@@ -47,7 +47,7 @@ public class UserService {
             throw new RuntimeException("El email ya existe");
         }
 
-        Residencia residenciaOpt = residenciaService.findById(input.getResidenciaId());
+        Residencia residenciaOpt = residenciaService.findById(input.getIdResidencia());
         if(residenciaOpt == null){
             throw new RuntimeException("Residencia no encontrada");
         }
@@ -66,7 +66,7 @@ public class UserService {
      * @param email Email del usuario a buscar (opcional).
      * @return Lista de usuarios que cumplen con los filtros.
      */
-    public List<User> getUsers(Long idResidencia, Boolean enable, String email) {
+    public List<UserResponseDto> getUsers(Long idResidencia, Boolean enable, String email) {
         List<User> baseList;
 
         // Filtrado por residencia si se indica
@@ -90,7 +90,16 @@ public class UserService {
                     .toList();
         }
 
-        return baseList;
+
+        return baseList.stream().map(user ->
+                new UserResponseDto(
+                        user.getId(),
+                        user.getNombre(),
+                        user.getApellido(),
+                        user.getEmail(),
+                        user.isEnabled(),
+                        user.getResidencia() != null? user.getResidencia().getId() : null
+                )).toList();
     }
 
 }
