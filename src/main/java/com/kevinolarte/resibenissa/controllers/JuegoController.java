@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.controllers;
 
 import com.kevinolarte.resibenissa.dto.in.JuegoDto;
+import com.kevinolarte.resibenissa.dto.out.JuegoResponseDto;
 import com.kevinolarte.resibenissa.models.Juego;
 import com.kevinolarte.resibenissa.services.JuegoService;
 import lombok.AllArgsConstructor;
@@ -16,9 +17,9 @@ import java.util.List;
 public class JuegoController {
     private final JuegoService juegoService;
 
+    //TODO: mirar sql;
     @PostMapping("/add")
     public ResponseEntity<?> addJuego(@RequestBody JuegoDto juegoDto) {
-        System.out.println("ENTRA AL MENOS");
         try{
             Juego juego = juegoService.save(juegoDto);
             return ResponseEntity.ok(juego);
@@ -32,7 +33,7 @@ public class JuegoController {
             @RequestParam(required = false) Long idJuego,
             @RequestParam(required = false) Long idResidencia) {
         try{
-            List<Juego> juegos = juegoService.getJuegos(idJuego, idResidencia);
+            List<JuegoResponseDto> juegos = juegoService.getJuegos(idJuego, idResidencia);
             return ResponseEntity.ok(juegos);
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

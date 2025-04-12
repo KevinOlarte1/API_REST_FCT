@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.controllers;
 
 import com.kevinolarte.resibenissa.dto.in.RegistroJuegoDto;
+import com.kevinolarte.resibenissa.dto.out.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.models.RegistroJuego;
 import com.kevinolarte.resibenissa.services.RegistroJuegoService;
 import lombok.AllArgsConstructor;
@@ -36,7 +37,7 @@ public class RegistroJuegoController {
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer day){
         try {
-            List<RegistroJuego> resultados = registroJuegoService.getStats(idResidente, idResidencia, idJuego, year, month, day);
+            List<RegistroJuegoResponseDto> resultados = registroJuegoService.getStats(idResidente, idResidencia, idJuego, year, month, day);
             return ResponseEntity.ok(resultados);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

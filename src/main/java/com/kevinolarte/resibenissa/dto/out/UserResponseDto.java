@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.dto.out;
 
+import com.kevinolarte.resibenissa.models.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,13 +14,13 @@ public class UserResponseDto {
     private boolean enabled;
     private Long idResidencia;
 
-    public UserResponseDto(Long id, String nombre, String apellido, String email, boolean enabled, Long idResidencia) {
-        this.id = id;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.email = email;
-        this.enabled = enabled;
-        this.idResidencia = idResidencia;
+    public UserResponseDto(User user) {
+        this.id = user.getId();
+        this.nombre = user.getNombre();
+        this.apellido = user.getApellido();
+        this.email = user.getEmail();
+        this.enabled = user.isEnabled();
+        this.idResidencia = user.getResidencia().getId();
     }
 
 

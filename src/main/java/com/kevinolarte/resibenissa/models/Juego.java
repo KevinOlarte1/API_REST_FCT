@@ -34,7 +34,7 @@ public class Juego {
     /**
      * Nombre del juego. Debe ser único dentro de cada residencia.
      */
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String nombre;
 
     /**

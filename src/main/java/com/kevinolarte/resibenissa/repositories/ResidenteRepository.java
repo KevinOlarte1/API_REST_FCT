@@ -25,4 +25,12 @@ public interface ResidenteRepository extends JpaRepository<Residente, Long> {
      * @return Lista de residentes que pertenecen a la residencia dada.
      */
     List<Residente> findByResidencia(Residencia residencia);
+
+    /**
+     * Obtiene todos los residentes asociados a una residencia específica usando el ID de la residencia.
+     *
+     * @param residenciaId ID de la residencia.
+     * @return Lista de residentes asociados a esa residencia.
+     */
+    List<Residente> findByResidencia_Id(Long residenciaId);
 }

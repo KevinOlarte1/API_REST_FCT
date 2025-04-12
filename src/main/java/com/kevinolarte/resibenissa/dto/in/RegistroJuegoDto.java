@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.dto.in;
 
+import enums.Dificultad;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,22 @@ public class RegistroJuegoDto {
 
     private Long idJuego;
     private Long idResidente;
+    private Long idUsuario;
     private Integer fallos;
     private Double duracion;
+    private Dificultad dificultad;
+
+    @Override
+    public String toString() {
+        return "RegistroJuegoDto{" +
+                "idJuego=" + idJuego +
+                ", idResidente=" + idResidente +
+                ", idUsuario=" + idUsuario +
+                ", fallos=" + fallos +
+                ", duracion=" + duracion +
+                ", dificultad=" + dificultad +
+                '}';
+    }
 }
+
+

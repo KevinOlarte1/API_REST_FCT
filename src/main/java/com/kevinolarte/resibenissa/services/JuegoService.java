@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.dto.in.JuegoDto;
+import com.kevinolarte.resibenissa.dto.out.JuegoResponseDto;
 import com.kevinolarte.resibenissa.models.Juego;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.repositories.JuegoRepository;
@@ -8,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Servicio encargado de la lógica relacionada con los juegos.
@@ -33,7 +35,7 @@ public class JuegoService {
      * @throws RuntimeException si faltan datos, la residencia no existe o el juego ya está registrado en esa residencia.
      */
     public Juego save(JuegoDto juegoDto)throws RuntimeException{
-        if (juegoDto.getNombre() == null || juegoDto.getNombre().isEmpty() || juegoDto.getIdResidencia() == null){
+        if (juegoDto.getNombre() == null || juegoDto.getNombre().trim().isEmpty() || juegoDto.getIdResidencia() == null){
             throw new RuntimeException("Ningún campo puede ser nulo o vacio");
         }
 
@@ -73,17 +75,21 @@ public class JuegoService {
      * @param idResidencia ID de la residencia.
      * @return Lista de juegos correspondiente al filtro aplicado.
      */
-    public List<Juego> getJuegos(Long idJuego, Long idResidencia) {
+    public List<JuegoResponseDto> getJuegos(Long idJuego, Long idResidencia) {
         if (idJuego != null) {
             Juego juego = findById(idJuego);
-            return juego != null ? List.of(juego) : List.of();
+            return juego != null ? List.of(new JuegoResponseDto(juego)) : List.of();
         }
 
         if (idResidencia != null) {
-            return juegoRepository.findByResidenciaId(idResidencia);
+            return juegoRepository.findByResidenciaId(idResidencia).stream()
+                    .map(JuegoResponseDto::new)
+                    .collect(Collectors.toList());
         }
 
-        return juegoRepository.findAll();
+        return juegoRepository.findAll().stream()
+                .map(JuegoResponseDto::new)
+                .collect(Collectors.toList());
     }
 
 }

@@ -9,7 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Entidad que representa un usuario del sistema.
@@ -79,7 +81,18 @@ public class User implements UserDetails {
      */
     @ManyToOne
     @JoinColumn(name = "fk_residencia")
+    @JsonIgnore
     private Residencia residencia;
+
+    /**
+     * Relacion con los registros de los juegos que son los que se encargan de asignar el jugador.
+     * Para llevar un mayor control.
+     * <p>
+     *  Este ususario puede tener varios registros.
+     */
+    @OneToMany(mappedBy = "usuario")
+    @JsonIgnore
+    private Set<RegistroJuego> registroJuegos = new LinkedHashSet<>();
 
     public User() {}
     public User(String nombre, String apellido, String email, String password){

@@ -22,5 +22,5 @@ public class ResidenteDto {
     private String nombre;
     private String apellido;
     private LocalDate fechaNacimiento;
-    private Long residenciaId;
+    private Long idResidencia;
 }

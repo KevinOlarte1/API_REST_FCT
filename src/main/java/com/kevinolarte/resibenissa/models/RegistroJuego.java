@@ -1,10 +1,12 @@
 package com.kevinolarte.resibenissa.models;
 
+import enums.Dificultad;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Entidad que representa un registro del uso de un juego por parte de un residente.
@@ -35,21 +37,27 @@ public class RegistroJuego {
     /**
      * Juego que fue utilizado.
      */
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "fk_juego")
     private Juego juego;
+
+    /**
+     * Trabajador que registra la partida.
+     */
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "fk_usuario")
+    private User usuario;
 
     /**
      * Fecha en la que se jugó.
      */
     @Column(nullable = false)
-    private LocalDate fecha;
+    private LocalDateTime fecha;
 
     /**
      * Número de fallos cometidos por el residente durante el juego.
      */
-    @Column(nullable = false)
-    private Integer fallos;
+    private Integer num;
 
     /**
      * Duración del juego en segundos (o minutos, según convención del sistema).
@@ -57,10 +65,22 @@ public class RegistroJuego {
     @Column(nullable = false)
     private Double duracion;
 
-    public RegistroJuego(Integer fallos, Double duracion){
-        this.fallos = fallos;
+    private Dificultad dificultad;
+
+    public RegistroJuego(Integer num, Double duracion, Dificultad dificultad){
+        this.num = num;
         this.duracion = duracion;
-        this.fecha = LocalDate.now();
+        this.fecha = LocalDateTime.now();
+        this.dificultad = dificultad;
     }
-    public RegistroJuego(){}
+    public RegistroJuego(Double duracion, Dificultad dificultad ){
+        this(0,duracion,dificultad);
+    }
+    public RegistroJuego(Integer num, Double duracion){
+        this(num,duracion,null);
+    }
+
+    public RegistroJuego() {
+
+    }
 }

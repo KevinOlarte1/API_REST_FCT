@@ -36,6 +36,7 @@ public class ResidenciaService {
                 || input.getNombre().isEmpty() || input.getEmail().isEmpty()){
             throw new RuntimeException("El nombre y el correo son obligatorio");
         }
+        input.setEmail(input.getEmail().toLowerCase().trim());
 
         if (!EmailService.isEmailValid(input.getEmail())){
             throw new RuntimeException("Email invalido");

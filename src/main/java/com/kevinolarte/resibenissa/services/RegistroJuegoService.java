@@ -1,15 +1,19 @@
 package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.dto.in.RegistroJuegoDto;
+import com.kevinolarte.resibenissa.dto.out.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.models.Juego;
 import com.kevinolarte.resibenissa.models.RegistroJuego;
 import com.kevinolarte.resibenissa.models.Residente;
+import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.RegistroJuegoRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Servicio que gestiona la lógica de negocio relacionada con los registros de juegos.
@@ -26,6 +30,7 @@ public class RegistroJuegoService {
     private final RegistroJuegoRepository registroJuegoRepository;
     private final ResidenteService residenteService;
     private final JuegoService juegoService;
+    private final UserService userService;
 
 
     /**
@@ -37,7 +42,7 @@ public class RegistroJuegoService {
      */
     public RegistroJuego save(RegistroJuegoDto input) throws RuntimeException{
         if (input.getDuracion() == null || input.getFallos() == null ||
-                input.getIdResidente() == null || input.getIdJuego() == null){
+                input.getIdResidente() == null || input.getIdJuego() == null || input.getIdUsuario() == null){
             throw new RuntimeException("No se deje ningun campo nullo");
         }
 
@@ -47,13 +52,15 @@ public class RegistroJuegoService {
         }
         Juego juego = juegoService.findById(input.getIdJuego());
         Residente residente = residenteService.findById(input.getIdResidente());
-
-        if (juego == null || residente == null) {
+        User usuario = userService.findById(input.getIdUsuario());
+        if (juego == null || residente == null || usuario == null) {
             String msg = "";
             if(juego == null)
                 msg += " Juego - No encontrado ";
-            else
+            if(residente == null)
                 msg += " Residente - No encontrado ";
+            if (usuario == null)
+                msg += " Usuario - No encontrado ";
             throw new RuntimeException(msg);
         }
 
@@ -61,10 +68,10 @@ public class RegistroJuegoService {
         if (!Objects.equals(juego.getResidencia().getId(), residente.getResidencia().getId())) {
             throw new RuntimeException("No posible");
         }
-
-        RegistroJuego registroJuego = new RegistroJuego(input.getFallos(), input.getDuracion());
+        RegistroJuego registroJuego = new RegistroJuego(input.getFallos(), input.getDuracion(), input.getDificultad());
         registroJuego.setJuego(juego);
         registroJuego.setResidente(residente);
+        registroJuego.setUsuario(usuario);
         return registroJuegoRepository.save(registroJuego);
     }
 
@@ -80,7 +87,8 @@ public class RegistroJuegoService {
      * @param day Día del registro (opcional).
      * @return Lista de registros de juegos que cumplen con los filtros.
      */
-    public List<RegistroJuego> getStats(Long idResidente, Long idResidencia, Long idJuego, Integer year, Integer month, Integer day) {
+    @Async
+    public List<RegistroJuegoResponseDto> getStats(Long idResidente, Long idResidencia, Long idJuego, Integer year, Integer month, Integer day) {
         List<RegistroJuego> baseList;
 
         //1- filtro mira de mas pequeño a mas grade idResidente, idResidencia sino todo.
@@ -99,20 +107,20 @@ public class RegistroJuegoService {
                     .toList();
         }
 
-        //Filtra por dia, por mes, por año o combinado.
+        //Filtra por dia, por mes, por año o combinado. //Mapping clase origen clase destino. DOZER, MapStruct
         if (year != null || month != null || day != null) {
             baseList = baseList.stream()
                     .filter(r -> {
                         boolean match = true;
-                        if (year != null) match = match && r.getFecha().getYear() == year;
+                        if (year != null) match = r.getFecha().getYear() == year;
                         if (month != null) match = match && r.getFecha().getMonthValue() == month;
                         if (day != null) match = match && r.getFecha().getDayOfMonth() == day;
                         return match;
                     })
                     .toList();
         }
-
-        return baseList;
+        //TODO: -ALTERNATIVA QUERY DINAMICA
+        return baseList.stream().map(RegistroJuegoResponseDto::new).collect(Collectors.toList());
     }
 
 }

@@ -23,7 +23,6 @@ public class ResidenciaController {
     @PostMapping("/add")
     public ResponseEntity<?> addResidencia(@RequestBody ResidenciaDto residenciaDto) {
         try{
-            residenciaDto.setEmail(residenciaDto.getEmail().toLowerCase().trim());
             Residencia residencia = residenciaService.save(residenciaDto);
             return ResponseEntity.ok(residencia);
         }catch (Exception e){

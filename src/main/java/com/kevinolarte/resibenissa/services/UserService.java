@@ -34,11 +34,11 @@ public class UserService {
     public User save(UserDto input) throws RuntimeException{
 
         if (input.getNombre() == null || input.getApellido() == null || input.getEmail() == null || input.getPassword() == null ||
-                input.getNombre().isEmpty() || input.getApellido().isEmpty() || input.getEmail().isEmpty() || input.getPassword().isEmpty() ||
+                input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty() || input.getEmail().trim().isEmpty() || input.getPassword().isEmpty() ||
                 input.getIdResidencia() == null){
             throw new RuntimeException("No puede faltar ningun campo");
         }
-
+        input.setEmail(input.getEmail().toLowerCase().trim());
         if(!EmailService.isEmailValid(input.getEmail().toLowerCase().trim())){
             throw new RuntimeException("Email invalido");
         }
@@ -91,15 +91,10 @@ public class UserService {
         }
 
 
-        return baseList.stream().map(user ->
-                new UserResponseDto(
-                        user.getId(),
-                        user.getNombre(),
-                        user.getApellido(),
-                        user.getEmail(),
-                        user.isEnabled(),
-                        user.getResidencia() != null? user.getResidencia().getId() : null
-                )).toList();
+        return baseList.stream().map(UserResponseDto::new).toList();
     }
 
+    public User findById(Long idUsuario) {
+        return userRepository.findById(idUsuario).orElse(null);
+    }
 }

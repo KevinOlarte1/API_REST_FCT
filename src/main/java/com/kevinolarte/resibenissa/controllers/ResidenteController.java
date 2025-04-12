@@ -26,16 +26,10 @@ public class ResidenteController {
 
     @GetMapping()
     public ResponseEntity<?> getResidente(
-            @RequestParam(required = false) Long resindeciaId,
-            @RequestParam(required = false) Long residenteId) {
+            @RequestParam(required = false) Long idResidencia,
+            @RequestParam(required = false) Long idResidente) {
         try {
-            if (residenteId != null)
-                return ResponseEntity.ok(residenteService.findById(residenteId));
-
-            if (resindeciaId != null)
-                return ResponseEntity.ok(residenteService.findByResidencia(resindeciaId));
-            else
-                return ResponseEntity.ok(residenteService.findAll());
+            return ResponseEntity.ok().body(residenteService.getResidentes(idResidencia, idResidente));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

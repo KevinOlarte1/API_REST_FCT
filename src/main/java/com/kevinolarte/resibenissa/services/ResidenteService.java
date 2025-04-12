@@ -2,6 +2,7 @@ package com.kevinolarte.resibenissa.services;
 
 
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
+import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
@@ -9,7 +10,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Servicio encargado de gestionar la lógica relacionada con los residentes.
@@ -34,7 +37,7 @@ public class ResidenteService {
      */
     public Residente save(ResidenteDto input)throws RuntimeException{
         if (input.getNombre() == null || input.getApellido() == null || input.getFechaNacimiento() == null ||
-                input.getNombre().isEmpty() || input.getApellido().isEmpty()) {
+                input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty()) {
             throw new RuntimeException("No campos vacios");
         }
 
@@ -42,7 +45,7 @@ public class ResidenteService {
             throw new RuntimeException("Fecha nacimiento es invalida");
         }
 
-        Residencia residencia = residenciaService.findById(input.getResidenciaId());
+        Residencia residencia = residenciaService.findById(input.getIdResidencia());
         if(residencia == null){
             throw new RuntimeException("Residencia no encontrada");
         }
@@ -87,4 +90,33 @@ public class ResidenteService {
 
         return residenteRepository.findByResidencia(residencia);
     }
+
+    /**
+     * Obtiener la lista de residentes filtrados por los siguentes parametros
+     * @param idResidencia id de la residencia que pertenece
+     * @param idResidente id del residente en especifico
+     * @return una lista con el anterior filtrado.
+     */
+    public List<ResidenteResponseDto> getResidentes(Long idResidencia, Long idResidente) {
+        List<Residente> residentes;
+
+        if (idResidente != null) {
+            Residente residente = residenteRepository.findById(idResidente).orElse(null);
+            if (residente != null) {
+                if (!Objects.equals(residente.getResidencia().getId(), idResidencia)) {
+                    return List.of();
+                }
+            }
+            residentes = residente != null ? List.of(residente) : List.of();
+        } else if (idResidencia != null) {
+            residentes = residenteRepository.findByResidencia_Id(idResidencia);
+        } else {
+            residentes = residenteRepository.findAll();
+        }
+
+        return residentes.stream()
+                .map(ResidenteResponseDto::new)
+                .toList();
+    }
+
 }
