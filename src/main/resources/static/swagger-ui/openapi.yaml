@@ -27,13 +27,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseDto-CAMPOS_OBLIGATORIOS'
+                $ref: '#/components/schemas/ErrorResponseDto'
+              examples:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                CORREO_INVALIDO:
+                  value:
+                    mensaje: Email invalid
+                    codigo: 1002
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+
         '409':
           description: "Email o nombre ya existe"
           content:
             aplication/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseDto-CORREO_DUPLICADO'
+                $ref: '#/components/schemas/ErrorResponseDto'
+              examples:
+                CORREO_DUPLICADO:
+                  value:
+                    mensaje: Email ya existente
+                    codigo: 1003
+                    status: 409
+                    timestamp: 2025-04-13T21:00:00
+                NOMBRE_DUPLICADO:
+                  value:
+                    mensaje: Nombre ya existente
+                    codigo: 1004
+                    status: 409
+                    timestamp: 2025-04-13T21:00:00
 
   /resi:
     get:
@@ -57,6 +84,88 @@ paths:
                   $ref: '#/components/schemas/ResidenciaResponseDto'
         '400':
           description: Error al recuperar residencias
+          content:
+            application/json:
+              schema:
+
+  /resi/residents/add:
+    post:
+      summary: Registrar un nuevo residente
+      description: Crea un residente en una residencia existente en la base de datos, con ciertos campos.
+      requestBody:
+        required: true
+        content:
+          aplication/json:
+            schema:
+              $ref: '#/components/schemas/ResidenteDto'
+      responses:
+        '200':
+          description: Residente registrado con existo
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ResidenteResponseDto'
+        '400':
+          description: Error de validacion o campos nulos
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+              examples:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                FECHA_INVALIDO:
+                  value:
+                    mensaje: Fecha invalida
+                    codigo: 1005
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '409':
+          description: La residencia que se quiere asignar no existe
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/residents:
+    get:
+      summary: Obtener residentes
+      description: Devuelve una lista de residentes. Si pones el id del residente te de vuelve solo el residnete. Si pones el id de la residencia te devuelve una lsita de residentes de esa residencia.
+      parameters:
+        - name: idResidencia
+          in:  query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: idResidente
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Residente(s) econtrado(s)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResidenteResponseDto'
+        '400':
+          description: Error al recuperar residentes
           content:
             application/json:
               schema:
@@ -90,71 +199,66 @@ components:
         email:
           type: string
           example: contacto@resilapaz.com
+    ResidenteDto:
+      type: object
+      required:
+        - nombre
+        - apellido
+        - fechaNacimiento
+        - idResidencia
+      properties:
+        nombre:
+          type: string
+          example: Carlos
+        apellido:
+          type: string
+          example: Pérez
+        fechaNacimiento:
+          type: string
+          format: date
+          example: 1945-06-15
+        idResidencia:
+          type: integer
+          format: int64
+          example: 1
 
-    ErrorResponseDto-CAMPOS_OBLIGATORIOS:
+    ResidenteResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 101
+        nombre:
+          type: string
+          example: Carlos
+        apellido:
+          type: string
+          example: Pérez
+        fechaNacimiento:
+          type: string
+          format: date
+          example: 1945-06-15
+        idResidencia:
+          type: integer
+          format: int64
+          example: 1
+
+    ErrorResponseDto:
       type: object
       properties:
         mensaje:
           type: string
-          example: Faltan campos obligatorios
         codigo:
           type: integer
-          example: 1001
         status:
           type: integer
-          example: 400
         timestamp:
           type: string
           format: date-time
-          example: 2025-04-13T21:00:00
+      example:
+        mensaje: Faltan campos obligatorios
+        codigo: 1001
+        status: 400
+        timestamp: 2025-04-13T21:00:00
 
-    ErrorResponseDto-CORREO_INVALIDO:
-      type: object
-      properties:
-        mensaje:
-          type: string
-          example: Email invalid
-        codigo:
-          type: integer
-          example: 1002
-        status:
-          type: integer
-          example: 400
-        timestamp:
-          type: string
-          format: date-time
-          example: 2025-04-13T21:00:00
-
-    ErrorResponseDto-CORREO_DUPLICADO:
-      type: object
-      properties:
-        mensaje:
-          type: string
-          example: Email ya existente
-        codigo:
-          type: integer
-          example: 1003
-        status:
-          type: integer
-          example: 409
-        timestamp:
-          type: string
-          format: date-time
-          example: 2025-04-13T21:00:00
-
-    ErrorResponseDto-NOMBRE_DUPLICADO:
-      type: object
-      properties:
-        mensaje:
-          type: string
-          example: Nombre ya existente
-        codigo:
-          type: integer
-          example: 1004
-        status:
-          type: integer
-          example: 409
-        timestamp:
-          type: string
-          format: date-time
-          example: 2025-04-13T21:00:00

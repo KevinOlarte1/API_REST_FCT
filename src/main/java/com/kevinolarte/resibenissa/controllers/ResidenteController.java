@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.controllers;
 
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
+import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
@@ -15,13 +16,10 @@ public class ResidenteController {
     private final ResidenteService residenteService;
 
     @PostMapping("/add")
-    public ResponseEntity<?> addResidente(@RequestBody ResidenteDto residenteDto)throws RuntimeException {
-        try{
-            Residente residente = residenteService.save(residenteDto);
+    public ResponseEntity<ResidenteResponseDto> addResidente(@RequestBody ResidenteDto residenteDto)throws RuntimeException {
+            ResidenteResponseDto residente = residenteService.save(residenteDto);
             return ResponseEntity.ok().body(residente);
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+
     }
 
     @GetMapping()

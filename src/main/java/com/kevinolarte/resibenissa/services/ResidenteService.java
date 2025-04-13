@@ -2,7 +2,10 @@ package com.kevinolarte.resibenissa.services;
 
 
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
+import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
@@ -29,30 +32,42 @@ public class ResidenteService {
     private final ResidenciaService residenciaService;
 
     /**
-     * Guarda un nuevo residente a partir de los datos del DTO.
+     * Registra un nuevo residente en el sistema a partir de los datos proporcionados.
+     * <p>
+     * Este método valida que los campos requeridos estén presentes y sean válidos, incluyendo:
+     * <ul>
+     *   <li>Nombre y apellido no nulos ni vacíos.</li>
+     *   <li>La fecha de nacimiento no puede ser posterior a la fecha actual.</li>
+     *   <li>La residencia asociada debe existir en el sistema.</li>
+     * </ul>
+     * Si alguna de estas validaciones falla, se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
+     * con un código de error correspondiente.
+     * </p>
      *
-     * @param input DTO con los datos del residente.
-     * @return El residente registrado y persistido.
-     * @throws RuntimeException si hay campos inválidos o falta de residencia.
+     * @param input DTO con los datos del residente a registrar.
+     * @return DTO de respuesta con los datos del residente registrado.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si los datos de entrada son inválidos
+     *         o si la residencia especificada no existe.
      */
-    public Residente save(ResidenteDto input)throws RuntimeException{
+    public ResidenteResponseDto save(ResidenteDto input)throws ApiException{
         if (input.getNombre() == null || input.getApellido() == null || input.getFechaNacimiento() == null ||
                 input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty()) {
-            throw new RuntimeException("No campos vacios");
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         if(input.getFechaNacimiento().isAfter(LocalDate.now())){
-            throw new RuntimeException("Fecha nacimiento es invalida");
+            throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
         }
 
         Residencia residencia = residenciaService.findById(input.getIdResidencia());
         if(residencia == null){
-            throw new RuntimeException("Residencia no encontrada");
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
         Residente residente = new Residente(input.getNombre(), input.getApellido(), input.getFechaNacimiento());
         residente.setResidencia(residencia);
-        return residenteRepository.save(residente);
+        Residente residenteSaved = residenteRepository.save(residente);
+        return new ResidenteResponseDto(residenteSaved);
 
     }
 
@@ -97,7 +112,7 @@ public class ResidenteService {
      * @param idResidente id del residente en especifico
      * @return una lista con el anterior filtrado.
      */
-    public List<ResidenteResponseDto> getResidentes(Long idResidencia, Long idResidente) {
+    public List<ResidenteResponseDto> getResidentes(Long idResidencia, Long idResidente){
         List<Residente> residentes;
 
         if (idResidente != null) {
