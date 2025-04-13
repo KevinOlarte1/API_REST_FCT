@@ -21,25 +21,18 @@ public class ResidenciaController {
     private final ResidenteService residenteService;
 
     @PostMapping("/add")
-    public ResponseEntity<?> addResidencia(@RequestBody ResidenciaDto residenciaDto) {
-        try{
-            Residencia residencia = residenciaService.save(residenciaDto);
+    public ResponseEntity<ResidenciaResponseDto> addResidencia(@RequestBody ResidenciaDto residenciaDto) {
+            ResidenciaResponseDto residencia = residenciaService.save(residenciaDto);
             return ResponseEntity.ok(residencia);
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+
     }
 
     @GetMapping()
-    public ResponseEntity<?> getResidencia(
+    public ResponseEntity<List<ResidenciaResponseDto>> getResidencia(
             @RequestParam(required = false) Long idResidencia) {
-        try {
-            List<ResidenciaResponseDto> residencias = residenciaService.getResidencias(idResidencia);
-            return ResponseEntity.ok(residencias);
+        List<ResidenciaResponseDto> residencias = residenciaService.getResidencias(idResidencia);
+        return ResponseEntity.ok(residencias);
 
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
     }
 
 }

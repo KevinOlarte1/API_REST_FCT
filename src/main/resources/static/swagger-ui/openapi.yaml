@@ -1,0 +1,160 @@
+openapi: 3.0.0
+info:
+  title: API de Residencias
+  version: 1.0.0
+  description: API para gestionar residencias, con operaciones de registro y consulta.
+
+paths:
+  /resi/add:
+    post:
+      summary: Registrar una nueva residencia
+      description: Crea una nueva residencia validando campos obligatorios, formato de correo y unicidad.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResidenciaDto'
+      responses:
+        '200':
+          description: Residencia registrada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResidenciaResponseDto'
+        '400':
+          description: Error de validación o datos nulos/vacios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto-CAMPOS_OBLIGATORIOS'
+        '409':
+          description: "Email o nombre ya existe"
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseDto-CORREO_DUPLICADO'
+
+  /resi:
+    get:
+      summary: Obtener residencias
+      description: Devuelve una lista de residencias. Si se indica un ID, devuelve solo esa residencia.
+      parameters:
+        - name: idResidencia
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Residencia(s) encontrada(s)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResidenciaResponseDto'
+        '400':
+          description: Error al recuperar residencias
+          content:
+            application/json:
+              schema:
+
+
+components:
+  schemas:
+    ResidenciaDto:
+      type: object
+      required:
+        - nombre
+        - email
+      properties:
+        nombre:
+          type: string
+          example: Residencia La Paz
+        email:
+          type: string
+          example: contacto@resilapaz.com
+
+    ResidenciaResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        nombre:
+          type: string
+          example: Residencia La Paz
+        email:
+          type: string
+          example: contacto@resilapaz.com
+
+    ErrorResponseDto-CAMPOS_OBLIGATORIOS:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          example: Faltan campos obligatorios
+        codigo:
+          type: integer
+          example: 1001
+        status:
+          type: integer
+          example: 400
+        timestamp:
+          type: string
+          format: date-time
+          example: 2025-04-13T21:00:00
+
+    ErrorResponseDto-CORREO_INVALIDO:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          example: Email invalid
+        codigo:
+          type: integer
+          example: 1002
+        status:
+          type: integer
+          example: 400
+        timestamp:
+          type: string
+          format: date-time
+          example: 2025-04-13T21:00:00
+
+    ErrorResponseDto-CORREO_DUPLICADO:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          example: Email ya existente
+        codigo:
+          type: integer
+          example: 1003
+        status:
+          type: integer
+          example: 409
+        timestamp:
+          type: string
+          format: date-time
+          example: 2025-04-13T21:00:00
+
+    ErrorResponseDto-NOMBRE_DUPLICADO:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          example: Nombre ya existente
+        codigo:
+          type: integer
+          example: 1004
+        status:
+          type: integer
+          example: 409
+        timestamp:
+          type: string
+          format: date-time
+          example: 2025-04-13T21:00:00
