@@ -13,13 +13,14 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 /**
- * Servicio encargado de la lógica relacionada con los juegos.
+ * Servicio que gestiona la lógica de negocio relacionada con los juegos.
  * <p>
- * Permite registrar nuevos juegos, obtenerlos por ID o por residencia,
- * y verificar restricciones como la unicidad del nombre dentro de una residencia.
+ * Permite crear juegos nuevos validados y consultarlos por ID o por residencia.
+ * </p>
  *
- * @author Kevin Olarte
+ * @author Kevin
  */
 @Service
 @AllArgsConstructor
@@ -29,7 +30,21 @@ public class JuegoService {
     private final ResidenciaService residenciaService;
 
 
-
+    /**
+     * Guarda un nuevo juego en el sistema.
+     * <p>
+     * Se validan los siguientes aspectos:
+     * <ul>
+     *   <li>El nombre del juego no puede estar vacío.</li>
+     *   <li>Debe estar asociado a una residencia válida existente.</li>
+     *   <li>No debe existir ya un juego con el mismo nombre en la misma residencia.</li>
+     * </ul>
+     * </p>
+     *
+     * @param juegoDto DTO con los datos del juego a registrar.
+     * @return DTO con la información del juego registrado.
+     * @throws ApiException si faltan campos, la residencia no existe o el nombre ya está en uso en esa residencia.
+     */
     public JuegoResponseDto save(JuegoDto juegoDto)throws ApiException{
         if (juegoDto.getNombre() == null || juegoDto.getNombre().trim().isEmpty() || juegoDto.getIdResidencia() == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -56,20 +71,27 @@ public class JuegoService {
     /**
      * Busca un juego por su ID.
      *
-     * @param id ID del juego.
-     * @return El juego si existe, o null si no se encuentra.
+     * @param id ID del juego a buscar.
+     * @return Entidad {@link Juego} si existe, o {@code null} si no se encuentra.
      */
     public Juego findById(Long id){
         return juegoRepository.findById(id).orElse(null);
     }
 
     /**
-     * Devuelve una lista de juegos filtrada por ID de juego o ID de residencia.
-     * Si ambos parámetros son nulos, devuelve todos los juegos.
+     * Recupera una lista de juegos según filtros opcionales.
+     * <p>
+     * Comportamientos posibles:
+     * <ul>
+     *   <li>Si se proporciona <code>idJuego</code>, devuelve ese juego (si existe).</li>
+     *   <li>Si se proporciona <code>idResidencia</code>, devuelve todos los juegos de esa residencia.</li>
+     *   <li>Si no se proporciona ningún parámetro, devuelve todos los juegos existentes.</li>
+     * </ul>
+     * </p>
      *
-     * @param idJuego     ID específico del juego.
-     * @param idResidencia ID de la residencia.
-     * @return Lista de juegos correspondiente al filtro aplicado.
+     * @param idJuego ID específico del juego a recuperar (opcional).
+     * @param idResidencia ID de la residencia para filtrar juegos (opcional).
+     * @return Lista de juegos convertidos a {@link JuegoResponseDto}.
      */
     public List<JuegoResponseDto> getJuegos(Long idJuego, Long idResidencia) {
         if (idJuego != null) {

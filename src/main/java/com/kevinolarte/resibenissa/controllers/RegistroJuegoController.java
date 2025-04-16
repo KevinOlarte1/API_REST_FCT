@@ -19,29 +19,24 @@ public class RegistroJuegoController {
     private final RegistroJuegoService registroJuegoService;
 
     @PostMapping("/add")
-    public ResponseEntity<?> addRegistroJuego(@RequestBody RegistroJuegoDto registroJuegoDto) {
-        try{
-            RegistroJuego registroJuego = registroJuegoService.save(registroJuegoDto);
-            return ResponseEntity.ok(registroJuego);
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<RegistroJuegoResponseDto> addRegistroJuego(@RequestBody RegistroJuegoDto registroJuegoDto) {
+        RegistroJuegoResponseDto registroJuego = registroJuegoService.save(registroJuegoDto);
+        return ResponseEntity.ok(registroJuego);
+
     }
 
     @GetMapping
-    public ResponseEntity<?> getStats(
+    public ResponseEntity<List<RegistroJuegoResponseDto>> getStats(
             @RequestParam(required = false) Long idResidente,
             @RequestParam(required = false) Long idResidencia,
             @RequestParam(required = false) Long idJuego,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer day){
-        try {
-            List<RegistroJuegoResponseDto> resultados = registroJuegoService.getStats(idResidente, idResidencia, idJuego, year, month, day);
-            return ResponseEntity.ok(resultados);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+
+        List<RegistroJuegoResponseDto> resultados = registroJuegoService.getStats(idResidente, idResidencia, idJuego, year, month, day);
+        return ResponseEntity.ok(resultados);
+
 
     }
 

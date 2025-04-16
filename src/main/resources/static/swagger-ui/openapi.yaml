@@ -182,7 +182,7 @@ paths:
     post:
       tags:
         - User
-      summary: Registrar un usuario tranajador en el sistema.
+      summary: Registrar un usuario.
       description: Crea un usuasrio en una residencia existente en la base de datos, con ciertos campos.
       requestBody:
         required: true
@@ -277,7 +277,7 @@ paths:
     post:
       tags:
         - Juego
-      summary: Registrar un nuevo juego
+      summary: Registrar un juego.
       description: Crea un nuevo Juego validando campos obligatiorios, unicidad y que la residencia donde se guarda exista.
       requestBody:
         required: true

@@ -2,6 +2,9 @@ package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.dto.in.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.dto.out.RegistroJuegoResponseDto;
+import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Juego;
 import com.kevinolarte.resibenissa.models.RegistroJuego;
 import com.kevinolarte.resibenissa.models.Residente;
@@ -15,14 +18,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-/**
- * Servicio que gestiona la lógica de negocio relacionada con los registros de juegos.
- * <p>
- * Permite guardar nuevas sesiones de juego realizadas por los residentes y
- * consultar estadísticas o historial filtrando por múltiples parámetros.
- *
- * @author Kevin Olarte
- */
 @Service
 @AllArgsConstructor
 public class RegistroJuegoService {
@@ -33,61 +28,45 @@ public class RegistroJuegoService {
     private final UserService userService;
 
 
-    /**
-     * Guarda un nuevo registro de juego a partir de un DTO con los datos necesarios.
-     *
-     * @param input Objeto con los datos de entrada (residente, juego, fallos y duración).
-     * @return El objeto {@link RegistroJuego} guardado.
-     * @throws RuntimeException si hay datos inválidos o inconsistentes.
-     */
-    public RegistroJuego save(RegistroJuegoDto input) throws RuntimeException{
+
+    public RegistroJuegoResponseDto save(RegistroJuegoDto input) throws ApiException {
         if (input.getDuracion() == null || input.getFallos() == null ||
                 input.getIdResidente() == null || input.getIdJuego() == null || input.getIdUsuario() == null){
-            throw new RuntimeException("No se deje ningun campo nullo");
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         //No puede haber fallos negativos
         if (input.getFallos() < 0){
-            throw new RuntimeException("Los fallos no pueden ser negativos");
+            throw new ApiException(ApiErrorCode.VALORES_NEGATIVOS);
         }
         Juego juego = juegoService.findById(input.getIdJuego());
         Residente residente = residenteService.findById(input.getIdResidente());
         User usuario = userService.findById(input.getIdUsuario());
-        if (juego == null || residente == null || usuario == null) {
-            String msg = "";
-            if(juego == null)
-                msg += " Juego - No encontrado ";
-            if(residente == null)
-                msg += " Residente - No encontrado ";
-            if (usuario == null)
-                msg += " Usuario - No encontrado ";
-            throw new RuntimeException(msg);
-        }
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        if (residente == null)
+            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+        if (usuario == null)
+            throw  new ApiException(ApiErrorCode.USUARIO_INVALIDO);
 
         //Ver si el juego es de la misma residencia que el residente
         if (!Objects.equals(juego.getResidencia().getId(), residente.getResidencia().getId())) {
-            throw new RuntimeException("No posible");
+            throw new ApiException(ApiErrorCode.CONFLICTO_REFERENCIAS);
+        }
+        //Ver si el juego es de la misma residencia que el usuario/trabajador.
+        if (!Objects.equals(usuario.getResidencia().getId(), juego.getResidencia().getId())) {
+            throw new ApiException(ApiErrorCode.CONFLICTO_REFERENCIAS);
         }
         RegistroJuego registroJuego = new RegistroJuego(input.getFallos(), input.getDuracion(), input.getDificultad());
         registroJuego.setJuego(juego);
         registroJuego.setResidente(residente);
         registroJuego.setUsuario(usuario);
-        return registroJuegoRepository.save(registroJuego);
+        RegistroJuego registro = registroJuegoRepository.save(registroJuego);
+        return new RegistroJuegoResponseDto(registro);
     }
 
 
-    /**
-     * Devuelve una lista de registros de juegos filtrados por residente, residencia, juego, y fecha (año/mes/día).
-     *
-     * @param idResidente ID del residente (opcional).
-     * @param idResidencia ID de la residencia (opcional).
-     * @param idJuego ID del juego (opcional).
-     * @param year Año del registro (opcional).
-     * @param month Mes del registro (opcional).
-     * @param day Día del registro (opcional).
-     * @return Lista de registros de juegos que cumplen con los filtros.
-     */
-    @Async
+
     public List<RegistroJuegoResponseDto> getStats(Long idResidente, Long idResidencia, Long idJuego, Integer year, Integer month, Integer day) {
         List<RegistroJuego> baseList;
 
