@@ -2,6 +2,8 @@ package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.dto.in.JuegoDto;
 import com.kevinolarte.resibenissa.dto.out.JuegoResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Juego;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.repositories.JuegoRepository;
@@ -27,33 +29,27 @@ public class JuegoService {
     private final ResidenciaService residenciaService;
 
 
-    /**
-     * Guarda un nuevo juego en la base de datos a partir de los datos recibidos en el DTO.
-     *
-     * @param juegoDto DTO con la información del juego a registrar.
-     * @return El juego creado y persistido.
-     * @throws RuntimeException si faltan datos, la residencia no existe o el juego ya está registrado en esa residencia.
-     */
-    public Juego save(JuegoDto juegoDto)throws RuntimeException{
+
+    public JuegoResponseDto save(JuegoDto juegoDto)throws ApiException{
         if (juegoDto.getNombre() == null || juegoDto.getNombre().trim().isEmpty() || juegoDto.getIdResidencia() == null){
-            throw new RuntimeException("Ningún campo puede ser nulo o vacio");
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         Residencia residencia = residenciaService.findById(juegoDto.getIdResidencia());
         if (residencia == null){
-            throw new RuntimeException("La residencia no existe");
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
         // Comprobar si ya existe un juego con ese nombre en esa residencia
         boolean exists = juegoRepository.existsByNombreAndResidenciaId(juegoDto.getNombre(), residencia.getId());
         if (exists) {
-            throw new RuntimeException("Ya existe un juego con ese nombre en esta residencia");
+            throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
         }
 
         Juego juego = new Juego(juegoDto.getNombre());
         juego.setResidencia(residencia);
-        juegoRepository.save(juego);
-        return juego;
+        Juego juegoSafe = juegoRepository.save(juego);
+        return new JuegoResponseDto(juegoSafe);
 
     }
 

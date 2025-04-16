@@ -7,6 +7,8 @@ info:
 paths:
   /resi/add:
     post:
+      tags:
+        - Residencia
       summary: Registrar una nueva residencia
       description: Crea una nueva residencia validando campos obligatorios, formato de correo y unicidad.
       requestBody:
@@ -14,20 +16,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ResidenciaDto'
+              $ref: '#/components/schemas/Residencia.Dto'
       responses:
         '200':
           description: Residencia registrada con éxito
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResidenciaResponseDto'
+                $ref: '#/components/schemas/Residencia.ResponseDto'
         '400':
           description: Error de validación o datos nulos/vacios
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseDto'
+                $ref: '#/components/schemas/Error.ResponseDto'
               examples:
                 CAMPOS_OBLIGATORIOS:
                   value:
@@ -45,9 +47,9 @@ paths:
         '409':
           description: "Email o nombre ya existe"
           content:
-            aplication/json:
+            application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseDto'
+                $ref: '#/components/schemas/Error.ResponseDto'
               examples:
                 CORREO_DUPLICADO:
                   value:
@@ -64,6 +66,8 @@ paths:
 
   /resi:
     get:
+      tags:
+        - Residencia
       summary: Obtener residencias
       description: Devuelve una lista de residencias. Si se indica un ID, devuelve solo esa residencia.
       parameters:
@@ -81,7 +85,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ResidenciaResponseDto'
+                  $ref: '#/components/schemas/Residencia.ResponseDto'
         '400':
           description: Error al recuperar residencias
           content:
@@ -90,27 +94,29 @@ paths:
 
   /resi/residents/add:
     post:
+      tags:
+        - Residente
       summary: Registrar un nuevo residente
       description: Crea un residente en una residencia existente en la base de datos, con ciertos campos.
       requestBody:
         required: true
         content:
-          aplication/json:
+          application/json:
             schema:
-              $ref: '#/components/schemas/ResidenteDto'
+              $ref: '#/components/schemas/Residente.Dto'
       responses:
         '200':
           description: Residente registrado con existo
           content:
-            aplication/json:
+            application/json:
               schema:
-                $ref: '#/components/schemas/ResidenteResponseDto'
+                $ref: '#/components/schemas/Residente.ResponseDto'
         '400':
           description: Error de validacion o campos nulos
           content:
-            aplication/json:
+            application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseDto'
+                $ref: '#/components/schemas/Error.ResponseDto'
               examples:
                 CAMPOS_OBLIGATORIOS:
                   value:
@@ -127,9 +133,9 @@ paths:
         '409':
           description: La residencia que se quiere asignar no existe
           content:
-            aplication/json:
+            application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponseDto'
+                $ref: '#/components/schemas/Error.ResponseDto'
               example:
                 RESIDENCIA_INVALIDO:
                   value:
@@ -140,6 +146,8 @@ paths:
 
   /resi/residents:
     get:
+      tags:
+        - Residente
       summary: Obtener residentes
       description: Devuelve una lista de residentes. Si pones el id del residente te de vuelve solo el residnete. Si pones el id de la residencia te devuelve una lsita de residentes de esa residencia.
       parameters:
@@ -163,17 +171,202 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ResidenteResponseDto'
+                  $ref: '#/components/schemas/Residente.ResponseDto'
         '400':
           description: Error al recuperar residentes
           content:
             application/json:
               schema:
 
+  /resi/users/add:
+    post:
+      tags:
+        - User
+      summary: Registrar un usuario tranajador en el sistema.
+      description: Crea un usuasrio en una residencia existente en la base de datos, con ciertos campos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User.Dto'
+      responses:
+        '200':
+          description: Usuario registrado con existo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ResponseDto'
+        '400':
+          description: Error de validacion o campos nulos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                FECHA_INVALIDO:
+                  value:
+                    mensaje: Fecha invalida
+                    codigo: 1005
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '409':
+          description: La residencia que se quiere asignar no existe o correo duplicado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                CORREO_DUPLICADO:
+                  value:
+                    mensaje: Email ya existente
+                    codigo: 1003
+                    status: 409
+                    timestamp: 2025-04-13T21:00:00
+  /resi/users:
+    get:
+      tags:
+        - User
+      summary: Obtener ususarios.
+      description: Devuelve una lista de residentes. Con filtrado.
+      parameters:
+        - name: idResidencia
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: enable
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Usuario(s) econtrado(s)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User.ResponseDto'
+        '400':
+          description: Error al recuperar Usuarios.
+          content:
+            application/json:
+              schema:
+
+  /resi/juegos/add:
+    post:
+      tags:
+        - Juego
+      summary: Registrar un nuevo juego
+      description: Crea un nuevo Juego validando campos obligatiorios, unicidad y que la residencia donde se guarda exista.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Juego.Dto'
+      responses:
+        '200':
+          description: Juego registrado con éxisto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ResponseDto'
+        '400':
+          description: Error de valida o datos nulos/vacios.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '409':
+          description: El nombre que se le quiere asignar ya esrta registrado en esa residendcia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                NOMBRE_DUPLICADO:
+                  value:
+                    mensaje: Nombre ya existente
+                    codigo: 1004
+                    status: 409
+                    timestamp: 2025-04-13T21:00:00
+  /resi/juegos:
+    get:
+      tags:
+        - Juego
+      summary: Obtener juegos
+      description: Devuelve una lista de juegos. Si se indica el id de la residencia sacara una lista de juegos de esa residencia.
+      parameters:
+        - name: idJuego
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: idResidencia
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Juego(s) encontrado(s)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Juego.ResponseDto'
+        '400':
+          description: Error al recuperar los juegos.
+          content:
+            application/json:
+              schema:
+
+
+
+
+
+
 
 components:
   schemas:
-    ResidenciaDto:
+    Residencia.Dto:
       type: object
       required:
         - nombre
@@ -186,7 +379,7 @@ components:
           type: string
           example: contacto@resilapaz.com
 
-    ResidenciaResponseDto:
+    Residencia.ResponseDto:
       type: object
       properties:
         id:
@@ -199,7 +392,8 @@ components:
         email:
           type: string
           example: contacto@resilapaz.com
-    ResidenteDto:
+
+    Residente.Dto:
       type: object
       required:
         - nombre
@@ -222,7 +416,7 @@ components:
           format: int64
           example: 1
 
-    ResidenteResponseDto:
+    Residente.ResponseDto:
       type: object
       properties:
         id:
@@ -244,7 +438,83 @@ components:
           format: int64
           example: 1
 
-    ErrorResponseDto:
+    User.Dto:
+      type: object
+      required:
+        - nombre
+        - apellido
+        - email
+        - password
+        - idResidencia
+      properties:
+        nombre:
+          type: string
+          example: Juan
+        apellido:
+          type: string
+          example: García
+        email:
+          type: string
+          format: email
+          example: juan.garcia@ejemplo.com
+        password:
+          type: string
+          example: 1234secure
+        idResidencia:
+          type: integer
+          format: int64
+          example: 2
+
+    User.ResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 5
+        nombre:
+          type: string
+          example: Juan
+        apellido:
+          type: string
+          example: García
+        email:
+          type: string
+          format: email
+          example: juan.garcia@ejemplo.com
+        enabled:
+          type: boolean
+          example: true
+        idResidencia:
+          type: integer
+          format: int64
+          example: 2
+    Juego.Dto:
+      type: object
+      required:
+        - nombre
+        - idResidencia
+      properties:
+        nombre:
+          type: string
+          example: Memoria Visual
+        idResidencia:
+          type: integer
+          format: int64
+          example: 3
+
+    Juego.ResponseDto:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: Memoria Visual
+        idResidencia:
+          type: integer
+          format: int64
+          example: 3
+
+    Error.ResponseDto:
       type: object
       properties:
         mensaje:
@@ -261,4 +531,3 @@ components:
         codigo: 1001
         status: 400
         timestamp: 2025-04-13T21:00:00
-

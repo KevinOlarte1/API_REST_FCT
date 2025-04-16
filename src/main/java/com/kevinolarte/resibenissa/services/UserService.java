@@ -2,6 +2,8 @@ package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.dto.in.UserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
@@ -25,37 +27,51 @@ public class UserService {
     private final ResidenciaService residenciaService;
 
     /**
-     * Guarda un nuevo usuario a partir de los datos del DTO.
+     * Registra un nuevo usuario en el sistema a partir de los datos proporcionados.
+     * <p>
+     * Este método realiza las siguientes validaciones antes de persistir al usuario:
+     * <ul>
+     *   <li>Todos los campos obligatorios (nombre, apellido, email, contraseña, residencia) deben estar presentes y no vacíos.</li>
+     *   <li>El formato del correo electrónico debe ser válido.</li>
+     *   <li>El correo electrónico no debe estar ya registrado.</li>
+     *   <li>La residencia asociada debe existir en la base de datos.</li>
+     * </ul>
+     * Si alguna de estas validaciones falla, se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
+     * con un código de error correspondiente del enum {@link com.kevinolarte.resibenissa.exceptions.ApiErrorCode}.
+     * </p>
      *
      * @param input DTO con los datos del nuevo usuario.
-     * @return El usuario persistido.
-     * @throws RuntimeException si hay campos vacíos, email inválido o residencia inexistente.
+     * @return DTO de respuesta con los datos del usuario registrado.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si los datos de entrada son inválidos,
+     *         el correo es inválido o ya está en uso, o la residencia no existe.
      */
-    public User save(UserDto input) throws RuntimeException{
+    public UserResponseDto save(UserDto input) throws RuntimeException{
 
         if (input.getNombre() == null || input.getApellido() == null || input.getEmail() == null || input.getPassword() == null ||
                 input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty() || input.getEmail().trim().isEmpty() || input.getPassword().isEmpty() ||
                 input.getIdResidencia() == null){
-            throw new RuntimeException("No puede faltar ningun campo");
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
+
+
         input.setEmail(input.getEmail().toLowerCase().trim());
         if(!EmailService.isEmailValid(input.getEmail().toLowerCase().trim())){
-            throw new RuntimeException("Email invalido");
+            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
         }
 
         if (userRepository.findByEmail(input.getEmail()).isPresent()){
-            throw new RuntimeException("El email ya existe");
+            throw new ApiException(ApiErrorCode.CORREO_DUPLICADO);
         }
 
         Residencia residenciaOpt = residenciaService.findById(input.getIdResidencia());
         if(residenciaOpt == null){
-            throw new RuntimeException("Residencia no encontrada");
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
         User user = new User(input.getNombre(), input.getApellido(), input.getEmail(), input.getPassword());
         user.setResidencia(residenciaOpt);
-
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        return new UserResponseDto(savedUser);
     }
 
     /**

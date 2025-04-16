@@ -19,13 +19,10 @@ public class JuegoController {
 
     //TODO: mirar sql;
     @PostMapping("/add")
-    public ResponseEntity<?> addJuego(@RequestBody JuegoDto juegoDto) {
-        try{
-            Juego juego = juegoService.save(juegoDto);
+    public ResponseEntity<JuegoResponseDto> addJuego(@RequestBody JuegoDto juegoDto) {
+            JuegoResponseDto juego = juegoService.save(juegoDto);
             return ResponseEntity.ok(juego);
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+
     }
 
     @GetMapping

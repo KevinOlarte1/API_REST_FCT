@@ -19,7 +19,9 @@ import java.util.List;
  * Utiliza los servicios {@link ResidenciaService} y {@link ResidenteService} para gestionar la lógica de negocio.
  * </p>
  *
- * @author Kevin
+ * Ruta base: <b>/resi/users</b>
+ *
+ * @author Kevin Olarte
  */
 @RequestMapping("/resi")
 @RestController
