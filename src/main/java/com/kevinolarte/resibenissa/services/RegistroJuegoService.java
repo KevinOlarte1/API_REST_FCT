@@ -10,10 +10,19 @@ import com.kevinolarte.resibenissa.models.RegistroJuego;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.RegistroJuegoRepository;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.AllArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -26,6 +35,9 @@ public class RegistroJuegoService {
     private final ResidenteService residenteService;
     private final JuegoService juegoService;
     private final UserService userService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
 
@@ -67,6 +79,26 @@ public class RegistroJuegoService {
 
 
 
+    /**
+     * Recupera estadísticas de juegos jugados por los residentes, aplicando filtros dinámicos.
+     * <p>
+     * Filtros disponibles:
+     * <ul>
+     *   <li><b>idResidente</b>: juegos jugados por un residente específico</li>
+     *   <li><b>idResidencia</b>: juegos de todos los residentes de una residencia</li>
+     *   <li><b>idJuego</b>: juegos por tipo de juego</li>
+     *   <li><b>year, month, day</b>: filtro por fecha parcial o completa</li>
+     * </ul>
+     * </p>
+     *
+     * @param idResidente ID del residente (opcional)
+     * @param idResidencia ID de la residencia (opcional)
+     * @param idJuego ID del juego (opcional)
+     * @param year Año de juego (opcional)
+     * @param month Mes de juego (opcional)
+     * @param day Día de juego (opcional)
+     * @return Lista de registros de juego convertidos a DTO
+     */
     public List<RegistroJuegoResponseDto> getStats(Long idResidente, Long idResidencia, Long idJuego, Integer year, Integer month, Integer day) {
         List<RegistroJuego> baseList;
 
@@ -101,5 +133,8 @@ public class RegistroJuegoService {
         //TODO: -ALTERNATIVA QUERY DINAMICA
         return baseList.stream().map(RegistroJuegoResponseDto::new).collect(Collectors.toList());
     }
+
+
+
 
 }

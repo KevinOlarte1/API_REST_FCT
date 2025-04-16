@@ -130,19 +130,14 @@ paths:
                     codigo: 1005
                     status: 400
                     timestamp: 2025-04-13T21:00:00
-        '409':
-          description: La residencia que se quiere asignar no existe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
                 RESIDENCIA_INVALIDO:
                   value:
                     mensaje: Residencia invalida
                     codigo: 1006
                     status: 400
                     timestamp: 2025-04-13T21:00:00
+
+
 
   /resi/residents:
     get:
@@ -216,19 +211,19 @@ paths:
                     codigo: 1005
                     status: 400
                     timestamp: 2025-04-13T21:00:00
-        '409':
-          description: La residencia que se quiere asignar no existe o correo duplicado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              examples:
                 RESIDENCIA_INVALIDO:
                   value:
                     mensaje: Residencia invalida
                     codigo: 1006
                     status: 400
                     timestamp: 2025-04-13T21:00:00
+        '409':
+          description: La residencia que se quiere asignar no existe o correo duplicado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
                 CORREO_DUPLICADO:
                   value:
                     mensaje: Email ya existente
@@ -358,11 +353,133 @@ paths:
             application/json:
               schema:
 
+  /resi/juegos/stats/add:
+    post:
+      tags:
+        - Juego
+      summary: Registrar un nuevo registro de juego.
+      description: Crea un nuevo registro de juego validando campos obligatorios,existencia de las referencias y valores validos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroJuego.Dto'
+      responses:
+        '200':
+          description: Registro de juego registrado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroJuego.ResponseDto'
+        '400':
+          description: Error de validacion o datos nulos/vacios o conflicto de referencias.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                VALORES_NEGATIVOS:
+                  value:
+                    mensaje: No puede ser valores negativos
+                    codigo: 1007
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                JUEGO_INVALIDO:
+                  value:
+                    mensaje: Juego invalida
+                    codigo: 1008
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                RESIDENTE_INVALIDO:
+                  value:
+                    mensaje: Residente invalida
+                    codigo: 1009
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalida
+                    codigo: 1010
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '409':
+          description: Conflicto con las referencias de la residencia, no coinciden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CORREO_DUPLICADO:
+                  value:
+                    mensaje: Problemas con las referencias de las entidades, no corresponden a las mismas
+                    codigo: 1011
+                    status: 409
+                    timestamp: 2025-04-13T21:00:00
 
-
-
-
-
+  /resi/juegos/stats:
+    get:
+      tags:
+        - Juego
+      summary: Obtener juegos
+      description: Devuelve una lista de juegos. Si se indica el id de la residencia sacara una lista de juegos de esa residencia.
+      parameters:
+        - name: idResidente
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: idResidencia
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: idJuego
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: day
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Registro(s) Juego(s) encontrado(s)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistroJuego.ResponseDto'
+        '400':
+          description: Error al recuperar los registros de los juegos.
+          content:
+            application/json:
+              schema:
 
 components:
   schemas:
@@ -513,6 +630,68 @@ components:
           type: integer
           format: int64
           example: 3
+
+    RegistroJuego.Dto:
+      type: object
+      properties:
+        idJuego:
+          type: integer
+          format: int64
+          example: 1
+        idResidente:
+          type: integer
+          format: int64
+          example: 5
+        idUsuario:
+          type: integer
+          format: int64
+          example: 3
+        fallos:
+          type: integer
+          example: 2
+        duracion:
+          type: number
+          format: double
+          example: 120.5
+        dificultad:
+          type: string
+          enum: [ FACIL, MEDIA, DIFICIL ]
+          example: MEDIA
+
+    RegistroJuego.ResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 42
+        idResidente:
+          type: integer
+          format: int64
+          example: 5
+        idJuego:
+          type: integer
+          format: int64
+          example: 1
+        idUsario:
+          type: integer
+          format: int64
+          example: 3
+        num:
+          type: integer
+          example: 2
+        duracion:
+          type: number
+          format: double
+          example: 120.5
+        dificultad:
+          type: integer
+          format: int64
+          example: 1
+        fecha:
+          type: string
+          format: date-time
+          example: "2025-04-16T10:15:30"
 
     Error.ResponseDto:
       type: object

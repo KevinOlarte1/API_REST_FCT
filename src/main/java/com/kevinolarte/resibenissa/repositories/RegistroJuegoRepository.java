@@ -2,6 +2,7 @@ package com.kevinolarte.resibenissa.repositories;
 
 import com.kevinolarte.resibenissa.models.RegistroJuego;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -16,7 +17,7 @@ import java.util.List;
  * @author Kevin Olarte
  */
 @Repository
-public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Long> {
+public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Long>, JpaSpecificationExecutor<RegistroJuego> {
 
     /**
      * Obtiene todos los registros de juegos realizados por residentes de una residencia específica.
