@@ -69,7 +69,7 @@ public class ResidenciaController {
     }
 
     @DeleteMapping("/remove")
-    public ResponseEntity<ResidenciaResponseDto> removeResidencia(@PathVariable Long idResidencia){
+    public ResponseEntity<ResidenciaResponseDto> removeResidencia(@RequestParam Long idResidencia){
         ResidenciaResponseDto resDelete = residenciaService.remove(idResidencia);
         return ResponseEntity.ok(resDelete);
     }
