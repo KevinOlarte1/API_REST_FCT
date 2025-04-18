@@ -68,9 +68,22 @@ public class UserController {
 
     }
 
+    /**
+     * Elimina un usuario del sistema.
+     * <p>
+     * Este método recibe un ID de usuario como parámetro y solicita al servicio
+     * {@link UserService} que elimine la entidad correspondiente.
+     * Si la eliminación es exitosa, se devuelve un DTO con los datos del usuario eliminado.
+     * </p>
+     *
+     * @param idUser ID del usuario que se desea eliminar.
+     * @return {@link ResponseEntity} que contiene el DTO del usuario eliminado y el estado HTTP 200 (OK).
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe.
+     */
     @DeleteMapping("/remove")
     public ResponseEntity<UserResponseDto> removeUser(@RequestParam Long idUser) {
         UserResponseDto userTmp = userService.remove(idUser);
+        return ResponseEntity.ok(userTmp);
     }
 
 
