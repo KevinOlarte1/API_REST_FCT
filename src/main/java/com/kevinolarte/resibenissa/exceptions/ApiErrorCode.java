@@ -16,7 +16,8 @@ public enum ApiErrorCode {
     JUEGO_INVALIDO(1008, "Juego invalido", HttpStatus.BAD_REQUEST),
     RESIDENTE_INVALIDO(1009, "Residente invalido", HttpStatus.BAD_REQUEST),
     USUARIO_INVALIDO(1010, "Usuario invalido", HttpStatus.BAD_REQUEST),
-    CONFLICTO_REFERENCIAS(1011, "Problemas con las referencias de las entidades, no corresponden a las mismas", HttpStatus.CONFLICT),;
+    CONFLICTO_REFERENCIAS(1011, "Problemas con las referencias de las entidades, no corresponden a las mismas", HttpStatus.CONFLICT),
+    REGISTRO_JUEGO_INVALIDO(1012,"Registro juego invalido" , HttpStatus.BAD_REQUEST );
 
     private final int code;
     private final String message;

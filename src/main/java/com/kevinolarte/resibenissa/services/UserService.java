@@ -113,4 +113,13 @@ public class UserService {
     public User findById(Long idUsuario) {
         return userRepository.findById(idUsuario).orElse(null);
     }
+
+    public UserResponseDto remove(Long idUser) {
+        User userTmp = userRepository.findById(idUser).orElse(null);
+        if (userTmp == null) {
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+        userRepository.delete(userTmp);
+        return new UserResponseDto(userTmp);
+    }
 }

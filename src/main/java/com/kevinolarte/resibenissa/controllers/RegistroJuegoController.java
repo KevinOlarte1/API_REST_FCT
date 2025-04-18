@@ -40,4 +40,10 @@ public class RegistroJuegoController {
 
     }
 
+    @DeleteMapping("/remove")
+    public ResponseEntity<RegistroJuegoResponseDto> remove(@RequestParam Long idRegistroJuego){
+        RegistroJuegoResponseDto registroTmp = registroJuegoService.remove(idRegistroJuego);
+        return ResponseEntity.ok(registroTmp);
+    }
+
 }

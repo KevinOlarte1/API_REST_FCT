@@ -110,4 +110,14 @@ public class JuegoService {
                 .collect(Collectors.toList());
     }
 
+    public JuegoResponseDto remove(Long idJuego) {
+        Juego juegTmp = juegoRepository.findById(idJuego).orElse(null);
+
+        if(juegTmp == null){
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        }
+
+        juegoRepository.delete(juegTmp);
+        return new JuegoResponseDto(juegTmp);
+    }
 }

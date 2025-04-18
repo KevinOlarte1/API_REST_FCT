@@ -71,6 +71,12 @@ public class JuegoController {
         return ResponseEntity.ok(juegos);
     }
 
+    @DeleteMapping("/remove")
+    public ResponseEntity<JuegoResponseDto> remove(@RequestParam Long idJuego) {
+        JuegoResponseDto juegoTmp = juegoService.remove(idJuego);
+        return ResponseEntity.ok(juegoTmp);
+    }
+
 
 
 }

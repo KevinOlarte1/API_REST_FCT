@@ -68,6 +68,18 @@ public class ResidenciaController {
 
     }
 
+    /**
+     * Elimina una residencia del sistema.
+     * <p>
+     * Este método recibe un ID de residencia como parámetro y solicita al servicio
+     * {@link ResidenciaService} que elimine la entidad correspondiente.
+     * Si la eliminación es exitosa, se devuelve un DTO con los datos de la residencia eliminada.
+     * </p>
+     *
+     * @param idResidencia ID de la residencia que se desea eliminar. Debe existir en el sistema.
+     * @return {@link ResponseEntity} que contiene el DTO de la residencia eliminada y el estado HTTP 200 (OK).
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si la residencia no existe.
+     */
     @DeleteMapping("/remove")
     public ResponseEntity<ResidenciaResponseDto> removeResidencia(@RequestParam Long idResidencia){
         ResidenciaResponseDto resDelete = residenciaService.remove(idResidencia);

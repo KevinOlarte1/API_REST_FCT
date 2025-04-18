@@ -134,4 +134,14 @@ public class ResidenteService {
                 .toList();
     }
 
+
+    public ResidenteResponseDto remove(Long idResdente) {
+        Residente residenteTmp = residenteRepository.findById(idResdente).orElse(null);
+        if(residenteTmp == null){
+            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+        }
+        residenteRepository.delete(residenteTmp);
+
+        return new ResidenteResponseDto(residenteTmp);
+    }
 }

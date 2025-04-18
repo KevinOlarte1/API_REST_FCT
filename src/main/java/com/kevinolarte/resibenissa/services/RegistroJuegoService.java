@@ -135,6 +135,10 @@ public class RegistroJuegoService {
     }
 
 
-
-
+    public RegistroJuegoResponseDto remove(Long idRegistroJuego) {
+        RegistroJuego registroTmp = registroJuegoRepository.findById(idRegistroJuego).orElse(null);
+        if (registroTmp == null){
+            throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
+        }
+    }
 }

@@ -72,6 +72,24 @@ public class ResidenteController {
 
     }
 
+    /**
+     * Elimina un residente del sistema.
+     * <p>
+     * Este método recibe un ID de residente como parámetro y solicita al servicio
+     * {@link ResidenteService} que elimine la entidad correspondiente.
+     * Si la eliminación es exitosa, se devuelve un DTO con los datos del residente eliminado.
+     * </p>
+     *
+     * @param idResdente ID del residente que se desea eliminar. Debe existir en el sistema.
+     * @return {@link ResponseEntity} que contiene el DTO del residente eliminado y el estado HTTP 200 (OK).
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el residente no existe.
+     */
+    @DeleteMapping("/remove")
+    public ResponseEntity<ResidenteResponseDto> remove(@RequestParam Long idResdente){
+        ResidenteResponseDto residentetmp = residenteService.remove(idResdente);
+        return ResponseEntity.ok(residentetmp);
+    }
+
 
 
 

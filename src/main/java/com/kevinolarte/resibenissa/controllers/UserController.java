@@ -68,6 +68,11 @@ public class UserController {
 
     }
 
+    @DeleteMapping("/remove")
+    public ResponseEntity<UserResponseDto> removeUser(@RequestParam Long idUser) {
+        UserResponseDto userTmp = userService.remove(idUser);
+    }
+
 
 
 }
