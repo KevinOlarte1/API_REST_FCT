@@ -4,12 +4,14 @@ import com.kevinolarte.resibenissa.dto.in.UserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.models.RegistroJuego;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -128,20 +130,36 @@ public class UserService {
      * Elimina un usuario del sistema según su ID.
      * <p>
      * Este método busca el usuario por su identificador y, si existe, lo elimina del repositorio.
-     * Si el usuario no existe, se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
+     * Si el usuario no existe o tiene referencias que dependan de el , se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
      * con el código de error correspondiente.
      * </p>
      *
      * @param idUser ID del usuario que se desea eliminar.
      * @return DTO con la información del usuario eliminado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe en el sistema.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe en el sistema o tiene referencias que dependan de el .
      */
     public UserResponseDto remove(Long idUser) {
         User userTmp = userRepository.findById(idUser).orElse(null);
         if (userTmp == null) {
             throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
         }
+        if (!userTmp.getRegistroJuegos().isEmpty()){
+            throw new ApiException(ApiErrorCode.REFERENCIAS_DEPENDIENTES);
+        }
         userRepository.delete(userTmp);
+        return new UserResponseDto(userTmp);
+    }
+
+    public UserResponseDto removeReferencias(Long idUser) {
+        User userTmp = userRepository.findById(idUser).orElse(null);
+        if (userTmp == null) {
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+        for(RegistroJuego reg : userTmp.getRegistroJuegos()){
+            reg.setUsuario(null);
+        }
+        userTmp.setRegistroJuegos(new LinkedHashSet<>());
+        userRepository.save(userTmp);
         return new UserResponseDto(userTmp);
     }
 }

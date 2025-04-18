@@ -72,18 +72,35 @@ public class UserController {
      * Elimina un usuario del sistema.
      * <p>
      * Este método recibe un ID de usuario como parámetro y solicita al servicio
-     * {@link UserService} que elimine la entidad correspondiente.
+     * {@link UserService} que elimine la entidad correspondiente, pero de antemano debe haber usado el metodo {@linkplain com.kevinolarte.resibenissa.controllers.UserController#removeReferencias(Long)}.
      * Si la eliminación es exitosa, se devuelve un DTO con los datos del usuario eliminado.
      * </p>
      *
      * @param idUser ID del usuario que se desea eliminar.
      * @return {@link ResponseEntity} que contiene el DTO del usuario eliminado y el estado HTTP 200 (OK).
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe o tiene aún referencias asociadas..
      */
     @DeleteMapping("/remove")
     public ResponseEntity<UserResponseDto> removeUser(@RequestParam Long idUser) {
         UserResponseDto userTmp = userService.remove(idUser);
         return ResponseEntity.ok(userTmp);
+    }
+
+    /**
+     * Elimina todas las referencias que apuntan a el ponendolas a nulas.
+     * <p>
+     * Este método permite eliminar las referencias asociadas a el para luego eliminar el usuario con el metodo {@linkplain  com.kevinolarte.resibenissa.controllers.UserController#removeUser(Long)}
+     * aplicando una lógica especial en el servicio {@link UserService} para manejar las referencias antes de eliminar.
+     * </p>
+     *
+     * @param idUser ID del usuario que se desea eliminar junto con sus referencias.
+     * @return {@link ResponseEntity} que contiene el DTO del usuario cuyas referenciass ha sido eliminado y el estado HTTP 200 (OK).
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe.
+     */
+    @DeleteMapping("/remove/referencies")
+    public ResponseEntity<UserResponseDto> removeReferencias(@RequestParam Long idUser) {
+        UserResponseDto userTmp = userService.removeReferencias(idUser);
+        return  ResponseEntity.ok(userTmp);
     }
 
 

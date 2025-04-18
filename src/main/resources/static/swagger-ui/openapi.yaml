@@ -25,27 +25,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/Residencia.ResponseDto'
         '400':
-          description: Error de validación o datos nulos/vacios
+          description: Datos nulos/vacios
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
-              examples:
+              example:
                 CAMPOS_OBLIGATORIOS:
                   value:
                     mensaje: Faltan campos obligatorios
                     codigo: 1001
                     status: 400
                     timestamp: 2025-04-13T21:00:00
+        '406':
+          description: Correo Invalido, tiene que ser un correo con extructura correcta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
                 CORREO_INVALIDO:
                   value:
                     mensaje: Email invalid
                     codigo: 1002
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
-
+                    status: 406
+                    timestamp: 2025-04-13T21:00:0
         '409':
-          description: "Email o nombre ya existe"
+          description: Email o nombre ya existe
           content:
             application/json:
               schema:
@@ -92,11 +98,45 @@ paths:
             application/json:
               schema:
 
+  /resi/remove:
+    delete:
+      tags:
+        - Residencia
+      summary: Eliminar una Residencia existente.
+      description: Elimina una residencia en cascada, con todas las entidades relacionadas a el.
+      parameters:
+        - name: idResidencia
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Residencia borrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Residencia.ResponseDto'
+        '404':
+          description: Residencia invalida, no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+
   /resi/residents/add:
     post:
       tags:
         - Residente
-      summary: Registrar un nuevo residente
+      summary: Registrar un nuevo residente.
       description: Crea un residente en una residencia existente en la base de datos, con ciertos campos.
       requestBody:
         required: true
@@ -112,33 +152,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/Residente.ResponseDto'
         '400':
-          description: Error de validacion o campos nulos
+          description: Campos nulos
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
-              examples:
+              example:
                 CAMPOS_OBLIGATORIOS:
                   value:
                     mensaje: Faltan campos obligatorios
                     codigo: 1001
                     status: 400
                     timestamp: 2025-04-13T21:00:00
-                FECHA_INVALIDO:
-                  value:
-                    mensaje: Fecha invalida
-                    codigo: 1005
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Residencia invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
                 RESIDENCIA_INVALIDO:
                   value:
                     mensaje: Residencia invalida
                     codigo: 1006
-                    status: 400
+                    status: 404
                     timestamp: 2025-04-13T21:00:00
 
-
-
+        '406':
+          description: Fecha invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                FECHA_INVALIDO:
+                  value:
+                    mensaje: Fecha invalida
+                    codigo: 1005
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
   /resi/residents:
     get:
       tags:
@@ -173,6 +225,39 @@ paths:
             application/json:
               schema:
 
+  /resi/residents/remove:
+    delete:
+      tags:
+        - Residente
+      summary: Eliminar un Residente.
+      description: Elimina un Residente en cascada, con todas las entidades relacionadas que dependan de el.
+      parameters:
+        - name: idResidente
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Residente borrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Residente.ResponseDto'
+        '404':
+          description: Residente invalida, no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residente invalida
+                    codigo: 1009
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
   /resi/users/add:
     post:
       tags:
@@ -193,32 +278,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/User.ResponseDto'
         '400':
-          description: Error de validacion o campos nulos
+          description: Campos nulos/vacios
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
-              examples:
+              example:
                 CAMPOS_OBLIGATORIOS:
                   value:
                     mensaje: Faltan campos obligatorios
                     codigo: 1001
                     status: 400
                     timestamp: 2025-04-13T21:00:00
-                FECHA_INVALIDO:
-                  value:
-                    mensaje: Fecha invalida
-                    codigo: 1005
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
+
+
+        '404':
+          description: Residencia Invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
                 RESIDENCIA_INVALIDO:
                   value:
                     mensaje: Residencia invalida
                     codigo: 1006
-                    status: 400
+                    status: 404
                     timestamp: 2025-04-13T21:00:00
-        '409':
-          description: La residencia que se quiere asignar no existe o correo duplicado
+        '406':
+          description: Correo duplicado
           content:
             application/json:
               schema:
@@ -228,7 +316,7 @@ paths:
                   value:
                     mensaje: Email ya existente
                     codigo: 1003
-                    status: 409
+                    status: 406
                     timestamp: 2025-04-13T21:00:00
   /resi/users:
     get:
@@ -268,6 +356,87 @@ paths:
             application/json:
               schema:
 
+  /resi/users/remove:
+    delete:
+      tags:
+        - User
+      summary: Eliminar un Usuario.
+      description: Elimina un usuario en cascada, con todas las entidades relacionadas a el. Pero el registro de jeugo no se borra
+      parameters:
+        - name: idUsuario
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Usuario borrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ResponseDto'
+        '404':
+          description: Usuario invalido, no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Usuario invalida
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '409':
+          description: No se puede borrar una entidad que tiene referencia en otras entidades, antes hay que borrar esas relaciones.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                REFERENCIAS_DEPENDIENTES:
+                  value:
+                    mensaje: Esta entidad tiene referencias asociadas que dependen de el.
+                    codigo: 1013
+                    status: 409
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/users/remove/referencies:
+    delete:
+      tags:
+        - User
+      summary: Eliminar las referencias.
+      description: Elimina las referencias de los registros de los juegos a null. para poder luego borrar este objeto.
+      parameters:
+        - name: idUsuario
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Usuario borrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ResponseDto'
+        '404':
+          description: Usuario invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalida
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+
   /resi/juegos/add:
     post:
       tags:
@@ -288,23 +457,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/Juego.ResponseDto'
         '400':
-          description: Error de valida o datos nulos/vacios.
+          description: Datos nulos/vacios.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
-              examples:
+              example:
                 CAMPOS_OBLIGATORIOS:
                   value:
                     mensaje: Faltan campos obligatorios
                     codigo: 1001
                     status: 400
                     timestamp: 2025-04-13T21:00:00
+
+        '404':
+          description: Residencia invalida, no existe en la base de datos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
                 RESIDENCIA_INVALIDO:
                   value:
                     mensaje: Residencia invalida
                     codigo: 1006
-                    status: 400
+                    status: 404
                     timestamp: 2025-04-13T21:00:00
         '409':
           description: El nombre que se le quiere asignar ya esrta registrado en esa residendcia
@@ -353,6 +530,40 @@ paths:
             application/json:
               schema:
 
+  /resi/juegos/remove:
+    delete:
+      tags:
+        - Juego
+      summary: Eliminar una Juego.
+      description: Elimina un juego en cascada, con todas las entidades relacionadas a el.
+      parameters:
+        - name: idJuego
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Juego borrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Juego.ResponseDto'
+        '404':
+          description: Juego invalido, no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Juego invalido
+                    codigo: 1008
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+
   /resi/juegos/stats/add:
     post:
       tags:
@@ -385,30 +596,46 @@ paths:
                     codigo: 1001
                     status: 400
                     timestamp: 2025-04-13T21:00:00
-                VALORES_NEGATIVOS:
-                  value:
-                    mensaje: No puede ser valores negativos
-                    codigo: 1007
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
+
+        '404':
+          description: Juego, Residente o Usuario invalido, no esixte ninguna referencia en la base de datos de estas entidades
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
                 JUEGO_INVALIDO:
                   value:
                     mensaje: Juego invalida
                     codigo: 1008
-                    status: 400
+                    status: 404
                     timestamp: 2025-04-13T21:00:00
                 RESIDENTE_INVALIDO:
                   value:
                     mensaje: Residente invalida
                     codigo: 1009
-                    status: 400
+                    status: 404
                     timestamp: 2025-04-13T21:00:00
                 USUARIO_INVALIDO:
                   value:
                     mensaje: Usuario invalida
                     codigo: 1010
-                    status: 400
+                    status: 404
                     timestamp: 2025-04-13T21:00:00
+        '406':
+          description: No valores negativos en el el campo de puntos/num
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                VALORES_NEGATIVOS:
+                  value:
+                    mensaje: No puede ser valores negativos
+                    codigo: 1007
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+
         '409':
           description: Conflicto con las referencias de la residencia, no coinciden
           content:
@@ -480,6 +707,41 @@ paths:
           content:
             application/json:
               schema:
+
+  /resi/juegos/stats/remove:
+    delete:
+      tags:
+        - Juego
+      summary: Eliminar una Registro de juego.
+      description: Elimina un Registro de juego.
+      parameters:
+        - name: idRegistroJuego
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Registro Juego borrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroJuego.ResponseDto'
+        '404':
+          description: Registro Juego invalido, no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                REGISTRO_JUEGO_INVALIDO:
+                  value:
+                    mensaje: Registro Juego invalido
+                    codigo: 1012
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+
 
 components:
   schemas:

@@ -44,7 +44,7 @@ public class RegistroJuego {
     /**
      * Trabajador que registra la partida.
      */
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "fk_usuario")
     private User usuario;
 
