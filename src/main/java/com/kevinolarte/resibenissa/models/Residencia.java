@@ -46,7 +46,7 @@ public class Residencia {
      * Usuarios asociados a esta residencia (por ejemplo, personal que la gestiona).
      * Relación uno a muchos.
      */
-    @OneToMany(mappedBy = "residencia")
+    @OneToMany(mappedBy = "residencia", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Set<User> usuarios = new LinkedHashSet<>();
 
@@ -54,9 +54,18 @@ public class Residencia {
      * Residentes (personas mayores) que viven en esta residencia.
      * Relación uno a muchos.
      */
-    @OneToMany(mappedBy = "residencia")
+    @OneToMany(mappedBy = "residencia", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Set<Residente> residentes = new LinkedHashSet<>();
+
+
+    /**
+     * Juego que tienen implementados en esta reisdencia
+     * Relacion uno a muchos
+     */
+    @OneToMany(mappedBy = "residencia", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private Set<Juego> juegos = new LinkedHashSet<>();
 
 
 

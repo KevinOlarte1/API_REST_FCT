@@ -47,7 +47,7 @@ public class Juego {
     /**
      * Registros de uso de este juego por parte de residentes.
      */
-    @OneToMany(mappedBy = "juego")
+    @OneToMany(mappedBy = "juego", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Set<RegistroJuego> registro = new LinkedHashSet<>();
 

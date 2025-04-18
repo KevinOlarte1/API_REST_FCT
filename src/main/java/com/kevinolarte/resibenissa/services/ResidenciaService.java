@@ -112,4 +112,13 @@ public class ResidenciaService {
                 .map(ResidenciaResponseDto::new)
                 .toList();
     }
+
+    public ResidenciaResponseDto remove(Long idResidencia) {
+        Residencia residenciaTmp = residenciaRepository.findById(idResidencia).orElse(null);
+        if(residenciaTmp == null){
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+        residenciaRepository.delete(residenciaTmp);
+        return new ResidenciaResponseDto(residenciaTmp);
+    }
 }
