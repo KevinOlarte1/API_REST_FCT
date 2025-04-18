@@ -71,6 +71,18 @@ public class JuegoController {
         return ResponseEntity.ok(juegos);
     }
 
+    /**
+     * Elimina un juego del sistema.
+     * <p>
+     * Este método recibe un ID de juego como parámetro y solicita al servicio
+     * {@link com.kevinolarte.resibenissa.services.JuegoService} que elimine la entidad correspondiente.
+     * Si la eliminación es exitosa, se devuelve un DTO con los datos del juego eliminado.
+     * </p>
+     *
+     * @param idJuego ID del juego que se desea eliminar. Debe existir en el sistema.
+     * @return {@link ResponseEntity} que contiene el DTO del juego eliminado y el estado HTTP 200 (OK).
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el juego no existe.
+     */
     @DeleteMapping("/remove")
     public ResponseEntity<JuegoResponseDto> remove(@RequestParam Long idJuego) {
         JuegoResponseDto juegoTmp = juegoService.remove(idJuego);

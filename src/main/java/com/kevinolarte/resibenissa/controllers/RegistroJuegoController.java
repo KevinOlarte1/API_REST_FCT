@@ -40,6 +40,18 @@ public class RegistroJuegoController {
 
     }
 
+    /**
+     * Elimina un registro de juego del sistema.
+     * <p>
+     * Este método recibe un ID de registro de juego como parámetro y solicita al servicio
+     * {@link com.kevinolarte.resibenissa.services.RegistroJuegoService} que elimine la entidad correspondiente.
+     * Si la eliminación es exitosa, se devuelve un DTO con los datos del registro eliminado.
+     * </p>
+     *
+     * @param idRegistroJuego ID del registro de juego que se desea eliminar. Debe existir en el sistema.
+     * @return {@link ResponseEntity} que contiene el DTO del registro eliminado y el estado HTTP 200 (OK).
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el registro no existe.
+     */
     @DeleteMapping("/remove")
     public ResponseEntity<RegistroJuegoResponseDto> remove(@RequestParam Long idRegistroJuego){
         RegistroJuegoResponseDto registroTmp = registroJuegoService.remove(idRegistroJuego);

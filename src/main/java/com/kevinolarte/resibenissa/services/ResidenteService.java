@@ -135,6 +135,18 @@ public class ResidenteService {
     }
 
 
+    /**
+     * Elimina un residente del sistema según su ID.
+     * <p>
+     * Este método busca el residente por su identificador y, si existe, lo elimina del repositorio.
+     * Si el residente no existe, se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
+     * con un código de error del enum {@link com.kevinolarte.resibenissa.exceptions.ApiErrorCode}.
+     * </p>
+     *
+     * @param idResdente ID del residente que se desea eliminar.
+     * @return DTO con la información del residente eliminado.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el residente no existe en el sistema.
+     */
     public ResidenteResponseDto remove(Long idResdente) {
         Residente residenteTmp = residenteRepository.findById(idResdente).orElse(null);
         if(residenteTmp == null){

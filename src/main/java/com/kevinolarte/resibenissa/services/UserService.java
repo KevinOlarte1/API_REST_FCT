@@ -110,10 +110,32 @@ public class UserService {
         return baseList.stream().map(UserResponseDto::new).toList();
     }
 
+    /**
+     * Busca un usuario por su ID.
+     * <p>
+     * Este método consulta el repositorio de usuarios para recuperar una entidad {@link User}
+     * que coincida con el ID proporcionado.
+     * </p>
+     *
+     * @param idUsuario ID del usuario a buscar.
+     * @return Objeto {@link User} si existe en la base de datos, o {@code null} si no se encuentra.
+     */
     public User findById(Long idUsuario) {
         return userRepository.findById(idUsuario).orElse(null);
     }
 
+    /**
+     * Elimina un usuario del sistema según su ID.
+     * <p>
+     * Este método busca el usuario por su identificador y, si existe, lo elimina del repositorio.
+     * Si el usuario no existe, se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
+     * con el código de error correspondiente.
+     * </p>
+     *
+     * @param idUser ID del usuario que se desea eliminar.
+     * @return DTO con la información del usuario eliminado.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe en el sistema.
+     */
     public UserResponseDto remove(Long idUser) {
         User userTmp = userRepository.findById(idUser).orElse(null);
         if (userTmp == null) {

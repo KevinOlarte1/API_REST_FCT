@@ -113,6 +113,18 @@ public class ResidenciaService {
                 .toList();
     }
 
+    /**
+     * Elimina una residencia del sistema según su ID.
+     * <p>
+     * Este método busca la residencia por su identificador único. Si la encuentra, la elimina del repositorio.
+     * Si no existe, lanza una excepción personalizada {@link com.kevinolarte.resibenissa.exceptions.ApiException}
+     * con el código {@link com.kevinolarte.resibenissa.exceptions.ApiErrorCode#RESIDENCIA_INVALIDO}.
+     * </p>
+     *
+     * @param idResidencia ID de la residencia que se desea eliminar.
+     * @return DTO con la información de la residencia eliminada.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si no se encuentra la residencia especificada.
+     */
     public ResidenciaResponseDto remove(Long idResidencia) {
         Residencia residenciaTmp = residenciaRepository.findById(idResidencia).orElse(null);
         if(residenciaTmp == null){

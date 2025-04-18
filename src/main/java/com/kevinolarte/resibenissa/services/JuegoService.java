@@ -110,6 +110,18 @@ public class JuegoService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Elimina un juego del sistema según su ID.
+     * <p>
+     * Este método busca el juego por su identificador y, si lo encuentra, lo elimina del repositorio.
+     * Si el juego no existe, lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
+     * con el código de error {@link com.kevinolarte.resibenissa.exceptions.ApiErrorCode#JUEGO_INVALIDO}.
+     * </p>
+     *
+     * @param idJuego ID del juego que se desea eliminar.
+     * @return DTO con la información del juego eliminado.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el juego no existe en el sistema.
+     */
     public JuegoResponseDto remove(Long idJuego) {
         Juego juegTmp = juegoRepository.findById(idJuego).orElse(null);
 

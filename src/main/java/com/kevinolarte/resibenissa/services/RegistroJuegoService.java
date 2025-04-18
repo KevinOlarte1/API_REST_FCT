@@ -135,10 +135,23 @@ public class RegistroJuegoService {
     }
 
 
+    /**
+     * Elimina un registro de juego del sistema según su ID.
+     * <p>
+     * Este método busca el registro por su identificador y, si lo encuentra, devuelve un DTO con su información
+     * antes de eliminarlo del repositorio. Si no existe, lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
+     * con el código de error {@link com.kevinolarte.resibenissa.exceptions.ApiErrorCode#REGISTRO_JUEGO_INVALIDO}.
+     * </p>
+     *
+     * @param idRegistroJuego ID del registro de juego que se desea eliminar.
+     * @return DTO con la información del registro de juego eliminado.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el registro de juego no existe.
+     */
     public RegistroJuegoResponseDto remove(Long idRegistroJuego) {
         RegistroJuego registroTmp = registroJuegoRepository.findById(idRegistroJuego).orElse(null);
         if (registroTmp == null){
             throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
         }
+        return new RegistroJuegoResponseDto(registroTmp);
     }
 }
