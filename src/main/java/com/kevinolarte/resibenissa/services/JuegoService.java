@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * Permite crear juegos nuevos validados y consultarlos por ID o por residencia.
  * </p>
  *
- * @author Kevin
+ * @author Kevin Olarte
  */
 @Service
 @AllArgsConstructor

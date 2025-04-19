@@ -1,6 +1,6 @@
 package com.kevinolarte.resibenissa.dto.in;
 
-import enums.Dificultad;
+import com.kevinolarte.resibenissa.enums.Dificultad;
 import lombok.Getter;
 import lombok.Setter;
 

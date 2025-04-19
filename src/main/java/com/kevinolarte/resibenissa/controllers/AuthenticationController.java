@@ -12,6 +12,17 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST para la creacion de usuarios
+ * <p>
+ * Expone endpoints relacionados con el registro, inicio de sesión,
+ * verificación de cuenta por correo y reenvío de códigos de verificación.
+ * </p>
+ *
+ * Todas las rutas están bajo el prefijo <code>/auth</code>.
+ *
+ * @author Kevin
+ */
 @RequestMapping("/auth")
 @RestController
 @AllArgsConstructor
@@ -20,6 +31,16 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
 
+    /**
+     * Registra un nuevo usuario en el sistema.
+     * <p>
+     * El usuario creado se guarda con estado "no activado" hasta que complete
+     * el proceso de verificación vía código enviado al correo.
+     * </p>
+     *
+     * @param registerUserDto Datos necesarios para registrar al usuario.
+     * @return {@link ResponseEntity} con los datos del usuario registrado.
+     */
     @PostMapping("/signup")
     public ResponseEntity<UserResponseDto> register(@RequestBody RegisterUserDto registerUserDto){
             UserResponseDto user = authenticationService.singUp(registerUserDto);
@@ -27,6 +48,12 @@ public class AuthenticationController {
 
     }
 
+    /**
+     * Autentica a un usuario existente y devuelve un token JWT válido.
+     *
+     * @param loginUserDto DTO con email y contraseña.
+     * @return {@link ResponseEntity} con el token JWT y su tiempo de expiración.
+     */
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> authenticate(@RequestBody LoginUserDto loginUserDto){
             User userauthentication = authenticationService.authenticate(loginUserDto);
@@ -38,6 +65,12 @@ public class AuthenticationController {
             return ResponseEntity.ok(loginResponse);
     }
 
+    /**
+     * Verifica un usuario usando el código enviado por correo.
+     *
+     * @param verifyUserDto DTO con email y código de verificación.
+     * @return {@link ResponseEntity} con mensaje de éxito.
+     */
     @PostMapping("/verify")
     public ResponseEntity<String> verifyUser(@RequestBody VerifyUserDto verifyUserDto){
             authenticationService.verifyUser(verifyUserDto);
@@ -45,6 +78,12 @@ public class AuthenticationController {
 
     }
 
+    /**
+     * Reenvía un nuevo código de verificación al correo indicado.
+     *
+     * @param email Dirección de correo del usuario.
+     * @return {@link ResponseEntity} con mensaje de confirmación.
+     */
     @PostMapping("/resend")
     public ResponseEntity<String> resendVerificationCode(@RequestParam String email ){
         authenticationService.resendVerificationCode(email);

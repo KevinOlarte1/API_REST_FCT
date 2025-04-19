@@ -21,7 +21,7 @@ import java.util.List;
  *
  * Ruta base: <b>/resi/residents</b>
  *
- * @author Kevin
+ * @author Kevin Olarte
  */
 @RequestMapping("/resi/residents")
 @RestController

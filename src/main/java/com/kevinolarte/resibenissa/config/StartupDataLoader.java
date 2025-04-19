@@ -19,11 +19,5 @@ public class StartupDataLoader {
     public void init() {
 
         Residencia residenciaDefault = residenciaRepository.save(new Residencia("Residencia Benissa", "resibenissa@gmail.com"));
-        /*
-        User userDefault  = new User("default", "default", "default@default.com", "default");
-        userDefault.setResidencia(residenciaDefault);
-        userDefault.setEnabled(true);
-        userRepository.save(userDefault);
-         */
     }
 }

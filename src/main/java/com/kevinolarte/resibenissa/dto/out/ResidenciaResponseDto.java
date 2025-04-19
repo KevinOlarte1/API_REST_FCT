@@ -7,7 +7,20 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-
+/**
+ * DTO de salida que representa la información pública de una residencia.
+ * <p>
+ * Esta clase se utiliza para enviar al cliente los datos esenciales de una residencia,
+ * incluyendo su nombre, email y los identificadores de usuarios y residentes asociados.
+ * </p>
+ *
+ * <p>
+ * Se construye a partir de una instancia de {@link Residencia}, mapeando únicamente los IDs
+ * de las relaciones con usuarios y residentes para evitar sobrecarga de datos en la respuesta.
+ * </p>
+ *
+ * @author Kevin Olarte
+ */
 @Getter
 @Setter
 public class ResidenciaResponseDto {

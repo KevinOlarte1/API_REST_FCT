@@ -1,6 +1,6 @@
 package com.kevinolarte.resibenissa.models;
 
-import enums.Dificultad;
+import com.kevinolarte.resibenissa.enums.Dificultad;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

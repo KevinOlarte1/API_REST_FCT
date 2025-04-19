@@ -5,6 +5,322 @@ info:
   description: API para gestionar residencias, con operaciones de registro y consulta.
 
 paths:
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+        - User
+      summary: Registrar un nuevo usuario
+      description: Crea un nuevo usuario sin ser habilitado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User.Dto'
+      responses:
+        '200':
+          description: Usuario creado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ResponseDto'
+        '400':
+          description: Datos nulos/vacios o problemas internos con el mail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                ERROR_MAIL_SENDER:
+                  value:
+                    mensaje: Error enviando el correo
+                    codigo: 1020
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Residencia invalida, no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '406':
+          description: Correo Invalido, tiene que ser un correo con extructura correcta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CORREO_INVALIDO:
+                  value:
+                    mensaje: Email invalid
+                    codigo: 1002
+                    status: 406
+                    timestamp: 2025-04-13T21:00:0
+        '409':
+            description: Usuario ya existente
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  USER_YA_EXISTE:
+                    value:
+                      mensaje: Usuario existente
+                      codigo: 1014
+                      status: 409
+                      timestamp: 2025-04-13T21:00:0
+  /auth/verify:
+    post:
+      tags:
+        - Authentication
+        - User
+      summary: Activar un usuario ya creado pero sin estar activado
+      description: Activa ese usuario para poder usar los endPoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Verify.Dto'
+      responses:
+        '200':
+          description: Mnesaje indicando que ya esta activada.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: verificado
+        '400':
+          description: Datos nulos/vacios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Usuario invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalida
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '406':
+          description: El codigo de verificación no es valido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                CODIGO_INVALIDO:
+                  value:
+                    mensaje: El codigo de verificación no es valido
+                    codigo: 1017
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+                CORREO_INVALIDO:
+                  value:
+                    mensaje: Email invalid
+                    codigo: 1002
+                    status: 406
+                    timestamp: 2025-04-13T21:00:0
+        '410':
+          description: El codigo de verificación ha expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CODIGO_EXPIRADO:
+                  value:
+                    mensaje: El codigo de verificación ha expirado
+                    codigo: 1016
+                    status: 410
+                    timestamp: 2025-04-13T21:00:0
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+        - User
+      summary: Login para obtener token.
+      description: el token es para acceder a todos los endPoints ya que estan protegidos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login.Dto'
+      responses:
+        '200':
+          description: Logeo completado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login.ResponseDto'
+        '400':
+          description: Datos nulos/vacios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Usuario invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalida
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '406':
+          description: Correo Invalido, tiene que ser un correo con extructura correcta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                CORREO_INVALIDO:
+                  value:
+                    mensaje: Email invalid
+                    codigo: 1002
+                    status: 406
+                    timestamp: 2025-04-13T21:00:0
+                USUARIO_NO_ACTIVADO:
+                  value:
+                    mensaje: Usuario no activado
+                    codigo: 1015
+                    status: 406
+                    timestamp: 2025-04-13T21:00:0
+
+  /auth/resend:
+    post:
+      tags:
+        - Authentication
+        - User
+      summary: Renviar correo verificacion Code
+      description: manda un correo del ususario
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: correo enviado exitosamente
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: enviado.
+        '400':
+          description: Datos nulos/vacios o problemas al enviar correo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                ERROR_MAIL_SENDER:
+                  value:
+                    mensaje: Error enviando el correo
+                    codigo: 1020
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Usuario invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalida
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+
+        '406':
+          description: Correo Invalido, tiene que ser un correo con extructura correcta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CORREO_INVALIDO:
+                  value:
+                    mensaje: Email invalid
+                    codigo: 1002
+                    status: 406
+                    timestamp: 2025-04-13T21:00:0
+        '409':
+          description: El usuario ya esta activado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CORREO_INVALIDO:
+                  value:
+                    mensaje: El ususario ya esta activado
+                    codigo: 1018
+                    status: 409
+                    timestamp: 2025-04-13T21:00:0
+
+
+
+
+
+
+
+
+
+
+
+
+
   /resi/add:
     post:
       tags:
@@ -37,6 +353,19 @@ paths:
                     codigo: 1001
                     status: 400
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
         '406':
           description: Correo Invalido, tiene que ser un correo con extructura correcta.
           content:
@@ -97,6 +426,19 @@ paths:
           content:
             application/json:
               schema:
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
 
   /resi/remove:
     delete:
@@ -131,6 +473,19 @@ paths:
                     codigo: 1006
                     status: 404
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
 
   /resi/residents/add:
     post:
@@ -177,7 +532,19 @@ paths:
                     codigo: 1006
                     status: 404
                     timestamp: 2025-04-13T21:00:00
-
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
         '406':
           description: Fecha invalida
           content:
@@ -224,6 +591,19 @@ paths:
           content:
             application/json:
               schema:
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
 
   /resi/residents/remove:
     delete:
@@ -258,66 +638,19 @@ paths:
                     codigo: 1009
                     status: 404
                     timestamp: 2025-04-13T21:00:00
-  /resi/users/add:
-    post:
-      tags:
-        - User
-      summary: Registrar un usuario.
-      description: Crea un usuasrio en una residencia existente en la base de datos, con ciertos campos.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User.Dto'
-      responses:
-        '200':
-          description: Usuario registrado con existo
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User.ResponseDto'
-        '400':
-          description: Campos nulos/vacios
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
               example:
-                CAMPOS_OBLIGATORIOS:
+                ENDPOINT_PROTEGIDO:
                   value:
-                    mensaje: Faltan campos obligatorios
-                    codigo: 1001
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
-
-
-        '404':
-          description: Residencia Invalida
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                RESIDENCIA_INVALIDO:
-                  value:
-                    mensaje: Residencia invalida
-                    codigo: 1006
-                    status: 404
-                    timestamp: 2025-04-13T21:00:00
-        '406':
-          description: Correo duplicado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CORREO_DUPLICADO:
-                  value:
-                    mensaje: Email ya existente
-                    codigo: 1003
-                    status: 406
-                    timestamp: 2025-04-13T21:00:00
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
   /resi/users:
     get:
       tags:
@@ -355,6 +688,19 @@ paths:
           content:
             application/json:
               schema:
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
 
   /resi/users/remove:
     delete:
@@ -389,6 +735,19 @@ paths:
                     codigo: 1010
                     status: 404
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
         '409':
           description: No se puede borrar una entidad que tiene referencia en otras entidades, antes hay que borrar esas relaciones.
           content:
@@ -436,7 +795,19 @@ paths:
                     codigo: 1010
                     status: 404
                     timestamp: 2025-04-13T21:00:00
-
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
   /resi/juegos/add:
     post:
       tags:
@@ -483,6 +854,19 @@ paths:
                     codigo: 1006
                     status: 404
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
         '409':
           description: El nombre que se le quiere asignar ya esrta registrado en esa residendcia
           content:
@@ -529,6 +913,19 @@ paths:
           content:
             application/json:
               schema:
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
 
   /resi/juegos/remove:
     delete:
@@ -563,6 +960,19 @@ paths:
                     codigo: 1008
                     status: 404
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
 
   /resi/juegos/stats/add:
     post:
@@ -622,6 +1032,19 @@ paths:
                     codigo: 1010
                     status: 404
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
         '406':
           description: No valores negativos en el el campo de puntos/num
           content:
@@ -707,6 +1130,19 @@ paths:
           content:
             application/json:
               schema:
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
 
   /resi/juegos/stats/remove:
     delete:
@@ -741,10 +1177,63 @@ paths:
                     codigo: 1012
                     status: 404
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
 
 
 components:
   schemas:
+    Verify.Dto:
+      type: object
+      required:
+        -email
+        -verificationConde
+      properties:
+        email:
+          type: string
+          example: kevinolarte.ko@gmail.com
+        verificationCode:
+          type: string
+          example: 6394829
+
+    Login.Dto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: contacto@resilapaz.com
+        password:
+          type: string
+          example: 1234Residencia
+
+    Login.ResponseDto:
+      type: object
+      required:
+        - token
+        - expiresIn
+      properties:
+        token:
+          type: string
+          example: yJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Imtldmlub2xhcnRlLmtvQGdtYWlsLmNvbSIsInN1YiI6Imtldmlub2xhcnRlLmtvQGdtYWlsLmNvbSIsImlhdCI6MTc0NTA3NTc1NywiZXhwIjoxNzQ1MTYyMTU3fQ._jxW3tu7hG8NPVPZaNc6iMS5HjAyiQycUZl4SFc_a8
+        expiresIn:
+          type: integer
+          format: int64
+          example: 6400000
+
     Residencia.Dto:
       type: object
       required:

@@ -27,6 +27,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio que gestiona la lógica de negocio relacionada con los registros de juegos jugados
+ * por los residentes de una residencia.
+ * <p>
+ * Permite crear registros, aplicar filtros por fechas y entidades, y eliminar entradas específicas.
+ * También valida que los registros pertenezcan a una misma residencia para mantener coherencia.
+ * </p>
+ *
+ * @author Kevin Olarte
+ */
 @Service
 @AllArgsConstructor
 public class RegistroJuegoService {
@@ -36,11 +46,18 @@ public class RegistroJuegoService {
     private final JuegoService juegoService;
     private final UserService userService;
 
-    @PersistenceContext
-    private EntityManager entityManager;
 
-
-
+    /**
+     * Crea y guarda un nuevo registro de juego en la base de datos.
+     * <p>
+     * Realiza validaciones sobre los campos obligatorios, valores negativos, y que todas las entidades
+     * asociadas (juego, usuario, residente) existan y pertenezcan a la misma residencia.
+     * </p>
+     *
+     * @param input DTO de entrada con los datos del juego a registrar.
+     * @return DTO con los datos del registro creado.
+     * @throws ApiException si falta algún campo obligatorio, hay valores inválidos, o las entidades no son compatibles.
+     */
     public RegistroJuegoResponseDto save(RegistroJuegoDto input) throws ApiException {
         if (input.getDuracion() == null || input.getFallos() == null ||
                 input.getIdResidente() == null || input.getIdJuego() == null || input.getIdUsuario() == null){

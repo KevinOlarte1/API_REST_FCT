@@ -3,6 +3,22 @@ package com.kevinolarte.resibenissa.exceptions;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+/**
+ * Enumeración que define los distintos códigos de error personalizados utilizados en la API.
+ * <p>
+ * Cada valor del enum representa un tipo específico de error que puede ocurrir en la lógica
+ * de negocio de la aplicación. Cada error contiene:
+ * <ul>
+ *   <li>Un código numérico interno único para facilitar el rastreo.</li>
+ *   <li>Un mensaje amigable que puede mostrarse al usuario.</li>
+ *   <li>Un {@link HttpStatus} que será devuelto como código HTTP en la respuesta.</li>
+ * </ul>
+ *
+ * <p>Esta clase se utiliza junto a {@link ApiException} para lanzar errores consistentes.</p>
+ *
+ * @see ApiException
+ * @author Kevin Olarte
+ */
 @Getter
 public enum ApiErrorCode {
 
@@ -25,7 +41,7 @@ public enum ApiErrorCode {
     CODIGO_INVALIDO(1017,"El codigo de verificacion no es valdio" , HttpStatus.NOT_ACCEPTABLE ),
     USER_YA_ACTIVADO(1018,"El usuario ya activado" , HttpStatus.CONFLICT ),
     ERROR_MAIL_SENDER(1019,"Error enviando el correo" , HttpStatus.BAD_REQUEST ),
-    ENDPOINT_PROTEGIDO(1020, "Tiene que tener permiso para acceder aqui", HttpStatus.METHOD_NOT_ALLOWED);
+    ENDPOINT_PROTEGIDO(1020, "Tiene que tener permiso para acceder aqui", HttpStatus.METHOD_NOT_ALLOWED),;
 
     private final int code;
     private final String message;

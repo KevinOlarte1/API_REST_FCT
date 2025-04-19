@@ -1,12 +1,26 @@
 package com.kevinolarte.resibenissa.dto.out;
 
 import com.kevinolarte.resibenissa.models.RegistroJuego;
-import enums.Dificultad;
+import com.kevinolarte.resibenissa.enums.Dificultad;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO de salida que representa un registro del uso de un juego por parte de un residente.
+ * <p>
+ * Este DTO se utiliza para enviar al cliente información sobre una sesión de juego,
+ * incluyendo detalles como duración, dificultad, número de errores y fecha de ejecución.
+ * También identifica al residente, al juego y al usuario (trabajador) que registró la partida.
+ * </p>
+ *
+ * <p>
+ * Si el usuario asociado a la partida es nulo, el campo {@code idUsario} se establece en {@code null}.
+ * </p>
+ *
+ * @author Kevin Olarte.
+ */
 @Getter
 @Setter
 public class RegistroJuegoResponseDto {

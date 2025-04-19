@@ -4,6 +4,19 @@ import com.kevinolarte.resibenissa.models.User;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * DTO de salida para representar los datos públicos de un usuario del sistema.
+ * <p>
+ * Esta clase se utiliza para devolver información básica del usuario en las respuestas
+ * de la API, sin incluir detalles sensibles como contraseñas o tokens de autenticación.
+ * </p>
+ *
+ * <p>
+ * Contiene datos como el ID del usuario, nombre, email, estado de activación y la residencia asociada.
+ * </p>
+ *
+ * @author Kevin Olarte
+ */
 @Getter
 @Setter
 public class UserResponseDto {

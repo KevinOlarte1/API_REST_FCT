@@ -19,7 +19,7 @@ import java.util.List;
  *
  * Ruta base: <b>/resi/juegos</b>
  *
- * @author Kevin
+ * @author Kevin Olarte
  */
 @RequestMapping("/resi/juegos")
 @RestController

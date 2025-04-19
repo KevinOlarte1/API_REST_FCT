@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,17 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Clase de configuración de seguridad para la API.
+ * <p>
+ * Define la cadena de filtros de seguridad, política de sesiones,
+ * rutas públicas y configuración CORS para permitir solicitudes seguras desde el frontend.
+ * </p>
+ *
+ * Esta configuración se basa en JWT y es stateless (sin sesiones de servidor).
+ *
+ * @author Kevin
+ */
 @Configuration
 @EnableWebSecurity
 @AllArgsConstructor
@@ -26,19 +38,28 @@ public class SecurityConfiguration {
 
 
     /**
-     * Congigura la cadena de filtros de seguridad para la aplicación.
+     * Configura la cadena de filtros de seguridad para la aplicación.
      * <p>
-     * En esta configuración se desactiva CSF y se permite el acceso a todas las rutas
-     * @param http Objeto HttpSecurity utilizado para construir la configuración de seguridad.
-     * @return La cadena de filtros de seguridad configurada
-     * @throws Exception Si ocurre un error al formar la cadena de filtros.
+     * - Desactiva CSRF.<br>
+     * - Permite acceso libre a rutas que comienzan con {@code /auth/**}.<br>
+     * - Requiere autenticación para cualquier otra petición.<br>
+     * - Aplica política de sesión stateless (usada con JWT).<br>
+     * - Agrega el filtro personalizado para validar JWT antes de {@link UsernamePasswordAuthenticationFilter}.
+     * </p>
+     *
+     * @param http Objeto {@link HttpSecurity} para construir la configuración.
+     * @return Cadena de filtros de seguridad {@link SecurityFilterChain} configurada.
+     * @throws Exception Si ocurre un error en la construcción de la cadena.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/resi/**").permitAll()
+                        .requestMatchers(Conf.pathPublic + "**").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -59,4 +80,5 @@ public class SecurityConfiguration {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }

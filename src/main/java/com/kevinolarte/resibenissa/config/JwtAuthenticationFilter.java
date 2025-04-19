@@ -22,6 +22,19 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
+/**
+ * Filtro de autenticación que intercepta todas las peticiones HTTP y verifica si contienen
+ * un token JWT válido en la cabecera {@code Authorization}.
+ * <p>
+ * Si el token es válido, autentica al usuario y lo registra en el {@link SecurityContextHolder}.
+ * En caso de error, delega la excepción al {@link HandlerExceptionResolver} para devolver
+ * una respuesta estructurada.
+ * </p>
+ *
+ * Este filtro se ejecuta una sola vez por petición, al extender de {@link OncePerRequestFilter}.
+ *
+ * @author Kevin
+ */
 @Component
 @AllArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -30,7 +43,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final HandlerExceptionResolver handlerExceptionResolver;
 
 
-
+    /**
+     * Lógica principal del filtro. Verifica si la petición contiene un token JWT válido
+     * y, si es así, autentica al usuario en el contexto de seguridad de Spring.
+     *
+     * @param request       Petición HTTP entrante.
+     * @param response      Respuesta HTTP saliente.
+     * @param filterChain   Cadena de filtros que se continúa tras el procesamiento.
+     * @throws ServletException si ocurre un error en el filtro.
+     * @throws IOException      si ocurre un error de entrada/salida.
+     */
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -40,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         //Ver si esa cabeza esta nulla o no es un token bearer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("No token found");
+            handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
             filterChain.doFilter(request, response);
             return;
         }
@@ -79,10 +101,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
     }
-/*
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/resi/");
-    } */
+        return path.startsWith(Conf.pathPublic)
+                || path.startsWith("/swagger-ui/")
+                || path.startsWith("/v3/api-docs");
+    }
 }

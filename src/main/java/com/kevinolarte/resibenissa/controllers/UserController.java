@@ -38,13 +38,13 @@ public class UserController {
      * @param userDto DTO con los datos del nuevo usuario.
      * @return {@link ResponseEntity} con los datos del usuario creado.
      * @throws com.kevinolarte.resibenissa.exceptions.ApiException en casi de multiples casos.
-     */
+
     @PostMapping("/add")
     public ResponseEntity<UserResponseDto> addUser(@RequestBody UserDto userDto) {
         UserResponseDto user = userService.save(userDto);
         return ResponseEntity.ok(user);
 
-    }
+    } */
 
     /**
      * Recupera una lista de usuarios registrados, con la opción de aplicar filtros.

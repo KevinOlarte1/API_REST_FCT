@@ -25,6 +25,19 @@ import java.util.Random;
 
 /**
  * Servicio encargado de gestionar la autenticación y verificación de usuarios.
+ * <p>
+ * Incluye el registro de nuevos usuarios, generación y envío de códigos de verificación por correo electrónico,
+ * autenticación mediante email y contraseña, y validación del código de activación.
+ * </p>
+ *
+ * Este servicio utiliza:
+ * <ul>
+ *   <li>{@link PasswordEncoder} para cifrar contraseñas.</li>
+ *   <li>{@link AuthenticationManager} para autenticación en Spring Security.</li>
+ *   <li>{@link EmailService} para el envío de correos electrónicos.</li>
+ *   <li>{@link ResidenciaService} para validar residencias al registrar usuarios.</li>
+ * </ul>
+ *
  * @author Kevin Olarte
  */
 @Service
@@ -38,17 +51,26 @@ public class AuthenticationService {
 
     /**
      * Registra un nuevo usuario si no existe previamente.
-     * Genera un código de verificación y envía un correo.
+     * <p>
+     * Genera un código de verificación y lo envía por correo electrónico.
+     * El usuario se crea con estado desactivado hasta completar la verificación.
+     * </p>
      *
      * @param input DTO con los datos del usuario a registrar.
-     * @return El usuario creado.
-     * @throws ApiException si el usuario ya existe o la residencia no es válida.
+     * @return DTO con los datos del usuario creado.
+     * @throws ApiException si el email es inválido, ya existe, o la residencia no es válida.
      */
     public UserResponseDto singUp(RegisterUserDto input){
         if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getPassword() == null || input.getPassword().trim().isEmpty()
             || input.getIdResidencia() == null || input.getNombre() == null || input.getNombre().trim().isEmpty() || input.getApellido() == null || input.getApellido().trim().isEmpty()){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
+
+        input.setEmail(input.getEmail().trim().toLowerCase());
+        if (!EmailService.isEmailValid(input.getEmail())){
+            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+        }
+
         //Miramos si ese usuario y residencia existen
         Optional<User> userTest =  userRepository.findByEmail(input.getEmail());
         Residencia residenciaTest = residenciaService.findById(input.getIdResidencia());
@@ -59,9 +81,7 @@ public class AuthenticationService {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
-        System.out.println("Se ha registrado el usuario");
         User user = new User(input.getNombre(), input.getApellido(),input.getEmail(), passwordEncoder.encode(input.getPassword()));
-        System.out.println("Se ha registrado el usuario");
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationExpiration(LocalDateTime.now().plusMinutes(15));
         user.setEnabled(false);
@@ -73,13 +93,21 @@ public class AuthenticationService {
     }
 
     /**
-     * Autentica un usuario existente.
+     * Autentica un usuario existente mediante email y contraseña.
      *
-     * @param input DTO con email y contraseña del usuario.
-     * @return El usuario autenticado.
+     * @param input DTO con credenciales de acceso.
+     * @return El objeto {@link User} autenticado.
      * @throws ApiException si el usuario no existe o no está activado.
      */
     public User authenticate(LoginUserDto input){
+        if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getPassword() == null || input.getPassword().trim().isEmpty()){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        input.setEmail(input.getEmail().trim().toLowerCase());
+        if (!EmailService.isEmailValid(input.getEmail())){
+            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+        }
+
         //Ver si ese usuario existe o no
         User user = userRepository.findByEmail(input.getEmail())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
@@ -100,12 +128,15 @@ public class AuthenticationService {
     }
 
     /**
-     * Verifica el código de activación enviado por correo
+     * Verifica el código enviado por correo y activa la cuenta del usuario.
      *
-     * @param input DTO con email y código de verificación.
-     * @throws ApiException si el usuario no existe, el código no es válido o está expirado.
+     * @param input DTO que contiene el email y el código de verificación.
+     * @throws ApiException si el código está expirado, es inválido, o el usuario no existe.
      */
     public void verifyUser(VerifyUserDto input){
+        if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getVerificationCode() == null || input.getVerificationCode().trim().isEmpty()){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
         Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
         if(optionalUser.isPresent()){
             User user = optionalUser.get();
@@ -129,12 +160,19 @@ public class AuthenticationService {
     }
 
     /**
-     * Reenvía un nuevo código de verificación al email del usuario.
+     * Reenvía un nuevo código de verificación por correo si el usuario aún no está activado.
      *
-     * @param email Email del usuario.
+     * @param email Dirección de correo del usuario.
      * @throws ApiException si el usuario no existe o ya está activado.
      */
     public void resendVerificationCode(String email){
+        if (email == null || email.trim().isEmpty()){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        email = email.trim().toLowerCase();
+        if (!EmailService.isEmailValid(email)){
+            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+        }
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if(optionalUser.isPresent()){
