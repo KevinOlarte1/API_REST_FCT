@@ -63,6 +63,7 @@ public class UserController {
             @RequestParam(required = false) Long idResidencia,
             @RequestParam(required = false) Boolean enable,
             @RequestParam(required = false) String email) {
+        System.out.println("Entra");
         List<UserResponseDto> users = userService.getUsers(idResidencia, enable, email);
         return ResponseEntity.ok(users);
 

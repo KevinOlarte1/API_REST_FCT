@@ -18,7 +18,14 @@ public enum ApiErrorCode {
     USUARIO_INVALIDO(1010, "Usuario invalido", HttpStatus.NOT_FOUND),
     CONFLICTO_REFERENCIAS(1011, "Problemas con las referencias de las entidades, no corresponden a las mismas", HttpStatus.CONFLICT),
     REGISTRO_JUEGO_INVALIDO(1012,"Registro juego invalido" , HttpStatus.NOT_FOUND ),
-    REFERENCIAS_DEPENDIENTES(1013, "Esta entidad tiene referencias asociadas que dependen de el", HttpStatus.CONFLICT);
+    REFERENCIAS_DEPENDIENTES(1013, "Esta entidad tiene referencias asociadas que dependen de el", HttpStatus.CONFLICT),
+    USER_EXIST(1014, "Usuario ya existente" , HttpStatus.CONFLICT ),
+    USER_NO_ACTIVADO(1015,"Usuario no activado" , HttpStatus.NOT_ACCEPTABLE ),
+    CODIGO_EXPIRADO(1016,"El codigo de verificacion a caducado" , HttpStatus.GONE ),
+    CODIGO_INVALIDO(1017,"El codigo de verificacion no es valdio" , HttpStatus.NOT_ACCEPTABLE ),
+    USER_YA_ACTIVADO(1018,"El usuario ya activado" , HttpStatus.CONFLICT ),
+    ERROR_MAIL_SENDER(1019,"Error enviando el correo" , HttpStatus.BAD_REQUEST ),
+    ENDPOINT_PROTEGIDO(1020, "Tiene que tener permiso para acceder aqui", HttpStatus.METHOD_NOT_ALLOWED);
 
     private final int code;
     private final String message;

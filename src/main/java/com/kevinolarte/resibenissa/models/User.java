@@ -101,6 +101,7 @@ public class User implements UserDetails {
         this.email = email;
         this.password = password;
 
+
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

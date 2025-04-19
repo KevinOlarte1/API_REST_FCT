@@ -33,12 +33,13 @@ public class AplicationConfiguration {
      * @return Implementación de UserDetailsService personalizada.
      * @throws UsernameNotFoundException si el usuario no existe.
      */
+    @Bean
     UserDetailsService userDetailsService(){
     return email -> userRepository.findByEmail(email).
             orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 }
     @Bean
-    BCryptPasswordEncoder bCryptPasswordEncoder() {
+    BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -57,8 +58,9 @@ public class AplicationConfiguration {
     AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
-        authProvider.setPasswordEncoder(bCryptPasswordEncoder());
         authProvider.setUserDetailsService(userDetailsService());
+        authProvider.setPasswordEncoder(passwordEncoder());
+
         return authProvider;
     }
 
