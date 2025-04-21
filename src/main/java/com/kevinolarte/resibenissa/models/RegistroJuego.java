@@ -66,18 +66,20 @@ public class RegistroJuego {
     private Double duracion;
 
     private Dificultad dificultad;
+    private String observacion;
 
-    public RegistroJuego(Integer num, Double duracion, Dificultad dificultad){
+    public RegistroJuego(Integer num, Double duracion, Dificultad dificultad, String observacion) {
         this.num = num;
         this.duracion = duracion;
         this.fecha = LocalDateTime.now();
         this.dificultad = dificultad;
+        this.observacion = observacion;
     }
     public RegistroJuego(Double duracion, Dificultad dificultad ){
-        this(0,duracion,dificultad);
+        this(0,duracion,dificultad,null);
     }
     public RegistroJuego(Integer num, Double duracion){
-        this(num,duracion,null);
+        this(num,duracion,null,null);
     }
 
     public RegistroJuego() {

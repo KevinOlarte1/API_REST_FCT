@@ -23,6 +23,7 @@ public class RegistroJuegoDto {
     private Integer fallos;
     private Double duracion;
     private Dificultad dificultad;
+    private String observacion;
 
     @Override
     public String toString() {

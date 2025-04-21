@@ -33,6 +33,7 @@ public class RegistroJuegoResponseDto {
     private Double duracion;
     private Dificultad dificultad;
     private LocalDateTime fecha;
+    private String observacion;
 
     public RegistroJuegoResponseDto(RegistroJuego registroJuego) {
         this.id = registroJuego.getId();
@@ -43,5 +44,6 @@ public class RegistroJuegoResponseDto {
         this.duracion = registroJuego.getDuracion();
         this.dificultad = registroJuego.getDificultad();
         this.fecha = registroJuego.getFecha();
+        this.observacion = registroJuego.getObservacion() == null ? null : registroJuego.getObservacion();
     }
 }

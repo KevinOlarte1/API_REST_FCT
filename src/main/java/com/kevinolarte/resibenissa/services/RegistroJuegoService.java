@@ -60,7 +60,8 @@ public class RegistroJuegoService {
      */
     public RegistroJuegoResponseDto save(RegistroJuegoDto input) throws ApiException {
         if (input.getDuracion() == null || input.getFallos() == null ||
-                input.getIdResidente() == null || input.getIdJuego() == null || input.getIdUsuario() == null){
+                input.getIdResidente() == null || input.getIdJuego() == null || input.getIdUsuario() == null ||
+                input.getObservacion() == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
@@ -86,7 +87,7 @@ public class RegistroJuegoService {
         if (!Objects.equals(usuario.getResidencia().getId(), juego.getResidencia().getId())) {
             throw new ApiException(ApiErrorCode.CONFLICTO_REFERENCIAS);
         }
-        RegistroJuego registroJuego = new RegistroJuego(input.getFallos(), input.getDuracion(), input.getDificultad());
+        RegistroJuego registroJuego = new RegistroJuego(input.getFallos(), input.getDuracion(), input.getDificultad(), input.getObservacion());
         registroJuego.setJuego(juego);
         registroJuego.setResidente(residente);
         registroJuego.setUsuario(usuario);
