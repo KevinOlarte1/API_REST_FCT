@@ -28,7 +28,7 @@ public class RegistroJuegoResponseDto {
     private Long id;
     private Long idResidente;
     private Long idJuego;
-    private Long idUsario;
+    private Long idUsuario;
     private Integer num;
     private Double duracion;
     private Dificultad dificultad;
@@ -39,7 +39,7 @@ public class RegistroJuegoResponseDto {
         this.id = registroJuego.getId();
         this.idResidente = registroJuego.getResidente().getId();
         this.idJuego = registroJuego.getJuego().getId();
-        this.idUsario = registroJuego.getUsuario() == null? null : registroJuego.getUsuario().getId();
+        this.idUsuario = registroJuego.getUsuario() == null? null : registroJuego.getUsuario().getId();
         this.num = registroJuego.getNum();
         this.duracion = registroJuego.getDuracion();
         this.dificultad = registroJuego.getDificultad();
