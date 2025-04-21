@@ -808,6 +808,37 @@ paths:
                     codigo: 1020
                     status: 405
                     timestamp: 2025-04-13T21:00:0
+
+  /resi/users/defualtImage:
+    get:
+      tags:
+        - User
+      summary: Obtienes la foto de perfil en binario
+      description: obtienes la imagen de la ruta de tu usuario que actualmete es la default pero luego con otro endpoint puedes subir otra imagen y se cambairia a la ruta de esa imagen nueva. y que se obtendria la hacer el get este.
+      responses:
+        '200':
+          description: Archibo binario con la foto.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Resource Binario
+        '500':
+          description: Problemas pasando la iamgen, prueba con cambiar la imagen a una imagen valida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: A surgido un problema con la imagen
+                    codigo: 1021
+                    status: PROBLEMAS_CON_FILE
+                    timestamp: 2025-04-13T21:00:00
+
+
+
   /resi/juegos/add:
     post:
       tags:
