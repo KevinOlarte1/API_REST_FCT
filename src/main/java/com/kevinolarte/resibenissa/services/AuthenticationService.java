@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.services;
 
 import ch.qos.logback.core.model.INamedModel;
+import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.auth.LoginUserDto;
 import com.kevinolarte.resibenissa.dto.in.auth.RegisterUserDto;
 import com.kevinolarte.resibenissa.dto.in.auth.VerifyUserDto;
@@ -87,6 +88,7 @@ public class AuthenticationService {
         user.setEnabled(false);
         sendVerificationEmail(user);
         user.setResidencia(residenciaTest);
+        user.setFotoPerfil("/uploads/" + Conf.imageDefault);
         User savedUser = userRepository.save(user);
 
         return new UserResponseDto(savedUser);

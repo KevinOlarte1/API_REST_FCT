@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.controllers;
 
+import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.UserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
 import com.kevinolarte.resibenissa.models.User;
@@ -8,8 +9,23 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 
 /**
  * Controlador REST que gestiona las operaciones relacionadas con los usuarios del sistema.
@@ -103,6 +119,31 @@ public class UserController {
         UserResponseDto userTmp = userService.removeReferencias(idUser);
         return  ResponseEntity.ok(userTmp);
     }
+
+    /**
+     * Descarga la imagen por defecto del sistema como un archivo adjunto.
+     * <p>
+     * Este endpoint devuelve un archivo binario (imagen) con tipo de contenido {@code application/octet-stream},
+     * permitiendo al navegador descargarlo como si fuera un archivo externo.
+     * <br>
+     * Aunque el método recibe un {@code filename} como parámetro, internamente siempre se carga la imagen
+     * por defecto definida en {@link com.kevinolarte.resibenissa.config.Conf#imageDefault}.
+     * </p>
+     * @return {@link ResponseEntity} con el recurso de imagen como archivo descargable.
+     */
+    @GetMapping("/defualtImage")
+    public ResponseEntity<Resource> downloadImage(){
+        Resource resource = userService.getImage(Conf.imageDefault);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
+
+
+
+
 
 
 

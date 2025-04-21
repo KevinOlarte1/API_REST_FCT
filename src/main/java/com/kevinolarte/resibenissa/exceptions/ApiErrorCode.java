@@ -41,7 +41,8 @@ public enum ApiErrorCode {
     CODIGO_INVALIDO(1017,"El codigo de verificacion no es valdio" , HttpStatus.NOT_ACCEPTABLE ),
     USER_YA_ACTIVADO(1018,"El usuario ya activado" , HttpStatus.CONFLICT ),
     ERROR_MAIL_SENDER(1019,"Error enviando el correo" , HttpStatus.BAD_REQUEST ),
-    ENDPOINT_PROTEGIDO(1020, "Tiene que tener permiso para acceder aqui", HttpStatus.METHOD_NOT_ALLOWED),;
+    ENDPOINT_PROTEGIDO(1020, "Tiene que tener permiso para acceder aqui", HttpStatus.METHOD_NOT_ALLOWED),
+    PROBLEMAS_CON_FILE(1021,"A surgido un problema con la imagen" , HttpStatus.INTERNAL_SERVER_ERROR );
 
     private final int code;
     private final String message;

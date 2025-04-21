@@ -1,5 +1,7 @@
 package com.kevinolarte.resibenissa.config;
 
+import org.springframework.beans.factory.annotation.Value;
+
 /**
  * Clase de configuración que contiene valores por defecto utilizados en la aplicación.
  * <p>
@@ -16,4 +18,9 @@ public class Conf {
     public static final Long idUsuarioDefault = 1L;
     public static final String emailDefault = "default@default.com";
     public static final String pathPublic= "/auth/";
+
+    @Value("${upload.dir}")
+    public static String imageResource;
+    public static final String imageDefault = "defaultPerfil.png";
 }
+

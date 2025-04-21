@@ -26,6 +26,8 @@ public class UserResponseDto {
     private String email;
     private boolean enabled;
     private Long idResidencia;
+    private String fotoPerfil;
+
 
     public UserResponseDto(User user) {
         this.id = user.getId();
@@ -34,6 +36,7 @@ public class UserResponseDto {
         this.email = user.getEmail();
         this.enabled = user.isEnabled();
         this.idResidencia = user.getResidencia().getId();
+        this.fotoPerfil = user.getFotoPerfil();
     }
 
 

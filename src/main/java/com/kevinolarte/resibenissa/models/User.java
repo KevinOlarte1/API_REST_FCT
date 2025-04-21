@@ -66,6 +66,12 @@ public class User implements UserDetails {
     private boolean enabled;
 
     /**
+     * Ruta de la foto de perfil.
+     */
+    @Column(name = "foto_perfil")
+    private String fotoPerfil;
+
+    /**
      * Roles o permisos del usuario. En este caso no se están usando, se devuelve una lista vacía.
      */
     @JsonIgnore

@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.services;
 
+import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.UserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
@@ -9,8 +10,15 @@ import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -46,7 +54,7 @@ public class UserService {
      * @return DTO de respuesta con los datos del usuario registrado.
      * @throws com.kevinolarte.resibenissa.exceptions.ApiException si los datos de entrada son inválidos,
      *         el correo es inválido o ya está en uso, o la residencia no existe.
-     */
+     *
     public UserResponseDto save(UserDto input) throws RuntimeException{
 
         if (input.getNombre() == null || input.getApellido() == null || input.getEmail() == null || input.getPassword() == null ||
@@ -74,7 +82,7 @@ public class UserService {
         user.setResidencia(residenciaOpt);
         User savedUser = userRepository.save(user);
         return new UserResponseDto(savedUser);
-    }
+    } */
 
     /**
      * Filtra usuarios del sistema según residencia, email o estado habilitado.
@@ -150,6 +158,25 @@ public class UserService {
         return new UserResponseDto(userTmp);
     }
 
+
+    /**
+     * Elimina un usuario del sistema desvinculando previamente todas las referencias asociadas.
+     * <p>
+     * Este método permite eliminar un usuario sin violar las restricciones de integridad referencial
+     * que impone la base de datos (por ejemplo, registros de juegos que aún apuntan al usuario).
+     * Para ello:
+     * <ul>
+     *   <li>Establece el campo {@code usuario} como {@code null} en todos los registros de juego asociados.</li>
+     *   <li>Elimina la relación entre el usuario y sus registros de juego.</li>
+     *   <li>Guarda el usuario actualizado sin referencias.</li>
+     * </ul>
+     * Finalmente, devuelve un DTO con los datos del usuario modificado.
+     * </p>
+     *
+     * @param idUser ID del usuario que se desea eliminar con limpieza de referencias.
+     * @return DTO del usuario una vez desvinculado.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe.
+     */
     public UserResponseDto removeReferencias(Long idUser) {
         User userTmp = userRepository.findById(idUser).orElse(null);
         if (userTmp == null) {
@@ -161,5 +188,32 @@ public class UserService {
         userTmp.setRegistroJuegos(new LinkedHashSet<>());
         userRepository.save(userTmp);
         return new UserResponseDto(userTmp);
+    }
+
+    /**
+     * Obtiene una imagen como recurso desde el sistema de archivos.
+     * <p>
+     * Este método busca un archivo de imagen en el directorio <code>src/main/resources/static/uploads</code>,
+     * utilizando el nombre por defecto definido en {@link Conf#imageDefault}.
+     * Si el archivo no existe o hay problemas al acceder a él, lanza una excepción controlada.
+     * </p>
+     *
+     * @param filename Nombre del archivo solicitado (actualmente no se utiliza, se carga siempre la imagen por defecto).
+     * @return {@link Resource} que representa la imagen cargada desde el sistema de archivos.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el archivo no existe o no puede accederse.
+     */
+    public Resource getImage(String filename) {
+
+        Path filePath = Paths.get("src/main/resources/static/uploads").resolve(Conf.imageDefault).normalize();
+        Resource resource;
+        try{
+           resource = new UrlResource(filePath.toUri());
+            if (!resource.exists()) {
+                throw new ApiException(ApiErrorCode.PROBLEMAS_CON_FILE);
+            }
+        }catch (Exception e){
+            throw new ApiException(ApiErrorCode.PROBLEMAS_CON_FILE);
+        }
+        return resource;
     }
 }
