@@ -1,11 +1,12 @@
-package com.kevinolarte.resibenissa.models;
+package com.kevinolarte.resibenissa.models.modulojuego;
 
-import com.kevinolarte.resibenissa.enums.Dificultad;
+import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
+import com.kevinolarte.resibenissa.models.Residente;
+import com.kevinolarte.resibenissa.models.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**

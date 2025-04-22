@@ -1,7 +1,7 @@
-package com.kevinolarte.resibenissa.dto.out;
+package com.kevinolarte.resibenissa.dto.out.modulojuego;
 
-import com.kevinolarte.resibenissa.models.RegistroJuego;
-import com.kevinolarte.resibenissa.enums.Dificultad;
+import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
+import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import lombok.Getter;
 import lombok.Setter;
 

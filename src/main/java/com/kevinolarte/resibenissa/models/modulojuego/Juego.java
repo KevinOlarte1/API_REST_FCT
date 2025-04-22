@@ -1,6 +1,7 @@
-package com.kevinolarte.resibenissa.models;
+package com.kevinolarte.resibenissa.models.modulojuego;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kevinolarte.resibenissa.models.Residencia;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

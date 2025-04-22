@@ -1,6 +1,6 @@
-package com.kevinolarte.resibenissa.dto.out;
+package com.kevinolarte.resibenissa.dto.out.modulojuego;
 
-import com.kevinolarte.resibenissa.models.Juego;
+import com.kevinolarte.resibenissa.models.modulojuego.Juego;
 import lombok.Getter;
 import lombok.Setter;
 

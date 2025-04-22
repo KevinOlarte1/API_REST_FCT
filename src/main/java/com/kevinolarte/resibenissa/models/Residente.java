@@ -1,6 +1,8 @@
 package com.kevinolarte.resibenissa.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
+import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,6 +57,13 @@ public class Residente {
     @OneToMany(mappedBy = "residente", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Set<RegistroJuego> registros = new LinkedHashSet<>();
+
+    /**
+     * Conjunto de veces que participa el resudente a las excuirsiones.
+     */
+    @OneToMany(mappedBy = "residente", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private Set<Participante> participantes = new LinkedHashSet<>();
 
     public Residente(String nombre, String apellido, LocalDate fechaNacimiento){
         this.nombre = nombre;

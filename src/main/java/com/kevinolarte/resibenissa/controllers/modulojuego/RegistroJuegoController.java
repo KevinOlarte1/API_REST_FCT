@@ -1,11 +1,9 @@
-package com.kevinolarte.resibenissa.controllers;
+package com.kevinolarte.resibenissa.controllers.modulojuego;
 
-import com.kevinolarte.resibenissa.dto.in.RegistroJuegoDto;
-import com.kevinolarte.resibenissa.dto.out.RegistroJuegoResponseDto;
-import com.kevinolarte.resibenissa.models.RegistroJuego;
-import com.kevinolarte.resibenissa.services.RegistroJuegoService;
+import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
+import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
+import com.kevinolarte.resibenissa.services.modulojuego.RegistroJuegoService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -81,7 +79,7 @@ public class RegistroJuegoController {
      * Elimina un registro de juego del sistema.
      * <p>
      * Este método recibe un ID de registro de juego como parámetro y solicita al servicio
-     * {@link com.kevinolarte.resibenissa.services.RegistroJuegoService} que elimine la entidad correspondiente.
+     * {@link RegistroJuegoService} que elimine la entidad correspondiente.
      * Si la eliminación es exitosa, se devuelve un DTO con los datos del registro eliminado.
      * </p>
      *

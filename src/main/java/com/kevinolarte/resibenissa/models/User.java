@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -86,7 +87,7 @@ public class User implements UserDetails {
      * Varios usuarios pueden estar asociados a la misma residencia.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_residencia")
+    @JoinColumn(name = "fk_residencia", nullable = false)
     @JsonIgnore
     private Residencia residencia;
 

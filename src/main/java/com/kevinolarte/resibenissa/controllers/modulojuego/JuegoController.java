@@ -1,11 +1,9 @@
-package com.kevinolarte.resibenissa.controllers;
+package com.kevinolarte.resibenissa.controllers.modulojuego;
 
-import com.kevinolarte.resibenissa.dto.in.JuegoDto;
-import com.kevinolarte.resibenissa.dto.out.JuegoResponseDto;
-import com.kevinolarte.resibenissa.models.Juego;
-import com.kevinolarte.resibenissa.services.JuegoService;
+import com.kevinolarte.resibenissa.dto.in.modulojuego.JuegoDto;
+import com.kevinolarte.resibenissa.dto.out.modulojuego.JuegoResponseDto;
+import com.kevinolarte.resibenissa.services.modulojuego.JuegoService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,7 +73,7 @@ public class JuegoController {
      * Elimina un juego del sistema.
      * <p>
      * Este método recibe un ID de juego como parámetro y solicita al servicio
-     * {@link com.kevinolarte.resibenissa.services.JuegoService} que elimine la entidad correspondiente.
+     * {@link JuegoService} que elimine la entidad correspondiente.
      * Si la eliminación es exitosa, se devuelve un DTO con los datos del juego eliminado.
      * </p>
      *

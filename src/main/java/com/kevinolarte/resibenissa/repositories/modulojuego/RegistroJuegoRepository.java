@@ -1,11 +1,10 @@
-package com.kevinolarte.resibenissa.repositories;
+package com.kevinolarte.resibenissa.repositories.modulojuego;
 
-import com.kevinolarte.resibenissa.models.RegistroJuego;
+import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**

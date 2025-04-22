@@ -1,22 +1,17 @@
 package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.config.Conf;
-import com.kevinolarte.resibenissa.dto.in.UserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
-import com.kevinolarte.resibenissa.models.RegistroJuego;
-import com.kevinolarte.resibenissa.models.Residencia;
+import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashSet;

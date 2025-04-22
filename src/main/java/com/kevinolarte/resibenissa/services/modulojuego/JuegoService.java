@@ -1,12 +1,13 @@
-package com.kevinolarte.resibenissa.services;
+package com.kevinolarte.resibenissa.services.modulojuego;
 
-import com.kevinolarte.resibenissa.dto.in.JuegoDto;
-import com.kevinolarte.resibenissa.dto.out.JuegoResponseDto;
+import com.kevinolarte.resibenissa.dto.in.modulojuego.JuegoDto;
+import com.kevinolarte.resibenissa.dto.out.modulojuego.JuegoResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
-import com.kevinolarte.resibenissa.models.Juego;
+import com.kevinolarte.resibenissa.models.modulojuego.Juego;
 import com.kevinolarte.resibenissa.models.Residencia;
-import com.kevinolarte.resibenissa.repositories.JuegoRepository;
+import com.kevinolarte.resibenissa.repositories.modulojuego.JuegoRepository;
+import com.kevinolarte.resibenissa.services.ResidenciaService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

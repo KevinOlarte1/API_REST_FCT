@@ -1,4 +1,4 @@
-package com.kevinolarte.resibenissa.enums;
+package com.kevinolarte.resibenissa.enums.modulojuego;
 
 /**
  * Enum que representa la dificultad de una partida.

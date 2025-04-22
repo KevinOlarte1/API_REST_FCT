@@ -1,28 +1,21 @@
-package com.kevinolarte.resibenissa.services;
+package com.kevinolarte.resibenissa.services.modulojuego;
 
-import com.kevinolarte.resibenissa.dto.in.RegistroJuegoDto;
-import com.kevinolarte.resibenissa.dto.out.RegistroJuegoResponseDto;
-import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
+import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
+import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
-import com.kevinolarte.resibenissa.models.Juego;
-import com.kevinolarte.resibenissa.models.RegistroJuego;
+import com.kevinolarte.resibenissa.models.modulojuego.Juego;
+import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.User;
-import com.kevinolarte.resibenissa.repositories.RegistroJuegoRepository;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.EntityManager;
+import com.kevinolarte.resibenissa.repositories.modulojuego.RegistroJuegoRepository;
 
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import com.kevinolarte.resibenissa.services.ResidenteService;
+import com.kevinolarte.resibenissa.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
