@@ -18,6 +18,8 @@ import java.util.Optional;
 @Repository
 public interface ResidenciaRepository extends JpaRepository<Residencia, Long> {
 
+
+
     /**
      * Busca una residencia por su correo electrónico.
      *
