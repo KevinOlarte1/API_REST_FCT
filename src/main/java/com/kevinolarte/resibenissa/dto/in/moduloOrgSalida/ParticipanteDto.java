@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.dto.in.moduloOrgSalida;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Objeto de transferencia de datos (DTO) utilizado para representar la asistencia de un residente a una salida.
@@ -12,9 +13,12 @@ import lombok.Getter;
  *
  * @author Kevin Olarte
  */
+@Getter
+@Setter
 public class ParticipanteDto {
     private Long idResidente;
-    private Long idEventoSalida;
-    private boolean asistencia;
+    private Boolean asistencia;
+    private String preOpinion;
+    private String postOpinion;
 
 }

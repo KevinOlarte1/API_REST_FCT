@@ -2,6 +2,7 @@ package com.kevinolarte.resibenissa.models.moduloOrgSalida;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kevinolarte.resibenissa.enums.moduloOrgSalida.EstadoSalida;
+import com.kevinolarte.resibenissa.models.Residencia;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -62,9 +63,17 @@ public class EventoSalida {
      * <p>
      * Se ignora en la serialización JSON para evitar bucles y sobrecarga de datos innecesarios.
      */
-    @OneToMany(mappedBy = "salida")
+    @OneToMany(mappedBy = "salida", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Set<Participante> participantes = new LinkedHashSet<>();
+
+    /**
+     * Relación con la residencia donde pueden tener varias salidas.
+     * Múltiples Eventos pueden estar en una misma residencia.
+     */
+    @ManyToOne
+    @JoinColumn(name = "fk_residencia")
+    private Residencia residencia;
 
     public EventoSalida(String nombre, String descripcion, LocalDate fechaInicio) {
         this.nombre = nombre;

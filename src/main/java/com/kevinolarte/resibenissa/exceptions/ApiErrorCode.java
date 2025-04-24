@@ -42,7 +42,12 @@ public enum ApiErrorCode {
     USER_YA_ACTIVADO(1018,"El usuario ya activado" , HttpStatus.CONFLICT ),
     ERROR_MAIL_SENDER(1019,"Error enviando el correo" , HttpStatus.BAD_REQUEST ),
     ENDPOINT_PROTEGIDO(1020, "Tiene que tener permiso para acceder aqui", HttpStatus.METHOD_NOT_ALLOWED),
-    PROBLEMAS_CON_FILE(1021,"A surgido un problema con la imagen" , HttpStatus.INTERNAL_SERVER_ERROR );
+    PROBLEMAS_CON_FILE(1021,"A surgido un problema con la imagen" , HttpStatus.INTERNAL_SERVER_ERROR ),
+    PARTICIPANTE_YA_REGISTRADO(1022,"Este residente ya participa en otro evento ese mismo dia" ,HttpStatus.NOT_ACCEPTABLE),
+    EVENTO_SALIDA_INVALIDO(1023,"EventoSalida invalida" ,HttpStatus.NOT_FOUND),
+    EVENTO_SALIDA_NO_DISPONIBLE(1024, "No se puede hacer nada con este evento ciertos problemas", HttpStatus.BAD_REQUEST),
+    PARTICIPANTE_INVALIDO(1025, "No existe ningun participante en ese evento" , HttpStatus.NOT_FOUND);
+
 
     private final int code;
     private final String message;

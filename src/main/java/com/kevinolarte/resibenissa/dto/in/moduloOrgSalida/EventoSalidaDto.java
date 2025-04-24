@@ -1,6 +1,8 @@
 package com.kevinolarte.resibenissa.dto.in.moduloOrgSalida;
 
 import com.kevinolarte.resibenissa.enums.moduloOrgSalida.EstadoSalida;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
@@ -12,8 +14,9 @@ import java.time.LocalDate;
  *
  * @author Kevin Olarte
  */
+@Getter
+@Setter
 public class EventoSalidaDto {
-    private Long id;
     private String nombre;
     private String descripcion;
     private LocalDate fecha;
