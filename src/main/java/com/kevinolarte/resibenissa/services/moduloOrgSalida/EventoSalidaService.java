@@ -2,7 +2,6 @@ package com.kevinolarte.resibenissa.services.moduloOrgSalida;
 
 import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.EventoSalidaDto;
 import com.kevinolarte.resibenissa.dto.out.moduloOrgSalida.EventoSalidaResponseDto;
-import com.kevinolarte.resibenissa.enums.moduloOrgSalida.EstadoSalida;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
@@ -12,14 +11,15 @@ import com.kevinolarte.resibenissa.services.ResidenciaService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.chrono.ChronoLocalDate;
+import java.util.List;
+
 /**
  * Servicio que gestiona las operaciones relacionadas con los eventos de salida.
  * <p>
- * Permite registrar nuevos eventos, cambiar su estado y consultarlos por su ID.
- * Valida la integridad de los datos antes de realizar las operaciones.
+ * Permite registrar nuevos eventos, actualizar información, cambiar su estado,
+ * eliminar eventos y realizar consultas personalizadas sobre eventos de salida asociados a una residencia.
  * </p>
+ *
  * @author Kevin Olarte
  */
 @Service
@@ -31,16 +31,13 @@ public class EventoSalidaService {
 
 
     /**
-     * Registra un nuevo evento de salida en la base de datos.
-     * <p>
-     * Valida que todos los campos obligatorios estén presentes, que la fecha sea válida
-     * (no anterior a la actual), que la residencia exista y que el nombre del evento sea único en la residencia.
-     * </p>
+     * Registra un nuevo evento de salida en una residencia específica.
      *
      * @param input Objeto DTO que contiene los datos del nuevo evento.
-     * @return EventoSalidaResponseDto con los datos del evento guardado.
-     * @throws ApiException si falta algún campo obligatorio, la fecha es inválida, la residencia no existe
-     *                      o el nombre del evento está duplicado en la misma residencia.
+     * @param idResidencia ID de la residencia donde se creará el evento.
+     * @return DTO con los datos del evento guardado.
+     * @throws ApiException Si falta algún campo obligatorio, la fecha es inválida,
+     *                      la residencia no existe o el nombre ya está en uso en esa residencia.
      */
     public EventoSalidaResponseDto addEventoSalida(EventoSalidaDto input, Long idResidencia) {
         if (input.getNombre() == null || input.getNombre().trim().isEmpty() || input.getDescripcion() == null || input.getDescripcion().trim().isEmpty()
@@ -73,6 +70,16 @@ public class EventoSalidaService {
         return new EventoSalidaResponseDto(newEventoSalida);
     }
 
+    /**
+     * Actualiza los datos de un evento de salida existente.
+     * <p>
+     *     Unicamente se puede actualizar la fecha y el estado del evento.
+     *
+     * @param input DTO con los datos actualizados.
+     * @param idResidencia ID de la residencia del evento.
+     * @param idEventoSalida ID del evento a actualizar.
+     * @return DTO con los datos del evento actualizado.
+     */
     public EventoSalidaResponseDto updateEventoSalida(EventoSalidaDto input,
                                                       Long idResidencia, Long idEventoSalida) {
         if(idResidencia == null || idEventoSalida == null) {
@@ -101,48 +108,17 @@ public class EventoSalidaService {
         return new EventoSalidaResponseDto(eventoSalidaRepository.save(eventoSalida));
     }
 
+
     /**
-     * Cambiar el estado de un evento de salida.
-     * <p>
-     *     * Este método permite cambiar el estado de un evento de salida existente.
-     * @param idEventoSalida ID del evento de salida a modificar.
-     * @param estado Nuevo estado a establecer.
-     * @return EventoSalidaResponseDto con los datos del evento de salida actualizado.
-     * @throws ApiException si el ID del evento de salida o el estado son nulos, si el evento de salida no existe,
-     *          o si la fecha es invalida.
+     * Elimina un evento de salida.
      *
+     * @param idEventoSalida ID del evento de salida a eliminar.
+     * @param idResidencia   ID de la residencia asociada.
      */
-    public EventoSalidaResponseDto changeEstado(Long idEventoSalida, EstadoSalida estado) {
-        if (idEventoSalida == null || estado == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-
-        // Validar que el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaRepository.findById(idEventoSalida).orElse(null);
-        if (eventoSalida == null) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
-
-        // Comprobar la fecha del evento si ya a pasado
-        if (eventoSalida.getFechaInicio().isBefore(java.time.LocalDate.now())) {
-            throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
-        }
-
-        // Validar que el estado no sea el mismo que el actual
-        if (eventoSalida.getEstado() == estado) {
-            return new EventoSalidaResponseDto(eventoSalida);
-        }
-
-        // Cambiar el estado del evento de salida
-        eventoSalida.setEstado(estado);
-        return new EventoSalidaResponseDto(eventoSalidaRepository.save(eventoSalida));
-    }
-
-    public EventoSalidaResponseDto deleteEventoSalida(Long idEventoSalida, Long idResidencia) {
+    public void deleteEventoSalida(Long idEventoSalida, Long idResidencia) {
         if (idEventoSalida == null || idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
-
         // Validar que el evento de salida existe
         EventoSalida eventoSalida = eventoSalidaRepository
                 .findById(idEventoSalida)
@@ -153,8 +129,7 @@ public class EventoSalidaService {
             throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
         }
 
-        eventoSalidaRepository.delete(eventoSalida);
-        return new EventoSalidaResponseDto(eventoSalida);
+        eventoSalidaRepository.findById(idEventoSalida).ifPresent(eventoSalidaRepository::delete);
     }
 
     /**
@@ -170,4 +145,82 @@ public class EventoSalidaService {
     public EventoSalida findById(Long id) {
         return eventoSalidaRepository.findById(id).orElse(null);
     }
+
+    /**
+     * Recupera un evento de salida específico por su ID y residencia.
+     *
+     * @param idEventoSalida ID del evento de salida.
+     * @param idResidencia ID de la residencia asociada.
+     * @return DTO del evento de salida encontrado.
+     */
+    public EventoSalidaResponseDto getEventoSalida(Long idEventoSalida, Long idResidencia) {
+       EventoSalida eventoSalida = validarEventoSalida(idEventoSalida, idResidencia);
+        return new EventoSalidaResponseDto(eventoSalida);
+    }
+
+    /**
+     * Lista todos los eventos de salida de una residencia aplicando filtros opcionales.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param input Filtros de estado y fecha.
+     * @return Lista de DTOs de eventos de salida que cumplen los filtros.
+     */
+    public List<EventoSalidaResponseDto> getEventoSalida(Long idResidencia, EventoSalidaDto input) {
+        if (idResidencia == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        // Validar que la residencia existe
+        Residencia res = residenciaService.findById(idResidencia);
+        if (res == null) {
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+
+
+        List<EventoSalida> eventosSalida;
+        if (input == null || (input.getEstado() == null && input.getFecha() == null)) {
+            //Devuelve todos los eventos de salida que pertenezcan a ese idResidencia
+            eventosSalida = eventoSalidaRepository.findByResidenciaId(idResidencia);
+        }else if (input.getEstado() == null) {
+            //Devuelve todos los eventos de salida que pertenezcan a ese idResidencia y a esa fecha.
+            eventosSalida = eventoSalidaRepository.findByFechaInicioAndResidenciaId(input.getFecha(), idResidencia);
+        }else if (input.getFecha() == null) {
+            //Devuelve todos los eventos de salida que pertenezcan a ese idResidencia y a ese estado.
+            eventosSalida = eventoSalidaRepository.findByEstadoAndResidenciaId(input.getEstado(), idResidencia);
+        }else {
+            //Devuelve todos los eventos de salida que pertenezcan a ese idResidencia, a esa fecha y a ese estado.
+            eventosSalida = eventoSalidaRepository.findByFechaInicioAndEstadoAndResidenciaId(input.getFecha(), input.getEstado(), idResidencia);
+        }
+
+        return eventosSalida.stream()
+                .map(EventoSalidaResponseDto::new)
+                .toList();
+
+    }
+
+    /**
+     * Valida que un evento de salida pertenezca a una residencia.
+     *
+     * @param idEventoSalida ID del evento.
+     * @param idResidencia ID de la residencia.
+     * @return EventoSalida si la validación es exitosa.
+     */
+    private EventoSalida validarEventoSalida(Long idEventoSalida, Long idResidencia) {
+        if (idEventoSalida == null || idResidencia == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        // Validar que el evento de salida existe
+        EventoSalida eventoSalida = eventoSalidaRepository
+                .findById(idEventoSalida)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO));;
+
+        // Validar que el evento de salida pertenece a la residencia
+        if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+
+        return eventoSalida;
+    }
+
 }

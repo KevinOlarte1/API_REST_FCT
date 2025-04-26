@@ -46,7 +46,8 @@ public enum ApiErrorCode {
     PARTICIPANTE_YA_REGISTRADO(1022,"Este residente ya participa en otro evento ese mismo dia" ,HttpStatus.NOT_ACCEPTABLE),
     EVENTO_SALIDA_INVALIDO(1023,"EventoSalida invalida" ,HttpStatus.NOT_FOUND),
     EVENTO_SALIDA_NO_DISPONIBLE(1024, "No se puede hacer nada con este evento ciertos problemas", HttpStatus.BAD_REQUEST),
-    PARTICIPANTE_INVALIDO(1025, "No existe ningun participante en ese evento" , HttpStatus.NOT_FOUND);
+    PARTICIPANTE_INVALIDO(1025, "No existe ningun participante en ese evento" , HttpStatus.NOT_FOUND),
+    PARTICIPANTE_INMUTABLE(1026, "No se puede hacer esta operacion con el participante porque ahora mismo es inmutable", HttpStatus.NOT_ACCEPTABLE);
 
 
     private final int code;

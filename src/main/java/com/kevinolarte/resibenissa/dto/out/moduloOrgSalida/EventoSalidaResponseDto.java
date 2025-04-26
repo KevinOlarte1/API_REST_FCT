@@ -30,6 +30,7 @@ public class EventoSalidaResponseDto {
     private LocalDate fechaInicio;
     private EstadoSalida estado;
     private List<Long> participantes;
+    private Long idResidencia;
 
     public EventoSalidaResponseDto(EventoSalida e) {
         this.id = e.getId();
@@ -40,5 +41,6 @@ public class EventoSalidaResponseDto {
         this.participantes = e.getParticipantes().stream()
                 .map(Participante::getId)
                 .toList();
+        this.idResidencia = e.getResidencia().getId();
     }
 }
