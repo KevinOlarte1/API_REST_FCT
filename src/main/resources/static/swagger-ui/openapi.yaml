@@ -1222,6 +1222,347 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
+  /resi/{idResidencia}/evento/{idSalida}/participante/add:
+    post:
+      tags:
+        - Modulo Evento Salida
+      summary: Añadir un participante
+      description: Registra un nuevo participante en un evento de salida.
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idSalida
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Participante.Dto'
+      responses:
+        '200':
+          description: Participante añadido correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participante.ResponseDto'
+        '400':
+          description: Datos nulos/vacios o el evento no esta disponible.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+                EVENTO_SALIDA_NO_DISPONIBLE:
+                  value:
+                    mensaje: No se puede hacer nada con este evento ciertos problemas
+                    codigo: 1024
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+            description: Evento/Residente no existe en esa residencia.
+            content:
+              application/json:
+                schema:
+                    $ref: '#/components/schemas/Error.ResponseDto'
+                examples:
+                  EVENTO_SALIDA_INVALIDO:
+                    value:
+                      mensaje: Evento de salida invalido
+                      codigo: 1023
+                      status: 404
+                      timestamp: 2025-04-13T21:00:00
+                  RESIDENTE_INVALIDO:
+                    value:
+                      mensaje: Residente invalido
+                      codigo: 1009
+                      status: 404
+                      timestamp: 2025-04-13T21:00:00
+        '406':
+            description: Este residente ya participa en otro evento ese mismo dia
+            content:
+              application/json:
+                schema:
+                    $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  PARTICIPANTE_REGISTRADO:
+                    value:
+                      mensaje: Este residente ya participa en otro evento ese mismo dia
+                      codigo: 1022
+                      status: 406
+                      timestamp: 2025-04-13T21:00:00
+
+
+  /resi/{idResidencia}/evento/{idSalida}/participante/{idParticipante}/get:
+    get:
+      tags:
+        - Modulo Evento Salida
+      summary: Obtener un participante
+      description: Obtiene los datos de un participante específico en un evento de salida.
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idSalida
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idParticipante
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Participante encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participante.ResponseDto'
+        '400':
+          description: campos nulos/vacios.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Evento/Participante no  existe en esa residencia.
+          content:
+              application/json:
+                  schema:
+                      $ref: '#/components/schemas/Error.ResponseDto'
+                  examples:
+                    EVENTO_SALIDA_INVALIDO:
+                      value:
+                        mensaje: Evento de salida invalido
+                        codigo: 1023
+                        status: 404
+                        timestamp: 2025-04-13T21:00:00
+                    PARTICIPANTE_INVALIDO:
+                      value:
+                          mensaje: Participante invalido
+                          codigo: 1025
+                          status: 404
+                          timestamp: 2025-04-13T21:00:00
+  /resi/{idResidencia}/evento/{idSalida}/participante/getAll:
+    get:
+      tags:
+        - Modulo Evento Salida
+      summary: Listar participantes
+      description: Lista todos los participantes de un evento de salida, con filtros opcionales.
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idSalida
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Participante.Dto'
+      responses:
+        '200':
+          description: Lista de participantes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participante.ResponseDto'
+        '400':
+          description: Campos nulos/vacios.
+          content:
+              application/json:
+                schema:
+                    $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Evento invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                EVENTO_SALIDA_INVALIDO:
+                  value:
+                    mensaje: Evento de salida invalido
+                    codigo: 1023
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/{idResidencia}/evento/{idSalida}/participante/{idParticipante}/update:
+    patch:
+      tags:
+        - Modulo Evento Salida
+      summary: Actualizar participante
+      description: Actualiza los datos de un participante existente en un evento de salida.
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idSalida
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idParticipante
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Participante.Dto'
+      responses:
+        '200':
+          description: Participante actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participante.ResponseDto'
+        '400':
+          description: campos nulos/vacios o el evento no esta disponible.
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                  CAMPOS_OBLIGATORIOS:
+                    value:
+                        mensaje: Faltan campos obligatorios
+                        codigo: 1001
+                        status: 400
+                        timestamp: 2025-04-13T21:00:00
+                  EVENTO_SALIDA_NO_DISPONIBLE:
+                    value:
+                        mensaje: No se puede hacer nada con este evento ciertos problemas
+                        codigo: 1024
+                        status: 400
+                        timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Evento/Particicpante Invalido
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                  EVENTO_SALIDA_INVALIDO:
+                    value:
+                        mensaje: Evento de salida invalido
+                        codigo: 1023
+                        status: 404
+                        timestamp: 2025-04-13T21:00:00
+                  PARTICIPANTE_INVALIDO:
+                    value:
+                        mensaje: Participante invalido
+                        codigo: 1025
+                        status: 404
+                        timestamp: 2025-04-13T21:00:00
+
+  /resi/{idResidencia}/evento/{idSalida}/participante/{idParticipante}/delete:
+    delete:
+      tags:
+        - Modulo Evento Salida
+      summary: Eliminar participante
+      description: Elimina un participante de un evento de salida.
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idSalida
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idParticipante
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Participante eliminado correctamente
+        '404':
+          description: Evento/Particicpante Invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                EVENTO_SALIDA_INVALIDO:
+                  value:
+                    mensaje: Evento de salida invalido
+                    codigo: 1023
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+                PARTICIPANTE_INVALIDO:
+                  value:
+                    mensaje: Participante invalido
+                    codigo: 1025
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '406':
+          description: Participante inmutable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                PARTICIPANTE_INMUTABLE:
+                  value:
+                    mensaje: No se puede hacer esta operacion con el participante porque ahora mismo es inmutable
+                    codigo: 1026
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+
+
+
+
+
+
+
 
 components:
   schemas:
@@ -1478,6 +1819,43 @@ components:
           type: string
           format: date-time
           example: "2025-04-16T10:15:30"
+
+    Participante.Dto:
+      type: object
+      properties:
+        idResidente:
+          type: integer
+          example: 1
+        asistencia:
+          type: boolean
+          example: true
+        preOpinion:
+          type: string
+          example: Me va gustar mucho
+
+    Participante.ResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        idSalida:
+            type: integer
+            example: 1
+        idResidente:
+            type: integer
+            example: 1
+        ayuda:
+            type: boolean
+            example: true
+        preOpinion:
+            type: string
+            example: Me va gustar mucho
+        postOpinion:
+            type: string
+            example: Me gusto mucho
+
+
 
     Error.ResponseDto:
       type: object

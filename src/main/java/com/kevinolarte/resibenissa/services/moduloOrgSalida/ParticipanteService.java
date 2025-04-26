@@ -8,16 +8,23 @@ import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
 import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
-import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.EventoSalidaRepository;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
 import com.kevinolarte.resibenissa.services.ResidenteService;
-import jakarta.mail.Part;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.chrono.ChronoLocalDate;
 import java.util.List;
 
+
+/**
+ * Servicio que gestiona las operaciones relacionadas con los participantes de eventos de salida.
+ * <p>
+ * Permite registrar, actualizar, eliminar, consultar y listar participantes
+ * asociados a eventos de salida en una residencia.
+ * </p>
+ *
+ * @author Kevin Olarte
+ */
 @Service
 @AllArgsConstructor
 public class ParticipanteService {
@@ -27,6 +34,17 @@ public class ParticipanteService {
     private final ResidenteService residenteService;
 
 
+    /**
+     * Registra un nuevo participante en un evento de salida.
+     *
+     * @param input DTO con los datos del participante.
+     * @param idEventoSalida ID del evento de salida.
+     * @param idResidencia ID de la residencia asociada.
+     * @return DTO del participante creado.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el residente son inválidos,
+     *                      el evento no pertenece a la residencia, el evento está cerrado o ya ha finalizado,
+     *                      o el residente ya participa en otra salida el mismo día.
+     */
     public ParticipanteResponseDto addParticipante(ParticipanteDto input,
                                                    Long idEventoSalida, Long idResidencia) {
         if (idEventoSalida == null || input.getIdResidente() == null || input.getAsistencia() == null || idResidencia == null) {
@@ -83,6 +101,17 @@ public class ParticipanteService {
         return new ParticipanteResponseDto(participanteRepository.save(participante));
     }
 
+    /**
+     * Actualiza los datos de un participante existente.
+     *
+     * @param input DTO con los nuevos datos.
+     * @param idResidencia ID de la residencia.
+     * @param idEventoSalida ID del evento de salida.
+     * @param idParticipante ID del participante.
+     * @return DTO del participante actualizado.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      el evento no pertenece a la residencia, o el evento está cerrado.
+     */
     public ParticipanteResponseDto updateParticipante(ParticipanteDto input,
                                                       Long idResidencia, Long idEventoSalida, Long idParticipante) {
         if (idEventoSalida == null || idResidencia == null || idParticipante == null) {
@@ -139,6 +168,16 @@ public class ParticipanteService {
         return new ParticipanteResponseDto(participanteRepository.save(participante));
     }
 
+    /**
+     * Elimina un participante de un evento de salida.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante a eliminar.
+     * @return DTO del participante eliminado.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      el evento no pertenece a la residencia o ya ha finalizado.
+     */
     public ParticipanteResponseDto deleteParticipante(Long idResidencia, Long idEvento, Long idParticipante) {
         if (idResidencia == null || idEvento == null || idParticipante == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -152,7 +191,7 @@ public class ParticipanteService {
 
         // Verificar si el evento de salida pertenece a la residencia
         if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
 
         // Verificar si el participante existe
@@ -174,6 +213,16 @@ public class ParticipanteService {
         return new ParticipanteResponseDto(participante);
     }
 
+    /**
+     * Obtiene los datos de un participante específico.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante.
+     * @return DTO del participante encontrado.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      o no pertenecen a la residencia o evento.
+     */
     public ParticipanteResponseDto getParticipante(Long idResidencia, Long idEvento, Long idParticipante) {
         if (idResidencia == null || idEvento == null || idParticipante == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -186,7 +235,7 @@ public class ParticipanteService {
         }
         // Verificar si el evento de salida pertenece a la residencia
         if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
 
 
@@ -204,6 +253,15 @@ public class ParticipanteService {
 
     }
 
+    /**
+     * Lista todos los participantes de un evento de salida, aplicando filtros opcionales.
+     *
+     * @param idResdencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param input DTO con filtros de búsqueda (opcional).
+     * @return Lista de participantes encontrados.
+     * @throws ApiException si falta algún campo obligatorio o el evento es inválido.
+     */
     public List<ParticipanteResponseDto> getParticiapnte(Long idResdencia, Long idEvento, ParticipanteDto input){
         if (idResdencia == null || idEvento == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -217,7 +275,7 @@ public class ParticipanteService {
 
         // Verificar si el evento de salida pertenece a la residencia
         if (!eventoSalida.getResidencia().getId().equals(idResdencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
 
         //Verificar si tiene el filtrado de asistencia o no.
