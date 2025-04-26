@@ -1559,6 +1559,8 @@ paths:
 
   /resi/{idResidencia}/evento/add:
     post:
+      tags:
+        - Modulo Evento Salida
       summary: Crear un nuevo evento de salida
       description: Crea un nuevo evento de salida asociado a una residencia.
       parameters:
@@ -1635,6 +1637,8 @@ paths:
                     timestamp: 2025-04-13T21:00:00
   /resi/{idResidencia}/evento/{idEventoSalida}/update:
     patch:
+      tags:
+        - Modulo Evento Salida
       summary: Actualizar un evento de salida
       description: Actualiza la fecha y el estado de un evento de salida existente.
       parameters:
@@ -1691,6 +1695,8 @@ paths:
                   timestamp: 2025-04-13T21:00:00
   /resi/{idResidencia}/evento/{idEventoSalida}/delete:
     delete:
+      tags:
+        - Modulo Evento Salida
       summary: Eliminar un evento de salida
       description: Elimina un evento de salida, incluyendo sus participantes asociados.
       parameters:
@@ -1736,6 +1742,8 @@ paths:
 
   /resi/{idResidencia}/evento/{idEventoSalida}/get:
     get:
+      tags:
+        - Modulo Evento Salida
       summary: Obtener un evento de salida
       description: Obtiene los datos de un evento de salida específico.
       parameters:
@@ -1787,6 +1795,8 @@ paths:
 
   /resi/{idResidencia}/evento/getAll:
     get:
+      tags:
+        - Modulo Evento Salida
       summary: Listar eventos de salida
       description: Lista todos los eventos de salida de una residencia, con filtros opcionales.
       parameters:
@@ -1837,14 +1847,6 @@ paths:
                     codigo: 1006
                     status: 404
                     timestamp: 2025-04-13T21:00:00
-
-
-
-
-
-
-
-
 
 components:
   schemas:

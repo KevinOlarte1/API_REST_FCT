@@ -75,6 +75,16 @@ public class RegistroJuegoController {
 
     }
 
+    @PatchMapping("/update")
+    public ResponseEntity<RegistroJuegoResponseDto> update(
+            @RequestParam Long idResidencia,
+            @RequestParam Long idJuego,
+            @RequestParam Long idRegistroJuego,
+            @RequestBody RegistroJuegoDto registroJuegoDto){
+        RegistroJuegoResponseDto registroTmp = registroJuegoService.updateRegistro(idResidencia, idJuego, idRegistroJuego, registroJuegoDto);
+        return ResponseEntity.ok(registroTmp);
+    }
+
     /**
      * Elimina un registro de juego del sistema.
      * <p>

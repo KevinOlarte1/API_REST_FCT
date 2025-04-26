@@ -14,6 +14,8 @@ import com.kevinolarte.resibenissa.services.ResidenteService;
 import com.kevinolarte.resibenissa.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 import java.util.List;
@@ -88,6 +90,34 @@ public class RegistroJuegoService {
         return new RegistroJuegoResponseDto(registro);
     }
 
+
+    public RegistroJuegoResponseDto updateRegistro(Long idResidencia, Long idJuego, Long idRegistroJuego, RegistroJuegoDto input){
+       if (idResidencia == null || idJuego == null || idRegistroJuego == null || input == null)
+           throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+
+        //Comprobar si el juego existe
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        //Comprobar si el juego pertence a la residencia
+        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
+
+        //Comprobar si existe el registro de juego
+        RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego).orElse(null);
+        if (registroJuego == null)
+            throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
+        //Comprobar si el registro pertenece al juego
+        if (!Objects.equals(registroJuego.getJuego().getId(), idJuego))
+            throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
+
+        //Comprobar si tiene observaciones el input
+        if (input.getObservacion() != null){
+            registroJuego.setObservacion(input.getObservacion());
+        }
+        return new RegistroJuegoResponseDto(registroJuego);
+    }
 
 
     /**
