@@ -842,7 +842,7 @@ paths:
   /resi/juegos/add:
     post:
       tags:
-        - Juego
+        - Modulo Juego
       summary: Registrar un juego.
       description: Crea un nuevo Juego validando campos obligatiorios, unicidad y que la residencia donde se guarda exista.
       requestBody:
@@ -914,7 +914,7 @@ paths:
   /resi/juegos:
     get:
       tags:
-        - Juego
+        - Modulo Juego
       summary: Obtener juegos
       description: Devuelve una lista de juegos. Si se indica el id de la residencia sacara una lista de juegos de esa residencia.
       parameters:
@@ -961,7 +961,7 @@ paths:
   /resi/juegos/remove:
     delete:
       tags:
-        - Juego
+        - Modulo Juego
       summary: Eliminar una Juego.
       description: Elimina un juego en cascada, con todas las entidades relacionadas a el.
       parameters:
@@ -1008,7 +1008,7 @@ paths:
   /resi/juegos/stats/add:
     post:
       tags:
-        - Juego
+        - Modulo Juego
       summary: Registrar un nuevo registro de juego.
       description: Crea un nuevo registro de juego validando campos obligatorios,existencia de las referencias y valores validos.
       requestBody:
@@ -1107,7 +1107,7 @@ paths:
   /resi/juegos/stats:
     get:
       tags:
-        - Juego
+        - Modulo Juego
       summary: Obtener juegos
       description: Devuelve una lista de juegos. Si se indica el id de la residencia sacara una lista de juegos de esa residencia.
       parameters:
@@ -1178,7 +1178,7 @@ paths:
   /resi/juegos/stats/remove:
     delete:
       tags:
-        - Juego
+        - Modulo Juego
       summary: Eliminar una Registro de juego.
       description: Elimina un Registro de juego.
       parameters:
@@ -1388,7 +1388,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Participante.Dto'
+              $ref: '#/components/schemas/Participante.GetDto'
       responses:
         '200':
           description: Lista de participantes
@@ -1452,7 +1452,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Participante.Dto'
+              $ref: '#/components/schemas/Participante.UpdateDto'
       responses:
         '200':
           description: Participante actualizado
@@ -1832,6 +1832,26 @@ components:
         preOpinion:
           type: string
           example: Me va gustar mucho
+
+    Participante.GetDto:
+      type: object
+      properties:
+        asistencia:
+          type: boolean
+          example: true
+
+    Participante.UpdateDto:
+      type: object
+      properties:
+        asistencia:
+          type: boolean
+          example: true
+        preOpinion:
+          type: string
+          example: Me va gustar mucho
+        postOpinion:
+            type: string
+            example: Me gusto mucho
 
     Participante.ResponseDto:
       type: object

@@ -36,7 +36,7 @@ public class EventoSalidaService {
      * @param input Objeto DTO que contiene los datos del nuevo evento.
      * @param idResidencia ID de la residencia donde se creará el evento.
      * @return DTO con los datos del evento guardado.
-     * @throws ApiException Si falta algún campo obligatorio, la fecha es inválida,
+     * @throws ApiException si falta algún campo obligatorio, la fecha es inválida,
      *                      la residencia no existe o el nombre ya está en uso en esa residencia.
      */
     public EventoSalidaResponseDto addEventoSalida(EventoSalidaDto input, Long idResidencia) {
@@ -73,12 +73,14 @@ public class EventoSalidaService {
     /**
      * Actualiza los datos de un evento de salida existente.
      * <p>
-     *     Unicamente se puede actualizar la fecha y el estado del evento.
+     * Permite modificar únicamente la fecha y el estado del evento.
+     * </p>
      *
      * @param input DTO con los datos actualizados.
      * @param idResidencia ID de la residencia del evento.
      * @param idEventoSalida ID del evento a actualizar.
      * @return DTO con los datos del evento actualizado.
+     * @throws ApiException si los IDs son inválidos, el evento no existe o no pertenece a la residencia.
      */
     public EventoSalidaResponseDto updateEventoSalida(EventoSalidaDto input,
                                                       Long idResidencia, Long idEventoSalida) {
@@ -93,7 +95,7 @@ public class EventoSalidaService {
 
         // Validar si ese evento existe en esa residencia
         if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
 
         //Comprobar si la fecha no es anterior a la actual
@@ -110,10 +112,11 @@ public class EventoSalidaService {
 
 
     /**
-     * Elimina un evento de salida.
+     * Elimina un evento de salida de la residencia.
      *
      * @param idEventoSalida ID del evento de salida a eliminar.
-     * @param idResidencia   ID de la residencia asociada.
+     * @param idResidencia ID de la residencia asociada.
+     * @throws ApiException si el evento no existe o no pertenece a la residencia.
      */
     public void deleteEventoSalida(Long idEventoSalida, Long idResidencia) {
         if (idEventoSalida == null || idResidencia == null) {
@@ -126,32 +129,29 @@ public class EventoSalidaService {
 
         // Validar que el evento de salida pertenece a la residencia
         if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
 
         eventoSalidaRepository.findById(idEventoSalida).ifPresent(eventoSalidaRepository::delete);
     }
 
     /**
-     * Busca un evento de salida por su ID.
-     * <p>
-     * Este método permite recuperar un evento de salida existente en la base de datos
-     * utilizando su ID único.
-     * </p>
+     * Recupera un evento de salida por su ID.
      *
      * @param id ID del evento de salida a buscar.
-     * @return EventoSalida con los datos del evento encontrado, o null si no se encuentra.
+     * @return EventoSalida encontrado, o null si no existe.
      */
     public EventoSalida findById(Long id) {
         return eventoSalidaRepository.findById(id).orElse(null);
     }
 
     /**
-     * Recupera un evento de salida específico por su ID y residencia.
+     * Obtiene un evento de salida específico por su ID y residencia.
      *
      * @param idEventoSalida ID del evento de salida.
      * @param idResidencia ID de la residencia asociada.
      * @return DTO del evento de salida encontrado.
+     * @throws ApiException si el evento no existe o no pertenece a la residencia.
      */
     public EventoSalidaResponseDto getEventoSalida(Long idEventoSalida, Long idResidencia) {
        EventoSalida eventoSalida = validarEventoSalida(idEventoSalida, idResidencia);
@@ -162,8 +162,9 @@ public class EventoSalidaService {
      * Lista todos los eventos de salida de una residencia aplicando filtros opcionales.
      *
      * @param idResidencia ID de la residencia.
-     * @param input Filtros de estado y fecha.
-     * @return Lista de DTOs de eventos de salida que cumplen los filtros.
+     * @param input Filtros de búsqueda por estado y fecha (opcional).
+     * @return Lista de DTOs de eventos de salida encontrados.
+     * @throws ApiException si la residencia no existe o los datos son inválidos.
      */
     public List<EventoSalidaResponseDto> getEventoSalida(Long idResidencia, EventoSalidaDto input) {
         if (idResidencia == null){
@@ -175,6 +176,8 @@ public class EventoSalidaService {
         if (res == null) {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
+
+
 
 
         List<EventoSalida> eventosSalida;
@@ -199,11 +202,12 @@ public class EventoSalidaService {
     }
 
     /**
-     * Valida que un evento de salida pertenezca a una residencia.
+     * Valida que un evento de salida pertenezca a una residencia específica.
      *
-     * @param idEventoSalida ID del evento.
+     * @param idEventoSalida ID del evento de salida.
      * @param idResidencia ID de la residencia.
-     * @return EventoSalida si la validación es exitosa.
+     * @return EventoSalida validado.
+     * @throws ApiException si el evento no existe o no pertenece a la residencia.
      */
     private EventoSalida validarEventoSalida(Long idEventoSalida, Long idResidencia) {
         if (idEventoSalida == null || idResidencia == null) {
@@ -217,7 +221,7 @@ public class EventoSalidaService {
 
         // Validar que el evento de salida pertenece a la residencia
         if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
 
         return eventoSalida;
