@@ -97,14 +97,28 @@ public class EventoSalidaService {
         if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
             throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
+        // Validar que la fecha no sea anterior a la fecha actual
+        if (input.getFecha() != null && input.getFecha().isBefore(java.time.LocalDate.now())) {
+            throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
+        }
 
         //Comprobar si la fecha no es anterior a la actual
-        if (input.getFecha() != null && !input.getFecha().isBefore(java.time.LocalDate.now())) {
+        if (input.getFecha() != null) {
             eventoSalida.setFechaInicio(input.getFecha());
         }
 
         if (input.getEstado() != null) {
             eventoSalida.setEstado(input.getEstado());
+        }
+        if (input.getNombre() != null) {
+            // Comprobar si ya existe un evento de salida con ese nombre en esa residencia
+            if (eventoSalidaRepository.existsByNombreAndResidenciaId(input.getNombre(), idResidencia)) {
+                throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
+            }
+            eventoSalida.setNombre(input.getNombre());
+        }
+        if (input.getDescripcion() != null) {
+            eventoSalida.setDescripcion(input.getDescripcion());
         }
 
         return new EventoSalidaResponseDto(eventoSalidaRepository.save(eventoSalida));
