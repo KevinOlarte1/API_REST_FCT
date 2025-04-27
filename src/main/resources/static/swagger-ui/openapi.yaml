@@ -310,17 +310,6 @@ paths:
                     timestamp: 2025-04-13T21:00:0
 
 
-
-
-
-
-
-
-
-
-
-
-
   /resi/add:
     post:
       tags:
@@ -334,14 +323,14 @@ paths:
             schema:
               $ref: '#/components/schemas/Residencia.Dto'
       responses:
-        '200':
+        '201':
           description: Residencia registrada con éxito
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Residencia.ResponseDto'
         '400':
-          description: Datos nulos/vacios
+          description: Datos del cuerpo nulos/vacios
           content:
             application/json:
               schema:
@@ -380,7 +369,7 @@ paths:
                     status: 406
                     timestamp: 2025-04-13T21:00:0
         '409':
-          description: Email o nombre ya existe
+          description: Email o nombre que han sido ingreado en el cuerpo ya existen en otra residencia.
           content:
             application/json:
               schema:
@@ -399,33 +388,52 @@ paths:
                     status: 409
                     timestamp: 2025-04-13T21:00:00
 
-  /resi:
+  /resi/{idResidencia}/get:
     get:
       tags:
         - Residencia
-      summary: Obtener residencias
-      description: Devuelve una lista de residencias. Si se indica un ID, devuelve solo esa residencia.
+      summary: Busca la residencia por id ingresado en el path
+      description: Devuelve un dto Response con la residencia encontrada.
       parameters:
         - name: idResidencia
           in: query
-          required: false
+          required: true
           schema:
             type: integer
             format: int64
       responses:
         '200':
-          description: Residencia(s) encontrada(s)
+          description: Residencia encontrada
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Residencia.ResponseDto'
+                $ref: '#/components/schemas/Residencia.ResponseDto'
         '400':
-          description: Error al recuperar residencias
+          description: Datos nulos/vacios de la variable de la url
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Residencia invalida, no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
         '405':
           description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
           content:
@@ -440,7 +448,7 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/remove:
+  /resi/{idResidencia}/delete:
     delete:
       tags:
         - Residencia
@@ -454,12 +462,8 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
-          description: Residencia borrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Residencia.ResponseDto'
+        '204':
+          description: Residencia borrada correctamente
         '404':
           description: Residencia invalida, no encontrada
           content:
