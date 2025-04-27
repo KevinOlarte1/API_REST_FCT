@@ -47,7 +47,9 @@ public enum ApiErrorCode {
     EVENTO_SALIDA_INVALIDO(1023,"EventoSalida invalida" ,HttpStatus.NOT_FOUND),
     EVENTO_SALIDA_NO_DISPONIBLE(1024, "No se puede hacer nada con este evento ciertos problemas", HttpStatus.BAD_REQUEST),
     PARTICIPANTE_INVALIDO(1025, "Participante invalido" , HttpStatus.NOT_FOUND),
-    PARTICIPANTE_INMUTABLE(1026, "No se puede hacer esta operacion con el participante porque ahora mismo es inmutable", HttpStatus.NOT_ACCEPTABLE);
+    PARTICIPANTE_INMUTABLE(1026, "No se puede hacer esta operacion con el participante porque ahora mismo es inmutable", HttpStatus.NOT_ACCEPTABLE),
+    DOCUMENTO_INVALIDO(1027,"El docuemnto de identidad no tiene el formato correcto" ,HttpStatus.NOT_ACCEPTABLE),
+    DOCUMENTO_DUPLICADO(1028,"El docuemnto de identidad debe ser unico" ,HttpStatus.CONFLICT );
 
 
     private final int code;

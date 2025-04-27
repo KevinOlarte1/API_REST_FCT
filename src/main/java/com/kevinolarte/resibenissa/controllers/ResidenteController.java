@@ -12,82 +12,57 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
-/**
- * Controlador REST que gestiona las operaciones relacionadas con los residentes del sistema.
- * <p>
- * Permite registrar nuevos residentes y recuperar residentes filtrando por residencia o ID individual.
- * Este controlador forma parte del módulo de gestión de residencias.
- * </p>
- *
- * Ruta base: <b>/resi/residents</b>
- *
- * @author Kevin Olarte
- */
-@RequestMapping("/resi/residents")
+
+@RequestMapping("/resi/{idResidencia}/resident")
 @RestController
 @AllArgsConstructor
 public class ResidenteController {
     private final ResidenteService residenteService;
 
-    /**
-     * Registra un nuevo residente en una residencia existente.
-     * <p>
-     * Valida que los campos requeridos no estén vacíos, que la fecha de nacimiento sea válida
-     * y que la residencia especificada exista.
-     * </p>
-     *
-     * @param residenteDto DTO con los datos del residente a crear.
-     * @return {@link ResponseEntity} con los datos del residente registrado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si hay errores de validación o la residencia no existe.
-     */
+
     @PostMapping("/add")
-    public ResponseEntity<ResidenteResponseDto> addResidente(@RequestBody ResidenteDto residenteDto)throws RuntimeException {
-            ResidenteResponseDto residente = residenteService.save(residenteDto);
-            return ResponseEntity.ok().body(residente);
+    public ResponseEntity<ResidenteResponseDto> add(
+            @PathVariable Long idResidencia,
+            @RequestBody ResidenteDto residenteDto){
+
+        ResidenteResponseDto residente = residenteService.add(idResidencia, residenteDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(residente);
 
     }
 
-    /**
-     * Recupera residentes del sistema, con opciones de filtrado.
-     * <p>
-     * Puede comportarse de las siguientes maneras según los parámetros:
-     * <ul>
-     *   <li>Sin parámetros: devuelve todos los residentes.</li>
-     *   <li>Con <code>idResidencia</code>: devuelve todos los residentes asociados a esa residencia.</li>
-     *   <li>Con <code>idResidente</code>: devuelve el residente con ese ID específico.</li>
-     *   <li>Con ambos parámetros: aplica ambos filtros simultáneamente.</li>
-     * </ul>
-     * </p>
-     *
-     * @param idResidencia (opcional) ID de la residencia para filtrar los residentes.
-     * @param idResidente (opcional) ID del residente específico a recuperar.
-     * @return {@link ResponseEntity} con la lista de residentes o un único residente, dependiendo del filtro aplicado.
-     */
-    @GetMapping()
-    public ResponseEntity<List<ResidenteResponseDto>> getResidente(
-            @RequestParam(required = false) Long idResidencia,
-            @RequestParam(required = false) Long idResidente) {
 
-        return ResponseEntity.ok(residenteService.getResidentes(idResidencia, idResidente));
+    @GetMapping("/{idResidente}/get")
+    public ResponseEntity<ResidenteResponseDto> get(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idResidente) {
+
+        return ResponseEntity.ok(residenteService.get(idResidencia, idResidente));
 
     }
 
-    /**
-     * Elimina un residente del sistema.
-     * <p>
-     * Este método recibe un ID de residente como parámetro y solicita al servicio
-     * {@link ResidenteService} que elimine la entidad correspondiente.
-     * Si la eliminación es exitosa, se devuelve un DTO con los datos del residente eliminado.
-     * </p>
-     *
-     * @param idResdente ID del residente que se desea eliminar. Debe existir en el sistema.
-     * @return {@link ResponseEntity} que contiene el DTO del residente eliminado y el estado HTTP 200 (OK).
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el residente no existe.
-     */
-    @DeleteMapping("/remove")
-    public ResponseEntity<ResidenteResponseDto> remove(@RequestParam Long idResdente){
-        ResidenteResponseDto residentetmp = residenteService.remove(idResdente);
-        return ResponseEntity.ok(residentetmp);
+    @GetMapping("/getAll")
+    public ResponseEntity<List<ResidenteResponseDto>> getAll(
+            @PathVariable Long idResidencia,
+            @RequestBody(required =false) ResidenteDto filtre){
+
+        return ResponseEntity.ok(residenteService.getAll(idResidencia,filtre));
+    }
+
+    @DeleteMapping("/{idResidente}/delete")
+    public ResponseEntity<Void> remove(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idResidente) {
+        residenteService.delete(idResidencia,idResidente);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PatchMapping("/{idResidente}/update")
+    public ResponseEntity<ResidenteResponseDto> update(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idResidente,
+            @RequestBody ResidenteDto residenteDto) {
+
+        return ResponseEntity.ok(residenteService.update(idResidencia, idResidente, residenteDto));
     }
 
 

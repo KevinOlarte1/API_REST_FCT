@@ -53,8 +53,7 @@ public class ResidenciaController {
     @GetMapping("/{idResidencia}/get")
     public ResponseEntity<ResidenciaResponseDto> get(
             @PathVariable Long idResidencia) {
-        ResidenciaResponseDto residencias = residenciaService.get(idResidencia);
-        return ResponseEntity.ok(residencias);
+        return ResponseEntity.ok(residenciaService.get(idResidencia));
     }
 
 

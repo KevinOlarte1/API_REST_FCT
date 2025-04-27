@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.services;
 
 
+import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
@@ -16,14 +17,16 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Servicio encargado de gestionar la lógica relacionada con los residentes.
  * <p>
- * Permite registrar nuevos residentes, validando su información, así como
- * consultar residentes por ID, listar todos o filtrarlos por residencia.
+ * Permite registrar nuevos residentes, consultar, actualizar y eliminar residentes,
+ * validando su información y asociándolos a una residencia existente.
+ * </p>
  *
- * @author Kevin Olarte
+ * @author : Kevin Olarte
  */
 @Service
 @AllArgsConstructor
@@ -32,39 +35,44 @@ public class ResidenteService {
     private final ResidenciaService residenciaService;
 
     /**
-     * Registra un nuevo residente en el sistema a partir de los datos proporcionados.
-     * <p>
-     * Este método valida que los campos requeridos estén presentes y sean válidos, incluyendo:
-     * <ul>
-     *   <li>Nombre y apellido no nulos ni vacíos.</li>
-     *   <li>La fecha de nacimiento no puede ser posterior a la fecha actual.</li>
-     *   <li>La residencia asociada debe existir en el sistema.</li>
-     * </ul>
-     * Si alguna de estas validaciones falla, se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
-     * con un código de error correspondiente.
-     * </p>
+     * Crea un nuevo residente asociado a una residencia.
      *
+     * @param idResidencia ID de la residencia.
      * @param input DTO con los datos del residente a registrar.
-     * @return DTO de respuesta con los datos del residente registrado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si los datos de entrada son inválidos
-     *         o si la residencia especificada no existe.
+     * @return DTO del residente creado.
+     * @throws ApiException si faltan campos, datos inválidos o documentos duplicados.
      */
-    public ResidenteResponseDto save(ResidenteDto input)throws ApiException{
-        if (input.getNombre() == null || input.getApellido() == null || input.getFechaNacimiento() == null ||
-                input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty()) {
+    public ResidenteResponseDto add(Long idResidencia, ResidenteDto input)throws ApiException{
+        if (input.getNombre() == null || input.getApellido() == null || input.getFechaNacimiento() == null || input.getDocumentoIdentidad() == null ||
+                input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty() || input.getDocumentoIdentidad().trim().isEmpty() || idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
+        // Validar el formato del documento de identidad
+        input.setDocumentoIdentidad(input.getDocumentoIdentidad().trim().toUpperCase());
+        if (input.getDocumentoIdentidad().length() != 8){
+            throw new ApiException(ApiErrorCode.DOCUMENTO_INVALIDO);
+        }
+
+        // Validar que la fecha de nacimiento no sea futura
         if(input.getFechaNacimiento().isAfter(LocalDate.now())){
             throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
         }
 
-        Residencia residencia = residenciaService.findById(input.getIdResidencia());
+        // Validar que la residencia existe
+        Residencia residencia = residenciaService.findById(idResidencia);
         if(residencia == null){
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
-        Residente residente = new Residente(input.getNombre(), input.getApellido(), input.getFechaNacimiento());
+        // Validar que no existe otro residente con el mismo documento de identidad en cualquier residencia
+        Residente residenteDup = residenteRepository.findByDocuemntoIdentidad(input.getDocumentoIdentidad());
+        if (residenteDup != null){
+            throw new ApiException(ApiErrorCode.DOCUMENTO_DUPLICADO);
+        }
+
+        // Crear el nuevo residente
+        Residente residente = new Residente(input.getNombre(), input.getApellido(), input.getFechaNacimiento(), input.getDocumentoIdentidad());
         residente.setResidencia(residencia);
         Residente residenteSaved = residenteRepository.save(residente);
         return new ResidenteResponseDto(residenteSaved);
@@ -83,77 +91,170 @@ public class ResidenteService {
     }
 
     /**
-     * Obtiene la lista de todos los residentes del sistema.
+     * Obtiene un residente validando su pertenencia a una residencia específica.
      *
-     * @return Lista de residentes.
+     * @param idResidencia ID de la residencia.
+     * @param idResidente ID del residente.
+     * @return DTO del residente encontrado.
+     * @throws ApiException si los IDs no corresponden o no existe el residente.
      */
-    public List<Residente> findAll() {
-        return (List<Residente>) residenteRepository.findAll();
-    }
+    public ResidenteResponseDto get(Long idResidencia, Long idResidente){
 
-    /**
-     * Obtiene la lista de todos los residentes del sistema.
-     *
-     * @return Lista de residentes.
-     */
-    public List<Residente> findByResidencia(Long id)throws RuntimeException {
-        Residencia residencia = residenciaService.findById(id);
-        if(residencia == null){
-            throw new RuntimeException("Residencia no encontrada");
-        }
-
-
-        return residenteRepository.findByResidencia(residencia);
-    }
-
-    /**
-     * Obtiener la lista de residentes filtrados por los siguentes parametros
-     * @param idResidencia id de la residencia que pertenece
-     * @param idResidente id del residente en especifico
-     * @return una lista con el anterior filtrado.
-     */
-    public List<ResidenteResponseDto> getResidentes(Long idResidencia, Long idResidente){
-        List<Residente> residentes;
-
-        if (idResidente != null) {
-            Residente residente = residenteRepository.findById(idResidente).orElse(null);
-            if (residente != null) {
-                if (!Objects.equals(residente.getResidencia().getId(), idResidencia)) {
-                    return List.of();
-                }
-            }
-            residentes = residente != null ? List.of(residente) : List.of();
-        } else if (idResidencia != null) {
-            residentes = residenteRepository.findByResidencia_Id(idResidencia);
-        } else {
-            residentes = residenteRepository.findAll();
-        }
-
-        return residentes.stream()
-                .map(ResidenteResponseDto::new)
-                .toList();
-    }
-
-
-    /**
-     * Elimina un residente del sistema según su ID.
-     * <p>
-     * Este método busca el residente por su identificador y, si existe, lo elimina del repositorio.
-     * Si el residente no existe, se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
-     * con un código de error del enum {@link com.kevinolarte.resibenissa.exceptions.ApiErrorCode}.
-     * </p>
-     *
-     * @param idResdente ID del residente que se desea eliminar.
-     * @return DTO con la información del residente eliminado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el residente no existe en el sistema.
-     */
-    public ResidenteResponseDto remove(Long idResdente) {
-        Residente residenteTmp = residenteRepository.findById(idResdente).orElse(null);
-        if(residenteTmp == null){
-            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-        }
-        residenteRepository.delete(residenteTmp);
+        Residente residenteTmp = getResidente(idResidencia, idResidente);
 
         return new ResidenteResponseDto(residenteTmp);
+
+
     }
+
+    /**
+     * Obtiene todos los residentes de una residencia, con opción de filtrar.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param filtre Filtros aplicables (documento de identidad, fecha de nacimiento, año o mes).
+     * @return Lista de DTOs de residentes filtrados.
+     * @throws ApiException si no existe la residencia.
+     */
+    public List<ResidenteResponseDto> getAll(Long idResidencia, ResidenteDto filtre){
+        if (idResidencia == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        // Validar que la residencia existe
+        Residencia residencia = residenciaService.findById(idResidencia);
+        // Comprobar que la residencia existe
+        if(residencia == null){
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+
+        // Obtener todos los residentes de la residencia
+        List<Residente> residentesBaseList =  residenteRepository.findByResidencia(residencia);
+
+        //Filtrar
+        if (filtre != null) {
+            if (filtre.getDocumentoIdentidad() != null){
+                filtre.setDocumentoIdentidad(filtre.getDocumentoIdentidad().trim().toUpperCase());
+                // Filtrar por documento de identidad
+                residentesBaseList = residentesBaseList.stream()
+                        .filter(r -> r.getDocuemntoIdentidad().equals(filtre.getDocumentoIdentidad()))
+                        .toList();
+            }else{
+                if (filtre.getFechaNacimiento() != null){
+                    // Filtrar por fecha de nacimiento
+                    residentesBaseList = residentesBaseList.stream()
+                            .filter(r -> r.getFechaNacimiento().equals(filtre.getFechaNacimiento()))
+                            .toList();
+                }else {
+                    if (filtre.getYear() != null){
+                        // Filtrar por año de nacimiento
+                        residentesBaseList = residentesBaseList.stream()
+                                .filter(r -> r.getFechaNacimiento().getYear() == filtre.getYear())
+                                .toList();
+                    }
+                    if (filtre.getMonth() != null){
+                        // Filtrar por mes de nacimiento
+                        residentesBaseList = residentesBaseList.stream()
+                                .filter(r -> r.getFechaNacimiento().getMonthValue() == filtre.getMonth())
+                                .toList();
+                    }
+                }
+            }
+        }
+
+        return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
+    }
+
+
+    /**
+     * Elimina un residente asegurando su pertenencia a una residencia.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idResidente ID del residente.
+     * @throws ApiException si no existe el residente o no pertenece a la residencia.
+     */
+    public void delete(Long idResidencia, Long idResidente) {
+        Residente residenteTmp = getResidente(idResidencia, idResidente);
+        // Eliminar el residente
+        residenteRepository.delete(residenteTmp);
+
+    }
+
+    /**
+     * Actualiza parcialmente los datos de un residente.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idResidente ID del residente.
+     * @param input DTO con los nuevos datos a actualizar.
+     * @return DTO actualizado del residente.
+     * @throws ApiException si hay errores de validación o duplicidad de documento.
+     */
+    public ResidenteResponseDto update(Long idResidencia, Long idResidente, ResidenteDto input) {
+        if (idResidencia == null || idResidente == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        // Validar que el residente existe
+        Residente residenteUpdatable = getResidente(idResidencia, idResidente);
+
+        //Si ha añadido algun campo en el input para actualizar
+        if (input != null){
+            // Validar el formato del documento de identidad
+            if (input.getDocumentoIdentidad() != null){
+                input.setDocumentoIdentidad(input.getDocumentoIdentidad().trim().toUpperCase());
+                if (input.getDocumentoIdentidad().length() != 8){
+                    throw new ApiException(ApiErrorCode.DOCUMENTO_INVALIDO);
+                }
+
+                // Comprobar si ya existe otro residente con el mismo documento de identidad
+                Residente residenteDup = residenteRepository.findByDocuemntoIdentidad(input.getDocumentoIdentidad());
+                if (residenteDup != null){
+                    if (!Objects.equals(residenteDup.getId(), idResidente)){
+                        throw new ApiException(ApiErrorCode.DOCUMENTO_DUPLICADO);
+                    }
+
+                }else
+                    residenteUpdatable.setDocuemntoIdentidad(input.getDocumentoIdentidad());
+            }
+            if (input.getFechaNacimiento() != null){
+                // Validar que la fecha de nacimiento no sea futura
+                if(input.getFechaNacimiento().isAfter(LocalDate.now())){
+                    throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
+                }
+                residenteUpdatable.setFechaNacimiento(input.getFechaNacimiento());
+            }
+            if (input.getNombre() != null && !input.getNombre().trim().isEmpty()){
+                residenteUpdatable.setNombre(input.getNombre());
+            }
+            if (input.getApellido() != null && !input.getApellido().trim().isEmpty()){
+                residenteUpdatable.setApellido(input.getApellido());
+            }
+            // Guardar los cambios
+            residenteUpdatable = residenteRepository.save(residenteUpdatable);
+        }
+        return new ResidenteResponseDto(residenteUpdatable);
+    }
+
+    /**
+     * Obtiene un residente por ID validando su pertenencia a una residencia.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idResidente ID del residente.
+     * @return El residente encontrado.
+     * @throws ApiException si no existe o no pertenece a la residencia.
+     */
+    private Residente getResidente(Long idResidencia, Long idResidente){
+        if (idResidencia == null || idResidente == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        // Validar que el residente existe
+        Residente residenteTmp = residenteRepository.findById(idResidente).orElse(null);
+        if (residenteTmp == null){
+            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+        }
+        //Comrpobar que el residente pertenece a la residencia
+        if (!Objects.equals(residenteTmp.getResidencia().getId(), idResidencia)){
+            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+        }
+        return residenteTmp;
+    }
+
 }

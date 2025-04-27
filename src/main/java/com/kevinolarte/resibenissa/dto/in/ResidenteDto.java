@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.dto.in;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,6 +22,9 @@ public class ResidenteDto {
 
     private String nombre;
     private String apellido;
+
     private LocalDate fechaNacimiento;
-    private Long idResidencia;
+    private String documentoIdentidad;
+    private Integer year;
+    private Integer month;
 }

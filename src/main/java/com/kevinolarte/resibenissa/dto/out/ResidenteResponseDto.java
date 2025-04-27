@@ -24,6 +24,7 @@ public class ResidenteResponseDto {
     private String nombre;
     private String apellido;
     private LocalDate fechaNacimiento;
+    private String documentoIdentidad;
     private Long idResidencia;
 
     public ResidenteResponseDto(Residente residente) {
@@ -32,5 +33,6 @@ public class ResidenteResponseDto {
         this.apellido = residente.getApellido();
         this.fechaNacimiento = residente.getFechaNacimiento();
         this.idResidencia = residente.getId();
+        this.documentoIdentidad = residente.getDocuemntoIdentidad();
     }
 }

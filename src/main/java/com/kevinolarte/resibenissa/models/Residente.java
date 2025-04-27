@@ -41,13 +41,19 @@ public class Residente {
     @Column(name = "fecha_nacimiento",nullable = false)
     private LocalDate fechaNacimiento;
 
+    /**
+     * documento de identidad del residente.
+     * DNI o NIE.
+     */
+    @Column(name = "documento_identidad", nullable = false, unique = true)
+    private String docuemntoIdentidad;
 
     /**
      * Relación con la residencia donde vive este residente.
      * Múltiples residentes pueden estar en una misma residencia.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_residencia")
+    @JoinColumn(name = "fk_residencia", nullable = false)
     private Residencia residencia;
 
     /**
@@ -65,10 +71,11 @@ public class Residente {
     @JsonIgnore
     private Set<Participante> participantes = new LinkedHashSet<>();
 
-    public Residente(String nombre, String apellido, LocalDate fechaNacimiento){
+    public Residente(String nombre, String apellido, LocalDate fechaNacimiento, String documentoIdentidad) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.fechaNacimiento = fechaNacimiento;
+        this.docuemntoIdentidad = documentoIdentidad;
 
     }
 

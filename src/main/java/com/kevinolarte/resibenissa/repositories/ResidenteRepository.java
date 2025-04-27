@@ -3,6 +3,7 @@ package com.kevinolarte.resibenissa.repositories;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +17,7 @@ import java.util.List;
  * @author Kevin Olarte
  */
 @Repository
-public interface ResidenteRepository extends JpaRepository<Residente, Long> {
+public interface ResidenteRepository extends JpaRepository<Residente, Long>, JpaSpecificationExecutor<Residente>{
 
     /**
      * Obtiene todos los residentes asociados a una residencia específica.
@@ -26,11 +27,13 @@ public interface ResidenteRepository extends JpaRepository<Residente, Long> {
      */
     List<Residente> findByResidencia(Residencia residencia);
 
+
     /**
-     * Obtiene todos los residentes asociados a una residencia específica usando el ID de la residencia.
-     *
-     * @param residenciaId ID de la residencia.
-     * @return Lista de residentes asociados a esa residencia.
+     * Busca residentes por su documento de identidad.
+     * @param docuemntoIdentidad Documento de identidad del residente.
+     * @return residente que coincide con el documento de identidad proporcionado.
      */
-    List<Residente> findByResidencia_Id(Long residenciaId);
+    Residente findByDocuemntoIdentidad(String docuemntoIdentidad);
+
+    List<Residente> findByResidenciaAndDocuemntoIdentidad(Residencia residencia, String docuemntoIdentidad);
 }

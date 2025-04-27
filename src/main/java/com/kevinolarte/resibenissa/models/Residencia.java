@@ -65,8 +65,6 @@ public class Residencia {
     @JsonIgnore
     private Set<Juego> juegos = new LinkedHashSet<>();
 
-
-
     public Residencia(String nombre, String email) {
         this.nombre = nombre;
         this.email = email;
