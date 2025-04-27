@@ -20,10 +20,10 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Servicio encargado de gestionar la lógica relacionada con los residentes.
+ * Servicio encargado de gestionar la lógica de negocio relacionada con los residentes.
  * <p>
- * Permite registrar nuevos residentes, consultar, actualizar y eliminar residentes,
- * validando su información y asociándolos a una residencia existente.
+ * Permite registrar, consultar, actualizar y eliminar residentes asociados a residencias.
+ * También permite aplicar filtros básicos sobre los residentes.
  * </p>
  *
  * @author : Kevin Olarte
@@ -35,12 +35,12 @@ public class ResidenteService {
     private final ResidenciaService residenciaService;
 
     /**
-     * Crea un nuevo residente asociado a una residencia.
+     * Registra un nuevo residente asociado a una residencia.
      *
      * @param idResidencia ID de la residencia.
-     * @param input DTO con los datos del residente a registrar.
+     * @param input DTO con los datos del residente.
      * @return DTO del residente creado.
-     * @throws ApiException si faltan campos, datos inválidos o documentos duplicados.
+     * @throws ApiException en caso de datos inválidos o duplicidad de documento.
      */
     public ResidenteResponseDto add(Long idResidencia, ResidenteDto input)throws ApiException{
         if (input.getNombre() == null || input.getApellido() == null || input.getFechaNacimiento() == null || input.getDocumentoIdentidad() == null ||
@@ -82,8 +82,8 @@ public class ResidenteService {
     /**
      * Busca un residente por su ID.
      *
-     * @param id Identificador del residente.
-     * @return El residente si existe, o {@code null} en caso contrario.
+     * @param id ID del residente.
+     * @return El residente encontrado o {@code null} si no existe.
      */
     public Residente findById(long id) {
 
@@ -91,12 +91,12 @@ public class ResidenteService {
     }
 
     /**
-     * Obtiene un residente validando su pertenencia a una residencia específica.
+     * Obtiene un residente asegurando su pertenencia a una residencia.
      *
      * @param idResidencia ID de la residencia.
      * @param idResidente ID del residente.
      * @return DTO del residente encontrado.
-     * @throws ApiException si los IDs no corresponden o no existe el residente.
+     * @throws ApiException si el residente no existe o no pertenece a la residencia.
      */
     public ResidenteResponseDto get(Long idResidencia, Long idResidente){
 
@@ -108,14 +108,20 @@ public class ResidenteService {
     }
 
     /**
-     * Obtiene todos los residentes de una residencia, con opción de filtrar.
-     *
+     * Obtiene todos los residentes de una residencia, aplicando filtros opcionales.
+     * <p>
+     *     * Permite filtrar por documento de identidad, fecha de nacimiento, año o mes de nacimiento.
+     *     * Si no se aplica ningún filtro, se devuelven todos los residentes de la residencia.
+     *     </p>
      * @param idResidencia ID de la residencia.
-     * @param filtre Filtros aplicables (documento de identidad, fecha de nacimiento, año o mes).
-     * @return Lista de DTOs de residentes filtrados.
-     * @throws ApiException si no existe la residencia.
+     * @param fechaNacimiento Fecha de nacimiento del residente (opcional).
+     * @param year Año de nacimiento del residente (opcional).
+     * @param month Mes de nacimiento del residente (opcional).
+     * @param documentoIdentidad Documento de identidad del residente (opcional).
+     * @return Lista de residentes filtrados.
+     * @throws ApiException si el ID de residencia es nulo o la residencia no existe.
      */
-    public List<ResidenteResponseDto> getAll(Long idResidencia, ResidenteDto filtre){
+    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, Integer year, Integer month, String documentoIdentidad) {
         if (idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -129,36 +135,36 @@ public class ResidenteService {
         // Obtener todos los residentes de la residencia
         List<Residente> residentesBaseList =  residenteRepository.findByResidencia(residencia);
 
-        //Filtrar
-        if (filtre != null) {
-            if (filtre.getDocumentoIdentidad() != null){
-                filtre.setDocumentoIdentidad(filtre.getDocumentoIdentidad().trim().toUpperCase());
-                // Filtrar por documento de identidad
+
+        if (documentoIdentidad != null){
+            documentoIdentidad = documentoIdentidad.trim().toUpperCase();
+            // Filtrar por documento de identidad
+            String finalDocumentoIdentidad = documentoIdentidad;
+            residentesBaseList = residentesBaseList.stream()
+                    .filter(r -> r.getDocuemntoIdentidad().equals(finalDocumentoIdentidad))
+                    .toList();
+        }else{
+            if (fechaNacimiento != null){
+                // Filtrar por fecha de nacimiento
                 residentesBaseList = residentesBaseList.stream()
-                        .filter(r -> r.getDocuemntoIdentidad().equals(filtre.getDocumentoIdentidad()))
+                        .filter(r -> r.getFechaNacimiento().equals(fechaNacimiento))
                         .toList();
-            }else{
-                if (filtre.getFechaNacimiento() != null){
-                    // Filtrar por fecha de nacimiento
+            }else {
+                if (year != null){
+                    // Filtrar por año de nacimiento
                     residentesBaseList = residentesBaseList.stream()
-                            .filter(r -> r.getFechaNacimiento().equals(filtre.getFechaNacimiento()))
+                            .filter(r -> r.getFechaNacimiento().getYear() == year)
                             .toList();
-                }else {
-                    if (filtre.getYear() != null){
-                        // Filtrar por año de nacimiento
-                        residentesBaseList = residentesBaseList.stream()
-                                .filter(r -> r.getFechaNacimiento().getYear() == filtre.getYear())
-                                .toList();
-                    }
-                    if (filtre.getMonth() != null){
-                        // Filtrar por mes de nacimiento
-                        residentesBaseList = residentesBaseList.stream()
-                                .filter(r -> r.getFechaNacimiento().getMonthValue() == filtre.getMonth())
-                                .toList();
-                    }
+                }
+                if (month != null){
+                    // Filtrar por mes de nacimiento
+                    residentesBaseList = residentesBaseList.stream()
+                            .filter(r -> r.getFechaNacimiento().getMonthValue() == month)
+                            .toList();
                 }
             }
         }
+
 
         return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
     }
@@ -179,13 +185,13 @@ public class ResidenteService {
     }
 
     /**
-     * Actualiza parcialmente los datos de un residente.
+     * Actualiza los datos de un residente.
      *
      * @param idResidencia ID de la residencia.
      * @param idResidente ID del residente.
      * @param input DTO con los nuevos datos a actualizar.
-     * @return DTO actualizado del residente.
-     * @throws ApiException si hay errores de validación o duplicidad de documento.
+     * @return DTO del residente actualizado.
+     * @throws ApiException si los datos son inválidos o se detecta duplicidad de documento.
      */
     public ResidenteResponseDto update(Long idResidencia, Long idResidente, ResidenteDto input) {
         if (idResidencia == null || idResidente == null){
@@ -233,11 +239,11 @@ public class ResidenteService {
     }
 
     /**
-     * Obtiene un residente por ID validando su pertenencia a una residencia.
+     * Obtiene un residente y valida que pertenece a la residencia especificada.
      *
      * @param idResidencia ID de la residencia.
      * @param idResidente ID del residente.
-     * @return El residente encontrado.
+     * @return Residente encontrado.
      * @throws ApiException si no existe o no pertenece a la residencia.
      */
     private Residente getResidente(Long idResidencia, Long idResidente){

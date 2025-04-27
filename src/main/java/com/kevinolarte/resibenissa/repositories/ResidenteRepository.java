@@ -17,7 +17,7 @@ import java.util.List;
  * @author Kevin Olarte
  */
 @Repository
-public interface ResidenteRepository extends JpaRepository<Residente, Long>, JpaSpecificationExecutor<Residente>{
+public interface ResidenteRepository extends JpaRepository<Residente, Long>{
 
     /**
      * Obtiene todos los residentes asociados a una residencia específica.
