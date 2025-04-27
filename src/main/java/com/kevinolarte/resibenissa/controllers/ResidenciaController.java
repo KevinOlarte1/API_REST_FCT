@@ -13,15 +13,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controlador REST que maneja las operaciones relacionadas con las entidades {@link com.kevinolarte.resibenissa.models.Residencia}.
+ * Controlador que expone endpoints REST para gestionar entidades {@link Residencia}.
  * <p>
- * Este controlador permite registrar nuevas residencias y recuperar información sobre residencias existentes.
- * Utiliza los servicios {@link ResidenciaService} y {@link ResidenteService} para gestionar la lógica de negocio.
+ * Permite crear nuevas residencias, obtenerlas por ID y eliminarlas.
  * </p>
  *
- * Ruta base: <b>/resi/users</b>
+ * URL Base: {@code /resi}
  *
- * @author Kevin Olarte
+ * @author : Kevin Olarte
  */
 @RequestMapping("/resi")
 @RestController
@@ -32,58 +31,27 @@ public class ResidenciaController {
     private final ResidenteService residenteService;
 
 
-    /**
-     * Registra una nueva residencia en el sistema.
-     * <p>
-     * Este método recibe los datos de una residencia desde el cuerpo de la petición en formato JSON,
-     * valida la información mediante el servicio {@link ResidenciaService} y guarda la entidad si es válida.
-     * </p>
-     *
-     * @param residenciaDto Datos de la residencia a registrar.
-     * @return {@link ResponseEntity} con el DTO de respuesta y el estado HTTP 200 si el registro fue exitoso.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de errores de validación o duplicación.
-     */
+
     @PostMapping("/add")
-    public ResponseEntity<ResidenciaResponseDto> addResidencia(@RequestBody ResidenciaDto residenciaDto) {
+    public ResponseEntity<ResidenciaResponseDto> add(@RequestBody ResidenciaDto residenciaDto) {
             ResidenciaResponseDto residencia = residenciaService.save(residenciaDto);
-            return ResponseEntity.ok(residencia);
+            return ResponseEntity.status(HttpStatus.CREATED).body(residencia);
 
     }
 
-    /**
-     * Obtiene una o varias residencias del sistema.
-     * <p>
-     * Si se proporciona un parámetro {@code idResidencia}, se devuelve únicamente la residencia con ese ID.
-     * Si no se proporciona, se devuelven todas las residencias disponibles.
-     * </p>
-     *
-     * @param idResidencia ID de la residencia específica a buscar (opcional).
-     * @return {@link ResponseEntity} con la lista de residencias encontradas.
-     */
-    @GetMapping()
-    public ResponseEntity<List<ResidenciaResponseDto>> getResidencia(
-            @RequestParam(required = false) Long idResidencia) {
-        List<ResidenciaResponseDto> residencias = residenciaService.getResidencias(idResidencia);
+
+    @GetMapping("/{idResidencia}/get")
+    public ResponseEntity<ResidenciaResponseDto> get(
+            @PathVariable Long idResidencia) {
+        ResidenciaResponseDto residencias = residenciaService.get(idResidencia);
         return ResponseEntity.ok(residencias);
-
     }
 
-    /**
-     * Elimina una residencia del sistema.
-     * <p>
-     * Este método recibe un ID de residencia como parámetro y solicita al servicio
-     * {@link ResidenciaService} que elimine la entidad correspondiente.
-     * Si la eliminación es exitosa, se devuelve un DTO con los datos de la residencia eliminada.
-     * </p>
-     *
-     * @param idResidencia ID de la residencia que se desea eliminar. Debe existir en el sistema.
-     * @return {@link ResponseEntity} que contiene el DTO de la residencia eliminada y el estado HTTP 200 (OK).
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si la residencia no existe.
-     */
-    @DeleteMapping("/remove")
-    public ResponseEntity<ResidenciaResponseDto> removeResidencia(@RequestParam Long idResidencia){
-        ResidenciaResponseDto resDelete = residenciaService.remove(idResidencia);
-        return ResponseEntity.ok(resDelete);
+
+    @DeleteMapping("/{idResidencia}/delete")
+    public ResponseEntity<Void> remove(@PathVariable Long idResidencia){
+        residenciaService.remove(idResidencia);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }
