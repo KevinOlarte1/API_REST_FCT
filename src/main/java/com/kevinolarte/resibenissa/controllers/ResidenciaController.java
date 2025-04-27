@@ -20,7 +20,7 @@ import java.util.List;
  *
  * URL Base: {@code /resi}
  *
- * @author : Kevin Olarte
+ * Autor: Kevin Olarte
  */
 @RequestMapping("/resi")
 @RestController
@@ -31,7 +31,12 @@ public class ResidenciaController {
     private final ResidenteService residenteService;
 
 
-
+    /**
+     * Crea una nueva residencia.
+     *
+     * @param residenciaDto DTO con los datos de la residencia a crear.
+     * @return {@link ResponseEntity} con estado {@code 201 Created} y el DTO de la residencia creada.
+     */
     @PostMapping("/add")
     public ResponseEntity<ResidenciaResponseDto> add(@RequestBody ResidenciaDto residenciaDto) {
             ResidenciaResponseDto residencia = residenciaService.save(residenciaDto);
@@ -39,7 +44,12 @@ public class ResidenciaController {
 
     }
 
-
+    /**
+     * Obtiene una residencia por su ID.
+     *
+     * @param idResidencia ID de la residencia a recuperar.
+     * @return {@link ResponseEntity} con estado {@code 200 OK} y el DTO de la residencia encontrada.
+     */
     @GetMapping("/{idResidencia}/get")
     public ResponseEntity<ResidenciaResponseDto> get(
             @PathVariable Long idResidencia) {
@@ -48,6 +58,12 @@ public class ResidenciaController {
     }
 
 
+    /**
+     * Elimina una residencia por su ID.
+     *
+     * @param idResidencia ID de la residencia a eliminar.
+     * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
+     */
     @DeleteMapping("/{idResidencia}/delete")
     public ResponseEntity<Void> remove(@PathVariable Long idResidencia){
         residenciaService.remove(idResidencia);
