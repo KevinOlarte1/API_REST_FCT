@@ -121,7 +121,7 @@ public class ResidenteService {
      * @return Lista de residentes filtrados.
      * @throws ApiException si el ID de residencia es nulo o la residencia no existe.
      */
-    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, Integer year, Integer month, String documentoIdentidad) {
+    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, Integer year, Integer month, String documentoIdentidad, Long idJuego, Long idEventoSalida) {
         if (idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -135,7 +135,7 @@ public class ResidenteService {
         // Obtener todos los residentes de la residencia
         List<Residente> residentesBaseList =  residenteRepository.findByResidencia(residencia);
 
-
+        //Filtrar por documento
         if (documentoIdentidad != null){
             documentoIdentidad = documentoIdentidad.trim().toUpperCase();
             // Filtrar por documento de identidad
@@ -143,27 +143,50 @@ public class ResidenteService {
             residentesBaseList = residentesBaseList.stream()
                     .filter(r -> r.getDocuemntoIdentidad().equals(finalDocumentoIdentidad))
                     .toList();
-        }else{
-            if (fechaNacimiento != null){
-                // Filtrar por fecha de nacimiento
+        }
+        // Filtrar por fecha de nacimiento
+        if (fechaNacimiento != null){
+            // Filtrar por fecha de nacimiento
+            residentesBaseList = residentesBaseList.stream()
+                    .filter(r -> r.getFechaNacimiento().equals(fechaNacimiento))
+                    .toList();
+        }else {
+            // Filtrar por año y mes de nacimiento
+            if (year != null){
+                // Filtrar por año de nacimiento
                 residentesBaseList = residentesBaseList.stream()
-                        .filter(r -> r.getFechaNacimiento().equals(fechaNacimiento))
+                        .filter(r -> r.getFechaNacimiento().getYear() == year)
                         .toList();
-            }else {
-                if (year != null){
-                    // Filtrar por año de nacimiento
-                    residentesBaseList = residentesBaseList.stream()
-                            .filter(r -> r.getFechaNacimiento().getYear() == year)
-                            .toList();
-                }
-                if (month != null){
-                    // Filtrar por mes de nacimiento
-                    residentesBaseList = residentesBaseList.stream()
-                            .filter(r -> r.getFechaNacimiento().getMonthValue() == month)
-                            .toList();
-                }
+            }
+            if (month != null){
+                // Filtrar por mes de nacimiento
+                residentesBaseList = residentesBaseList.stream()
+                        .filter(r -> r.getFechaNacimiento().getMonthValue() == month)
+                        .toList();
             }
         }
+        // Filtrar por juego
+        if (idJuego != null){
+            // Filtrar por juego
+            residentesBaseList = residentesBaseList.stream()
+                    .filter(r -> r.getRegistros().stream()
+                            .anyMatch(registro -> registro.getJuego().getId().equals(idJuego))
+                    )
+                    .toList();
+
+        }
+        // Filtrar por evento de salida
+        if (idEventoSalida != null){
+            // Filtrar por evento de salida
+            residentesBaseList = residentesBaseList.stream()
+                    .filter(r -> r.getParticipantes().stream()
+                            .anyMatch(participante ->
+                                    participante.getSalida().getId().equals(idEventoSalida))
+                    )
+                    .toList();
+        }
+
+
 
 
         return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
