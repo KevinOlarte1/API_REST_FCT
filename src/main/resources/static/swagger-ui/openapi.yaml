@@ -1348,12 +1348,19 @@ paths:
                   status: 406
                   timestamp: 2025-04-13T21:00:00
 
-  /resi/juegos/add:
+  /resi/{idResidencia}/add:
     post:
       tags:
-        - Modulo Juego
+        - Modulo - JUEGO
       summary: Registrar un juego.
       description: Crea un nuevo Juego validando campos obligatiorios, unicidad y que la residencia donde se guarda exista.
+      parameters:
+        - name: idResidencia
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
       requestBody:
         required: true
         content:
@@ -1361,14 +1368,14 @@ paths:
             schema:
               $ref: '#/components/schemas/Juego.Dto'
       responses:
-        '200':
+        '201':
           description: Juego registrado con éxisto
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Juego.ResponseDto'
         '400':
-          description: Datos nulos/vacios.
+          description: Datos nulos/vacios o del bodyRequest o de la url.
           content:
             application/json:
               schema:
@@ -1420,22 +1427,23 @@ paths:
                     codigo: 1004
                     status: 409
                     timestamp: 2025-04-13T21:00:00
-  /resi/juegos:
+
+  /resi/{idResidencia}/juego/{idJuego}/get:
     get:
       tags:
-        - Modulo Juego
+        - Modulo - JUEGO
       summary: Obtener juegos
-      description: Devuelve una lista de juegos. Si se indica el id de la residencia sacara una lista de juegos de esa residencia.
+      description: Devuelve un juego.
       parameters:
-        - name: idJuego
+        - name: idResidencia
           in: query
-          required: false
+          required: true
           schema:
             type: integer
             format: int64
-        - name: idResidencia
+        - name: idJuego
           in: query
-          required: false
+          required: true
           schema:
             type: integer
             format: int64
@@ -1449,10 +1457,31 @@ paths:
                 items:
                   $ref: '#/components/schemas/Juego.ResponseDto'
         '400':
-          description: Error al recuperar los juegos.
+          description: Datos nulos/vacios de la variable de la url
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Juego invalida, no existe en la base de datos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                JUEGO_INVALIDO:
+                  value:
+                    mensaje: Juego invalida
+                    codigo: 1008
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
         '405':
           description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
           content:
@@ -1467,26 +1496,113 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/juegos/remove:
-    delete:
+  /resi/{idResidencia}/juego/getAll:
+    get:
       tags:
-        - Modulo Juego
-      summary: Eliminar una Juego.
-      description: Elimina un juego en cascada, con todas las entidades relacionadas a el.
+        - Modulo - JUEGO
+      summary: Obtener lista de juego
+      description: Devuelve una lista de juegos.
       parameters:
-        - name: idJuego
+        - name: idResidencia
           in: query
           required: true
           schema:
             type: integer
             format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JuegoFiltre.Dto'
       responses:
         '200':
+          description: Juego(s) encontrado(s)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Juego.ResponseDto'
+        '400':
+          description: Datos nulos/vacios de la variable de la url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Residencia invalida, no existe en la base de datos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
+
+  /resi/{idResidencia}/juego/{idJuego}/delete:
+    delete:
+      tags:
+        - Modulo - JUEGO
+      summary: Eliminar una Juego.
+      description: Elimina un juego en cascada, con todas las entidades relacionadas a el.
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: idJuego
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
           description: Juego borrado
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Juego.ResponseDto'
+        '400':
+          description: Datos nulos/vacios de la variable de la url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
         '404':
           description: Juego invalido, no encontrado
           content:
@@ -1512,7 +1628,94 @@ paths:
                     mensaje: Tiene que tener permiso para acceder aqui.
                     codigo: 1020
                     status: 405
-                    timestamp: 2025-04-13T21:00:0
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/{idResidencia}/juego/{idJuego}/update:
+    patch:
+      tags:
+        - Modulo - JUEGO
+      summary: Actualizar un juego.
+      description: Actualiza el nombre del juego, y la imagen.
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: idJuego
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JuegoUpdate.Dto'
+      responses:
+        '200':
+          description: Juego actualizado con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Juego.ResponseDto'
+        '400':
+          description: Datos nulos/vacios de la variable de la url o del bodyRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+
+        '404':
+          description: Juego invalida, no existe en la base de datos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Juego invalida
+                    codigo: 1008
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+        '409':
+          description: El nombre ya existe en otro evento de la residencia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                NOMBRE_DUPLICADO:
+                value:
+                  mensaje: Nombre ya existente
+                  codigo: 1004
+                  status: 409
+                  timestamp: 2025-04-13T21:00:00
 
   /resi/juegos/stats/add:
     post:
@@ -2562,16 +2765,19 @@ components:
       type: object
       required:
         - nombre
-        - idResidencia
       properties:
         nombre:
           type: string
           example: Memoria Visual
-        idResidencia:
-          type: integer
-          format: int64
-          example: 3
-
+    JuegoFiltre.Dto:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: tres en ralla
+        maxRegistro:
+          type: boolean
+          example: true
     Juego.ResponseDto:
       type: object
       properties:
