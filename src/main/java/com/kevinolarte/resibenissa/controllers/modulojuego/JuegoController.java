@@ -11,6 +11,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
+/**
+ * Controlador REST que gestiona las operaciones relacionadas con los juegos en una residencia.
+ * <p>
+ * Permite registrar, consultar, listar, actualizar y eliminar juegos asociados a una residencia.
+ * </p>
+ *
+ * Ruta base: <b>/resi/{idResidencia}/juego</b>
+ *
+ * @author Kevin Olarte
+ */
 @RequestMapping("/resi/{idResidencia}/juego")
 @RestController
 @AllArgsConstructor
@@ -18,6 +28,13 @@ public class JuegoController {
     private final JuegoService juegoService;
 
 
+    /**
+     * Registra un nuevo juego asociado a una residencia.
+     *
+     * @param idResidencia ID de la residencia donde se añadirá el juego.
+     * @param juegoDto Datos del juego a registrar.
+     * @return {@link ResponseEntity} con los datos del juego creado y estado 201 CREATED.
+     */
     @PostMapping("/add")
     public ResponseEntity<JuegoResponseDto> add(
             @PathVariable Long idResidencia,
@@ -27,6 +44,13 @@ public class JuegoController {
 
     }
 
+    /**
+     * Obtiene los datos de un juego específico dentro de una residencia.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego a consultar.
+     * @return {@link ResponseEntity} con los datos del juego solicitado.
+     */
     @GetMapping("/{idJuego}/get")
     public ResponseEntity<JuegoResponseDto> get(
             @PathVariable Long idResidencia,
@@ -35,6 +59,14 @@ public class JuegoController {
         return ResponseEntity.ok(juegoService.get(idJuego, idResidencia));
     }
 
+    /**
+     * Obtiene una lista de juegos de una residencia, con filtros opcionales por nombre y cantidad máxima.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param nombreJuego Filtro por nombre del juego (opcional).
+     * @param maxRegistros Si es {@code true}, limita los resultados a un número máximo (definido en servicio).
+     * @return {@link ResponseEntity} con la lista de juegos.
+     */
     @GetMapping("/getAll")
     public ResponseEntity<List<JuegoResponseDto>> getAll(
             @PathVariable Long idResidencia,
@@ -44,6 +76,13 @@ public class JuegoController {
     }
 
 
+    /**
+     * Elimina un juego de una residencia si no tiene referencias dependientes.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego a eliminar.
+     * @return {@link ResponseEntity} con estado 204 NO CONTENT si la eliminación es exitosa.
+     */
     @DeleteMapping("/{idJuego}/delete")
     public ResponseEntity<Void> delete(
             @PathVariable Long idResidencia,
@@ -52,6 +91,14 @@ public class JuegoController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    /**
+     * Actualiza los datos de un juego ya registrado en una residencia.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego a actualizar.
+     * @param juegoDto Datos nuevos del juego.
+     * @return {@link ResponseEntity} con los datos del juego actualizado.
+     */
     @PatchMapping("/{idJuego}/update")
     public ResponseEntity<JuegoResponseDto> update(
             @PathVariable Long idResidencia,

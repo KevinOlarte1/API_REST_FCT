@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * Servicio que gestiona la lógica de negocio relacionada con los juegos.
  * <p>
- * Permite crear juegos nuevos validados y consultarlos por ID o por residencia.
+ * Permite crear, consultar, listar, actualizar y eliminar juegos, todos asociados a una residencia específica.
  * </p>
  *
  * @author Kevin Olarte
@@ -30,8 +30,17 @@ public class JuegoService {
     private final JuegoRepository juegoRepository;
     private final ResidenciaService residenciaService;
 
-
-
+    /**
+     * Registra un nuevo juego en una residencia.
+     * <p>
+     * Realiza validaciones sobre los campos obligatorios, existencia de la residencia y unicidad del nombre del juego.
+     * </p>
+     *
+     * @param idResidencia ID de la residencia.
+     * @param juegoDto Datos del juego a crear.
+     * @return DTO con la información del juego creado.
+     * @throws ApiException si falta algún campo obligatorio, la residencia no existe o el nombre está duplicado.
+     */
     public JuegoResponseDto save(Long idResidencia, JuegoDto juegoDto)throws ApiException{
         if (juegoDto.getNombre() == null || juegoDto.getNombre().trim().isEmpty() || idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -66,6 +75,14 @@ public class JuegoService {
     }
 
 
+    /**
+     * Obtiene un juego por su ID y valida que pertenezca a la residencia indicada.
+     *
+     * @param idJuego ID del juego.
+     * @param idResidencia ID de la residencia.
+     * @return DTO del juego solicitado.
+     * @throws ApiException si el ID es nulo, el juego no existe o no pertenece a la residencia.
+     */
     public JuegoResponseDto get(Long idJuego, Long idResidencia) {
        if (idResidencia == null || idJuego == null){
            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -83,7 +100,13 @@ public class JuegoService {
 
     }
 
-
+    /**
+     * Elimina un juego si pertenece a la residencia.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego a eliminar.
+     * @throws ApiException si algún ID es nulo, el juego no existe o no pertenece a la residencia.
+     */
     public void delete(Long idResidencia, Long idJuego) {
         if (idResidencia == null || idJuego == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -101,6 +124,17 @@ public class JuegoService {
 
     }
 
+    /**
+     * Lista los juegos de una residencia con filtros opcionales por nombre y por registros máximos/mínimos.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param nombreJuego Filtro por nombre de juego (opcional).
+     * @param maxRegistros Si es {@code true}, devuelve el juego con más registros;
+     *                     si es {@code false}, el de menos registros;
+     *                     si es {@code null}, todos.
+     * @return Lista de juegos mapeados a DTO.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
     public List<JuegoResponseDto> getAll(Long idResidencia, String nombreJuego, Boolean maxRegistros) {
         if (idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -147,6 +181,16 @@ public class JuegoService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Actualiza los datos de un juego si pertenece a una residencia específica.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param input DTO con los nuevos datos del juego.
+     * @return DTO con la información del juego actualizado.
+     * @throws ApiException si hay campos obligatorios faltantes, el juego no existe,
+     *                      no pertenece a la residencia o el nuevo nombre está duplicado.
+     */
     public JuegoResponseDto update(Long idResidencia, Long idJuego, JuegoDto input) {
         if (idResidencia == null || idJuego == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
