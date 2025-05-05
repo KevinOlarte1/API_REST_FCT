@@ -98,7 +98,22 @@ public class UserService {
         return userRepository.findById(idUsuario).orElse(null);
     }
 
-    
+    /**
+     * Elimina un usuario del sistema si pertenece a una residencia específica y no tiene registros de juegos asociados.
+     * <p>
+     * Este método valida:
+     * <ul>
+     *   <li>Que los IDs de residencia y usuario no sean nulos.</li>
+     *   <li>Que el usuario exista en la base de datos.</li>
+     *   <li>Que el usuario pertenezca a la residencia indicada.</li>
+     *   <li>Que el usuario no tenga registros de juegos asociados.</li>
+     * </ul>
+     * Si alguna de estas validaciones falla, lanza una excepción {@link ApiException}.
+     *
+     * @param idResidencia ID de la residencia del usuario.
+     * @param idUser ID del usuario a eliminar.
+     * @throws ApiException si los datos son inválidos o si hay referencias dependientes.
+     */
     public void delete(Long idResidencia, Long idUser) {
         if (idResidencia == null || idUser == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -121,8 +136,20 @@ public class UserService {
 
     }
 
-
-
+    /**
+     * Elimina las referencias de registros de juego asociadas a un usuario sin eliminar al usuario en sí.
+     * <p>
+     * Este método:
+     * <ul>
+     *   <li>Valida que los IDs no sean nulos.</li>
+     *   <li>Valida que el usuario pertenezca a la residencia indicada.</li>
+     *   <li>Desvincula todos los registros de juego del usuario (eliminando la relación, no los registros).</li>
+     * </ul>
+     *
+     * @param idResidencia ID de la residencia del usuario.
+     * @param idUser ID del usuario al que se le eliminarán las referencias.
+     * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
+     */
     public void deleteReferencies(Long idResidencia, Long idUser) {
         if (idResidencia == null || idUser == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -168,6 +195,20 @@ public class UserService {
         return resource;
     }
 
+    /**
+     * Elimina las referencias de registros de juego asociadas a un usuario sin eliminar al usuario en sí.
+     * <p>
+     * Este método:
+     * <ul>
+     *   <li>Valida que los IDs no sean nulos.</li>
+     *   <li>Valida que el usuario pertenezca a la residencia indicada.</li>
+     *   <li>Desvincula todos los registros de juego del usuario (eliminando la relación, no los registros).</li>
+     * </ul>
+     *
+     * @param idResidencia ID de la residencia del usuario.
+     * @param idUser ID del usuario al que se le eliminarán las referencias.
+     * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
+     */
     public UserResponseDto get(Long idResidencia, Long idUser) {
         if (idResidencia == null || idUser == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -186,6 +227,23 @@ public class UserService {
 
     }
 
+    /**
+     * Obtiene una lista de todos los usuarios asociados a una residencia con filtros opcionales.
+     * <p>
+     * Este método permite filtrar por:
+     * <ul>
+     *   <li>Email (no sensible a mayúsculas/minúsculas).</li>
+     *   <li>Estado habilitado.</li>
+     *   <li>ID de juego al que el usuario esté asociado.</li>
+     * </ul>
+     *
+     * @param idResidencia ID de la residencia.
+     * @param email Email para filtrar (opcional).
+     * @param enabled Estado habilitado para filtrar (opcional).
+     * @param idJuego ID del juego para filtrar (opcional).
+     * @return Lista de usuarios que cumplen con los filtros aplicados.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
     public List<UserResponseDto> getAll(Long idResidencia, String email, Boolean enabled, Long idJuego) {
         if (idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -222,6 +280,18 @@ public class UserService {
         return usuarios.stream().map(UserResponseDto::new).toList();
     }
 
+    /**
+     * Actualiza los datos de un usuario existente.
+     * <p>
+     * Este método permite modificar nombre, apellido y correo electrónico del usuario,
+     * con validaciones para cada uno. El correo debe ser válido y no estar ya registrado.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idUser ID del usuario a actualizar.
+     * @param input Datos nuevos del usuario.
+     * @return DTO con los datos del usuario actualizado.
+     * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
+     */
     public UserResponseDto update(Long idResidencia, Long idUser, UserDto input) {
         if (idResidencia == null || idUser == null)
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -260,6 +330,22 @@ public class UserService {
         return new UserResponseDto(userRepository.save(userTmp));
     }
 
+    /**
+     * Cambia la contraseña de un usuario, validando su contraseña actual.
+     * <p>
+     * Este método:
+     * <ul>
+     *   <li>Valida la residencia y existencia del usuario.</li>
+     *   <li>Verifica que la contraseña actual coincida.</li>
+     *   <li>Establece la nueva contraseña de forma segura.</li>
+     * </ul>
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idUser ID del usuario.
+     * @param input Objeto con la contraseña actual y la nueva.
+     * @return DTO con los datos del usuario actualizado.
+     * @throws ApiException si los datos son inválidos o la contraseña actual no coincide.
+     */
     public UserResponseDto updatePassword(Long idResidencia, Long idUser, ChangePasswordUserDto input) {
         if (idResidencia == null || idUser == null || input == null ||
                 input.getOldPassword() == null || input.getNewPassword() == null) {
