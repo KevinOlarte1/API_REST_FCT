@@ -31,27 +31,13 @@ public class JuegoService {
     private final ResidenciaService residenciaService;
 
 
-    /**
-     * Guarda un nuevo juego en el sistema.
-     * <p>
-     * Se validan los siguientes aspectos:
-     * <ul>
-     *   <li>El nombre del juego no puede estar vacío.</li>
-     *   <li>Debe estar asociado a una residencia válida existente.</li>
-     *   <li>No debe existir ya un juego con el mismo nombre en la misma residencia.</li>
-     * </ul>
-     * </p>
-     *
-     * @param juegoDto DTO con los datos del juego a registrar.
-     * @return DTO con la información del juego registrado.
-     * @throws ApiException si faltan campos, la residencia no existe o el nombre ya está en uso en esa residencia.
-     */
-    public JuegoResponseDto save(JuegoDto juegoDto)throws ApiException{
-        if (juegoDto.getNombre() == null || juegoDto.getNombre().trim().isEmpty() || juegoDto.getIdResidencia() == null){
+
+    public JuegoResponseDto save(Long idResidencia, JuegoDto juegoDto)throws ApiException{
+        if (juegoDto.getNombre() == null || juegoDto.getNombre().trim().isEmpty() || idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
-        Residencia residencia = residenciaService.findById(juegoDto.getIdResidencia());
+        Residencia residencia = residenciaService.findById(idResidencia);
         if (residencia == null){
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
@@ -79,58 +65,109 @@ public class JuegoService {
         return juegoRepository.findById(id).orElse(null);
     }
 
-    /**
-     * Recupera una lista de juegos según filtros opcionales.
-     * <p>
-     * Comportamientos posibles:
-     * <ul>
-     *   <li>Si se proporciona <code>idJuego</code>, devuelve ese juego (si existe).</li>
-     *   <li>Si se proporciona <code>idResidencia</code>, devuelve todos los juegos de esa residencia.</li>
-     *   <li>Si no se proporciona ningún parámetro, devuelve todos los juegos existentes.</li>
-     * </ul>
-     * </p>
-     *
-     * @param idJuego ID específico del juego a recuperar (opcional).
-     * @param idResidencia ID de la residencia para filtrar juegos (opcional).
-     * @return Lista de juegos convertidos a {@link JuegoResponseDto}.
-     */
-    public List<JuegoResponseDto> getJuegos(Long idJuego, Long idResidencia) {
-        if (idJuego != null) {
-            Juego juego = findById(idJuego);
-            return juego != null ? List.of(new JuegoResponseDto(juego)) : List.of();
+
+    public JuegoResponseDto get(Long idJuego, Long idResidencia) {
+       if (idResidencia == null || idJuego == null){
+           throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+       }
+        //Comprobar si existe el juego
+        Juego juegoTmp = juegoRepository.findById(idJuego)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.JUEGO_INVALIDO));
+
+        //Comprobar si pertenece a la residencia
+        if (!juegoTmp.getResidencia().getId().equals(idResidencia)){
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
         }
 
-        if (idResidencia != null) {
-            return juegoRepository.findByResidenciaId(idResidencia).stream()
-                    .map(JuegoResponseDto::new)
-                    .collect(Collectors.toList());
+        return new JuegoResponseDto(juegoTmp);
+
+    }
+
+
+    public void delete(Long idResidencia, Long idJuego) {
+        if (idResidencia == null || idJuego == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
-        return juegoRepository.findAll().stream()
+        //Comprobar si existe el juego
+        Juego juegoTmp = juegoRepository.findById(idJuego)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.JUEGO_INVALIDO));
+        //Comprobar si pertenece a la residencia
+        if (!juegoTmp.getResidencia().getId().equals(idResidencia)){
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        }
+
+        juegoRepository.delete(juegoTmp);
+
+    }
+
+    public List<JuegoResponseDto> getAll(Long idResidencia, String nombreJuego, Boolean maxRegistros) {
+        if (idResidencia == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Comprobar si existe la residencia
+        Residencia residencia = residenciaService.findById(idResidencia);
+        if (residencia == null){
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+
+        List<Juego> juegoBaseList = juegoRepository.findByResidenciaId(idResidencia);
+
+        // Filtrar por nombre de juego si se proporciona
+        if (nombreJuego != null && !nombreJuego.trim().isEmpty()) {
+            juegoBaseList = juegoBaseList.stream()
+                    .filter(juego -> juego.getNombre().toLowerCase().contains(nombreJuego.toLowerCase()))
+                    .toList();
+        }
+
+        //Filtrar por max registros o min.
+        if (maxRegistros != null){
+            if (maxRegistros){
+                Juego juego = juegoBaseList.get(0);
+                for(Juego j : juegoBaseList){
+                    if (j.getRegistro().size() > juego.getRegistro().size()){
+                        juego = j;
+                    }
+                }
+                juegoBaseList = List.of(juego);
+            }
+            else {
+                Juego juego = juegoBaseList.get(0);
+                for(Juego j : juegoBaseList){
+                    if (j.getRegistro().size() < juego.getRegistro().size()){
+                        juego = j;
+                    }
+                }
+                juegoBaseList = List.of(juego);
+            }
+        }
+        // Mapear a DTO
+        return juegoBaseList.stream()
                 .map(JuegoResponseDto::new)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Elimina un juego del sistema según su ID.
-     * <p>
-     * Este método busca el juego por su identificador y, si lo encuentra, lo elimina del repositorio.
-     * Si el juego no existe, lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
-     * con el código de error {@link com.kevinolarte.resibenissa.exceptions.ApiErrorCode#JUEGO_INVALIDO}.
-     * </p>
-     *
-     * @param idJuego ID del juego que se desea eliminar.
-     * @return DTO con la información del juego eliminado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el juego no existe en el sistema.
-     */
-    public JuegoResponseDto remove(Long idJuego) {
-        Juego juegTmp = juegoRepository.findById(idJuego).orElse(null);
-
-        if(juegTmp == null){
+    public JuegoResponseDto update(Long idResidencia, Long idJuego, JuegoDto input) {
+        if (idResidencia == null || idJuego == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Comprobar si existe el juego
+        Juego juegoTmp = juegoRepository.findById(idJuego)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.JUEGO_INVALIDO));
+        //Comprobar si pertenece a la residencia
+        if (!juegoTmp.getResidencia().getId().equals(idResidencia)){
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
         }
-
-        juegoRepository.delete(juegTmp);
-        return new JuegoResponseDto(juegTmp);
+        //Comprobar si ya existe un juego con ese nombre en esa residencia
+        if (input != null && input.getNombre() != null && !input.getNombre().trim().isEmpty()){
+            boolean exists = juegoRepository.existsByNombreAndResidenciaId(input.getNombre(), idResidencia);
+            if (exists) {
+                throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
+            }
+            juegoTmp.setNombre(input.getNombre());
+        }
+        // Guardar cambios
+        Juego juegoSafe = juegoRepository.save(juegoTmp);
+        return new JuegoResponseDto(juegoSafe);
     }
 }

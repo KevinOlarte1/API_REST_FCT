@@ -4,88 +4,62 @@ import com.kevinolarte.resibenissa.dto.in.modulojuego.JuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.JuegoResponseDto;
 import com.kevinolarte.resibenissa.services.modulojuego.JuegoService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controlador REST que gestiona las operaciones relacionadas con los juegos.
- * <p>
- * Permite registrar nuevos juegos y consultar juegos existentes, con filtros por ID o por residencia.
- * </p>
- *
- * Ruta base: <b>/resi/juegos</b>
- *
- * @author Kevin Olarte
- */
-@RequestMapping("/resi/juegos")
+
+@RequestMapping("/resi/{idResidencia}/juego")
 @RestController
 @AllArgsConstructor
 public class JuegoController {
     private final JuegoService juegoService;
 
 
-    /**
-     * Registra un nuevo juego en una residencia existente.
-     * <p>
-     * Valida que el nombre y la residencia estén presentes y que no exista un juego duplicado
-     * con el mismo nombre en la misma residencia.
-     * </p>
-     *
-     * @param juegoDto DTO con los datos del juego a crear.
-     * @return {@link ResponseEntity} con los datos del juego registrado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si hay errores de validación o de integridad.
-     */
     @PostMapping("/add")
-    public ResponseEntity<JuegoResponseDto> addJuego(@RequestBody JuegoDto juegoDto) {
-            JuegoResponseDto juego = juegoService.save(juegoDto);
-            return ResponseEntity.ok(juego);
+    public ResponseEntity<JuegoResponseDto> add(
+            @PathVariable Long idResidencia,
+            @RequestBody JuegoDto juegoDto) {
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(juegoService.save(idResidencia,juegoDto));
 
     }
 
-    /**
-     * Recupera juegos registrados en el sistema, aplicando filtros opcionales.
-     * <p>
-     * Comportamiento según los parámetros proporcionados:
-     * <ul>
-     *   <li>Sin parámetros: devuelve todos los juegos existentes.</li>
-     *   <li>Con <code>idJuego</code>: devuelve el juego con ese ID, si existe.</li>
-     *   <li>Con <code>idResidencia</code>: devuelve todos los juegos pertenecientes a esa residencia.</li>
-     *   <li>Con ambos parámetros: aplica ambos filtros si es compatible (aunque generalmente <code>idJuego</code> es único).</li>
-     * </ul>
-     * </p>
-     *
-     * @param idJuego ID específico del juego a buscar (opcional).
-     * @param idResidencia ID de la residencia para filtrar juegos (opcional).
-     * @return {@link ResponseEntity} con una lista de juegos según los filtros aplicados.
-     */
-    @GetMapping
-    public ResponseEntity<List<JuegoResponseDto>> getJuego(
-            @RequestParam(required = false) Long idJuego,
-            @RequestParam(required = false) Long idResidencia) {
+    @GetMapping("/{idJuego}/get")
+    public ResponseEntity<JuegoResponseDto> get(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idJuego) {
 
-        List<JuegoResponseDto> juegos = juegoService.getJuegos(idJuego, idResidencia);
-        return ResponseEntity.ok(juegos);
+        return ResponseEntity.ok(juegoService.get(idJuego, idResidencia));
     }
 
-    /**
-     * Elimina un juego del sistema.
-     * <p>
-     * Este método recibe un ID de juego como parámetro y solicita al servicio
-     * {@link JuegoService} que elimine la entidad correspondiente.
-     * Si la eliminación es exitosa, se devuelve un DTO con los datos del juego eliminado.
-     * </p>
-     *
-     * @param idJuego ID del juego que se desea eliminar. Debe existir en el sistema.
-     * @return {@link ResponseEntity} que contiene el DTO del juego eliminado y el estado HTTP 200 (OK).
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el juego no existe.
-     */
-    @DeleteMapping("/remove")
-    public ResponseEntity<JuegoResponseDto> remove(@RequestParam Long idJuego) {
-        JuegoResponseDto juegoTmp = juegoService.remove(idJuego);
-        return ResponseEntity.ok(juegoTmp);
+    @GetMapping("/getAll")
+    public ResponseEntity<List<JuegoResponseDto>> getAll(
+            @PathVariable Long idResidencia,
+            @RequestParam(required = false) String nombreJuego,
+            @RequestParam(required = false) boolean maxRegistros) {
+        return ResponseEntity.ok(juegoService.getAll(idResidencia, nombreJuego, maxRegistros));
     }
+
+
+    @DeleteMapping("/{idJuego}/delete")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idJuego) {
+        juegoService.delete(idResidencia,idJuego);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PatchMapping("/{idJuego}/update")
+    public ResponseEntity<JuegoResponseDto> update(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idJuego,
+            @RequestBody JuegoDto juegoDto) {
+        return ResponseEntity.ok(juegoService.update(idResidencia, idJuego, juegoDto));
+    }
+
 
 
 

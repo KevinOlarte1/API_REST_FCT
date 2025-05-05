@@ -216,7 +216,7 @@ public class ResidenteService {
      * @return DTO del residente actualizado.
      * @throws ApiException si los datos son inválidos o se detecta duplicidad de documento.
      */
-    public ResidenteResponseDto update(Long idResidencia, Long idResidente, ResidenteDto input) {
+    public ResidenteResponseDto     update(Long idResidencia, Long idResidente, ResidenteDto input) {
         if (idResidencia == null || idResidente == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }

@@ -15,5 +15,4 @@ import lombok.Setter;
 @Setter
 public class JuegoDto {
     private String nombre;
-    private Long idResidencia;
 }
