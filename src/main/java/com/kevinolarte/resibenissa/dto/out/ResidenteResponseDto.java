@@ -32,7 +32,7 @@ public class ResidenteResponseDto {
         this.nombre = residente.getNombre();
         this.apellido = residente.getApellido();
         this.fechaNacimiento = residente.getFechaNacimiento();
-        this.idResidencia = residente.getId();
+        this.idResidencia = residente.getResidencia().getId();
         this.documentoIdentidad = residente.getDocuemntoIdentidad();
     }
 }
