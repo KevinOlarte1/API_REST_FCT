@@ -2,30 +2,22 @@ package com.kevinolarte.resibenissa.controllers;
 
 import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.UserDto;
+import com.kevinolarte.resibenissa.dto.in.auth.ChangePasswordUserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
-import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 
 /**
  * Controlador REST que gestiona las operaciones relacionadas con los usuarios del sistema.
@@ -38,7 +30,7 @@ import java.nio.file.Paths;
  *
  * @author Kevin Olarte
  */
-@RequestMapping("/resi/users")
+@RequestMapping("/resi/{idResidencia}/user")
 @RestController
 @AllArgsConstructor
 public class UserController {
@@ -51,73 +43,54 @@ public class UserController {
      * Se validan los campos obligatorios, el formato y unicidad del email, y la existencia de la residencia.
      * </p>
      *
-     * @param userDto DTO con los datos del nuevo usuario.
+     * param userDto DTO con los datos del nuevo usuario.
      * @return {@link ResponseEntity} con los datos del usuario creado.
      * @throws com.kevinolarte.resibenissa.exceptions.ApiException en casi de multiples casos.
 
-    @PostMapping("/add")
+    PostMapping("/add")
     public ResponseEntity<UserResponseDto> addUser(@RequestBody UserDto userDto) {
         UserResponseDto user = userService.save(userDto);
         return ResponseEntity.ok(user);
 
     } */
 
-    /**
-     * Recupera una lista de usuarios registrados, con la opción de aplicar filtros.
-     * <p>
-     * Se pueden aplicar filtros por ID de residencia, estado de habilitación o email.
-     * Si no se proporciona ningún filtro, se devuelven todos los usuarios.
-     * </p>
-     *
-     * @param idResidencia (opcional) ID de la residencia asociada.
-     * @param enable       (opcional) Estado de habilitación del usuario (true/false).
-     * @param email        (opcional) Email del usuario a buscar.
-     * @return {@link ResponseEntity} con la lista de usuarios encontrados.
-     */
-    @GetMapping()
-    public ResponseEntity<List<UserResponseDto>> getUsers(
-            @RequestParam(required = false) Long idResidencia,
-            @RequestParam(required = false) Boolean enable,
-            @RequestParam(required = false) String email) {
-        System.out.println("Entra");
-        List<UserResponseDto> users = userService.getUsers(idResidencia, enable, email);
-        return ResponseEntity.ok(users);
+
+    @GetMapping("/{idUser}/get")
+    public ResponseEntity<UserResponseDto> get(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idUser) {
+
+        return ResponseEntity.ok(userService.get(idResidencia, idUser));
 
     }
 
-    /**
-     * Elimina un usuario del sistema.
-     * <p>
-     * Este método recibe un ID de usuario como parámetro y solicita al servicio
-     * {@link UserService} que elimine la entidad correspondiente, pero de antemano debe haber usado el metodo {@linkplain com.kevinolarte.resibenissa.controllers.UserController#removeReferencias(Long)}.
-     * Si la eliminación es exitosa, se devuelve un DTO con los datos del usuario eliminado.
-     * </p>
-     *
-     * @param idUser ID del usuario que se desea eliminar.
-     * @return {@link ResponseEntity} que contiene el DTO del usuario eliminado y el estado HTTP 200 (OK).
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe o tiene aún referencias asociadas..
-     */
-    @DeleteMapping("/remove")
-    public ResponseEntity<UserResponseDto> removeUser(@RequestParam Long idUser) {
-        UserResponseDto userTmp = userService.remove(idUser);
-        return ResponseEntity.ok(userTmp);
+    @GetMapping("/getAll")
+    public ResponseEntity<List<UserResponseDto>> getAll(
+            @PathVariable Long idResidencia,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Boolean enabled,
+            @RequestParam(required = false) Long idJuego) {
+
+        return ResponseEntity.ok(userService.getAll(idResidencia, email, enabled, idJuego));
+
     }
 
-    /**
-     * Elimina todas las referencias que apuntan a el ponendolas a nulas.
-     * <p>
-     * Este método permite eliminar las referencias asociadas a el para luego eliminar el usuario con el metodo {@linkplain  com.kevinolarte.resibenissa.controllers.UserController#removeUser(Long)}
-     * aplicando una lógica especial en el servicio {@link UserService} para manejar las referencias antes de eliminar.
-     * </p>
-     *
-     * @param idUser ID del usuario que se desea eliminar junto con sus referencias.
-     * @return {@link ResponseEntity} que contiene el DTO del usuario cuyas referenciass ha sido eliminado y el estado HTTP 200 (OK).
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe.
-     */
-    @DeleteMapping("/remove/referencies")
-    public ResponseEntity<UserResponseDto> removeReferencias(@RequestParam Long idUser) {
-        UserResponseDto userTmp = userService.removeReferencias(idUser);
-        return  ResponseEntity.ok(userTmp);
+
+    @DeleteMapping("/{idUser}/delete")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idUser) {
+        userService.delete(idResidencia,idUser);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+
+    @DeleteMapping("/{idUser}/delete/referencies")
+    public ResponseEntity<Void> deleteReferencies(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idUser) {
+        userService.deleteReferencies(idResidencia, idUser);
+        return  ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     /**
@@ -139,6 +112,24 @@ public class UserController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
+    }
+
+    @PatchMapping("/{idUser}/update")
+    public ResponseEntity<UserResponseDto> update(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idUser,
+            @RequestBody UserDto userDto) {
+
+        return ResponseEntity.ok(userService.update(idResidencia, idUser, userDto));
+    }
+
+    @PatchMapping("/{idUser}/update/changePassword")
+    public ResponseEntity<UserResponseDto> changePassword(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idUser,
+            @RequestBody ChangePasswordUserDto changePasswordUserDto) {
+
+        return ResponseEntity.ok(userService.updatePassword(idResidencia, idUser, changePasswordUserDto));
     }
 
 

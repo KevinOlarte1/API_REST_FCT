@@ -491,12 +491,19 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/residents/add:
+  /resi/{idResidencia}/resident/add:
     post:
       tags:
         - Residente
       summary: Registrar un nuevo residente.
       description: Crea un residente en una residencia existente en la base de datos, con ciertos campos.
+      parameters:
+        - name: idResidencia
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
       requestBody:
         required: true
         content:
@@ -504,14 +511,14 @@ paths:
             schema:
               $ref: '#/components/schemas/Residente.Dto'
       responses:
-        '200':
+        '201':
           description: Residente registrado con existo
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Residente.ResponseDto'
         '400':
-          description: Campos nulos
+          description: Datos del cuerpo nulos/vacios o de la variable del path idResidencia
           content:
             application/json:
               schema:
@@ -550,51 +557,90 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
         '406':
-          description: Fecha invalida
+          description: Fecha invalida o docuemnto de identidad invalido
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
-              example:
+              examples:
                 FECHA_INVALIDO:
                   value:
                     mensaje: Fecha invalida
                     codigo: 1005
                     status: 406
                     timestamp: 2025-04-13T21:00:00
-  /resi/residents:
+                DOCUMENTO_INVALIDO:
+                  value:
+                    mensaje: Documento de identidad no tiene el formato correcto
+                    codigo: 1027
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+        '409':
+          description: El documento de identidad ya existe en la residencia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                DOCUMENTO_DUPLICADO:
+                  value:
+                    mensaje: Documento de identidad ya existente
+                    codigo: 1028
+                    status: 409
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/{idResidencia}/resident/{idResidente}/get:
     get:
       tags:
         - Residente
-      summary: Obtener residentes
-      description: Devuelve una lista de residentes. Si pones el id del residente te de vuelve solo el residnete. Si pones el id de la residencia te devuelve una lsita de residentes de esa residencia.
+      summary: Busca el residente por id ingresado en el path
+      description: Devuelve un dto Response con el residente encontrada.
       parameters:
         - name: idResidencia
-          in:  query
-          required: false
+          in: query
+          required: true
           schema:
             type: integer
             format: int64
         - name: idResidente
           in: query
-          required: false
+          required: true
           schema:
             type: integer
             format: int64
       responses:
         '200':
-          description: Residente(s) econtrado(s)
+          description: Residente encontrado
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Residente.ResponseDto'
+                $ref: '#/components/schemas/Residente.ResponseDto'
         '400':
-          description: Error al recuperar residentes
+          description: Datos nulos/vacios de la variable de la url
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Residente invalido, no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENTE_INVALIDO:
+                  value:
+                    mensaje: Residente invalida
+                    codigo: 1009
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
         '405':
           description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
           content:
@@ -609,13 +655,103 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/residents/remove:
+  /resi/{idResidencia}/resident/getAll:
+    get:
+      tags:
+        - Residente
+      summary: Obtener residentes
+      description: Devuelve una lista de residentes.  Y filtrado por los sigueintes parametros. Hay que tener en cuenta sigue una proridad, documento de identidad, fecha de nacimiento y mes/año
+      parameters:
+        - name: idResidencia
+          in:  query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: documentoIdentidad
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: fechaNacimiento
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: month
+          in: query
+          required: false
+          schema:
+              type: integer
+              format: int64
+        - name: idJuego
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: idEventoSalida
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Residente(s) econtrado(s)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Residente.ResponseDto'
+        '404':
+          description: Residencia invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                value:
+                  mensaje: Residencia invalida
+                  codigo: 1006
+                  status: 404
+                  timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
+
+  /resi/{idResidencia}/resident/{idResidente}/delete:
     delete:
       tags:
         - Residente
       summary: Eliminar un Residente.
       description: Elimina un Residente en cascada, con todas las entidades relacionadas que dependan de el.
       parameters:
+        - name: idResidencia
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
         - name: idResidente
           in: query
           required: true
@@ -623,12 +759,22 @@ paths:
             type: integer
             format: int64
       responses:
-        '200':
+        '204':
           description: Residente borrada
+
+        '400':
+          description: Campos nulos/vacios de las variable path
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Residente.ResponseDto'
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
         '404':
           description: Residente invalida, no encontrada
           content:
@@ -655,43 +801,39 @@ paths:
                     codigo: 1020
                     status: 405
                     timestamp: 2025-04-13T21:00:0
-  /resi/users:
-    get:
+
+  /resi/{idResidencia}/resident/{idResidente}/update:
+    patch:
       tags:
-        - User
-      summary: Obtener ususarios.
-      description: Devuelve una lista de residentes. Con filtrado.
+        - Residente
+      summary: Actualiza los datos de un residente
+      description: Campos como nombre, apellido, documentoIdentidad, fecha de nacimiento.
       parameters:
         - name: idResidencia
           in: query
-          required: false
+          required: true
           schema:
             type: integer
             format: int64
-        - name: enable
+        - name: idResidente
           in: query
-          required: false
+          required: true
           schema:
-            type: boolean
-        - name: email
-          in: query
-          required: false
-          schema:
-            type: string
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Residente.Dto'
       responses:
         '200':
-          description: Usuario(s) econtrado(s)
+          description: Residente actualizado
           content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User.ResponseDto'
-        '400':
-          description: Error al recuperar Usuarios.
-          content:
-            application/json:
-              schema:
+              application/json:
+                schema:
+                    $ref: '#/components/schemas/Residente.ResponseDto'
         '405':
           description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
           content:
@@ -706,26 +848,78 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/users/remove:
-    delete:
+        '406':
+          description: Documento de identidad invalido o fecha invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                FECHA_INVALIDO:
+                  value:
+                    mensaje: Fecha invalida
+                    codigo: 1005
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+                DOCUMENTO_INVALIDO:
+                  value:
+                    mensaje: Documento de identidad no tiene el formato correcto
+                    codigo: 1027
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+        '409':
+          description: El documento de identidad ya existe en la residencia
+          content:
+              application/json:
+                schema:
+                    $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                    DOCUMENTO_DUPLICADO:
+                    value:
+                        mensaje: Documento de identidad ya existente
+                        codigo: 1028
+                        status: 409
+                        timestamp: 2025-04-13T21:00:00
+
+  /resi/{idResidencia}/user/{idUser}/get:
+    get:
       tags:
         - User
-      summary: Eliminar un Usuario.
-      description: Elimina un usuario en cascada, con todas las entidades relacionadas a el. Pero el registro de jeugo no se borra
+      summary: Obtener usuario
+      description: Busca el usuario por id ingresado en el path.
       parameters:
-        - name: idUsuario
+        - name: idResidencia
           in: query
           required: true
           schema:
-            type: integer
-            format: int64
+              type: integer
+              format: int64
+        - name: idUser
+          in: query
+          required: true
+          schema:
+              type: integer
+              format: int64
       responses:
         '200':
-          description: Usuario borrado
+          description: Usuario encontrado
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User.ResponseDto'
+        '400':
+          description: Datos nulos/vacios de la variable de la url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                value:
+                  mensaje: Faltan campos obligatorios
+                  codigo: 1001
+                  status: 400
+                  timestamp: 2025-04-13T21:00:00
         '404':
           description: Usuario invalido, no encontrado
           content:
@@ -733,9 +927,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
               example:
-                RESIDENCIA_INVALIDO:
+                USUARIO_INVALIDO:
                   value:
-                    mensaje: Usuario invalida
+                    mensaje: Usuario invalido
                     codigo: 1010
                     status: 404
                     timestamp: 2025-04-13T21:00:00
@@ -752,8 +946,148 @@ paths:
                     codigo: 1020
                     status: 405
                     timestamp: 2025-04-13T21:00:0
+
+  /resi/{idResidencia}/user/getAll:
+    get:
+      tags:
+        - User
+      summary: Obtener ususarios.
+      description: Devuelve una lista de residentes. Con filtrado.
+      parameters:
+        - name: idResidencia
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: enabled
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: idJuego
+          in: query
+          required: false
+          schema:
+              type: integer
+              format: int64
+      responses:
+        '200':
+          description: Usuario(s) econtrado(s)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User.ResponseDto'
+        '400':
+          description: Campos nulos/vacios de la variable de la url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Residencia invalida, no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/{idResidencia}/user/{idUser}/delete:
+    delete:
+      tags:
+          - User
+      summary: Eliminar un Usuario.
+      description: Elimina un usuario en cascada, con todas las entidades relacionadas a el. Pero el registro de jeugo no se borra
+      parameters:
+        - name: idResidencia
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: idUser
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Usuario borrado
+        '400':
+          description: campos nulos/vacios de la variable de la url
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Usuario invalido, no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalido
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
         '409':
-          description: No se puede borrar una entidad que tiene referencia en otras entidades, antes hay que borrar esas relaciones.
+          description: Esta entidad tiene referencias asociadas que dependen de el
           content:
             application/json:
               schema:
@@ -766,28 +1100,37 @@ paths:
                     status: 409
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/users/remove/referencies:
+  /resi/{idResidencia}/user/{idUser}/delete/referencies:
     delete:
       tags:
         - User
-      summary: Eliminar las referencias.
-      description: Elimina las referencias de los registros de los juegos a null. para poder luego borrar este objeto.
+      summary: Borrar la relacion usuario.
+      description: Borra y pone a null el parametro relacionado en el registro de juego.
       parameters:
-        - name: idUsuario
+        - name: idResidencia
           in: query
           required: true
-          schema:
-            type: integer
-            format: int64
+        - name: idUser
+          in: query
+          required: true
       responses:
-        '200':
-          description: Usuario borrado
+        '204':
+          description: Relaciones eliminadas.
+        '400':
+          description: campos nulos/vacios de la variable de la url
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User.ResponseDto'
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
         '404':
-          description: Usuario invalido
+          description: Usuario invalido, no encontrado
           content:
             application/json:
               schema:
@@ -795,7 +1138,7 @@ paths:
               example:
                 USUARIO_INVALIDO:
                   value:
-                    mensaje: Usuario invalida
+                    mensaje: Usuario invalido
                     codigo: 1010
                     status: 404
                     timestamp: 2025-04-13T21:00:00
@@ -811,24 +1154,55 @@ paths:
                     mensaje: Tiene que tener permiso para acceder aqui.
                     codigo: 1020
                     status: 405
-                    timestamp: 2025-04-13T21:00:0
+                    timestamp: 2025-04-13T21:00:00
 
-  /resi/users/defualtImage:
+  /resi/{idResidencia}/user/defaultImage:
     get:
       tags:
         - User
-      summary: Obtienes la foto de perfil en binario
-      description: obtienes la imagen de la ruta de tu usuario que actualmete es la default pero luego con otro endpoint puedes subir otra imagen y se cambairia a la ruta de esa imagen nueva. y que se obtendria la hacer el get este.
+      summary: Obtienes foto perfil
+      description: Obten el recurso default del img defecto del personaje .png
+      parameters:
+        - name: idResidencia
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
       responses:
         '200':
-          description: Archibo binario con la foto.
+          description: Recurso .PNG en binario con la imagen default de perfil.
+
+  /resi/{idResidencia}/user/{idUser}/update:
+    patch:
+      tags:
+        - User
+      summary: Actualizar valores del user.
+      description: Actualiza nombre, apellido y correo, no password (al hacer esto, se debe vovlver hacer el login por el token.)
+      parameters:
+        - name: idResidencia
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: idUser
+          in: query
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate.Dto"
+      responses:
+        '200':
+          description: Usuario actualizado
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: Resource Binario
-        '500':
-          description: Problemas pasando la iamgen, prueba con cambiar la imagen a una imagen valida
+                $ref: '#/components/schemas/User.ResponseDto'
+        '400':
+          description: Campos nulos/vacios de la variable de la url
           content:
             application/json:
               schema:
@@ -836,12 +1210,143 @@ paths:
               example:
                 CAMPOS_OBLIGATORIOS:
                   value:
-                    mensaje: A surgido un problema con la imagen
-                    codigo: 1021
-                    status: PROBLEMAS_CON_FILE
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Usuario invalido, no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalido
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '406':
+          description: correo invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CORREO_INVALIDO:
+                  value:
+                    mensaje: Email invalid
+                    codigo: 1002
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+        '409':
+          description: Correo duplicado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CORREO_DUPLICADO:
+                  value:
+                    mensaje: El correo ya existe en la base de datos.
+                    codigo: 1003
+                    status: 409
                     timestamp: 2025-04-13T21:00:00
 
-
+  /resi/{idResidencia}/user/{idUser}/update/changePassword:
+    patch:
+      tags:
+        - User
+      summary: Actualizar password
+      description: Cambia la contraseña de un usuario.
+      parameters:
+        - name: idResidencia
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: idUser
+          in: query
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdatePassword.Dto"
+      responses:
+        '200':
+          description: Password actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ResponseDto'
+        '400':
+          description: Campos nulos/vacios de la variable de la url o del requestBody
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Usuario invalido, no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalido
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+        '406':
+          description: Password invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                PASSWORD_INVALIDO:
+                value:
+                  mensaje: Contraseña invalida
+                  codigo: 1029
+                  status: 406
+                  timestamp: 2025-04-13T21:00:00
 
   /resi/juegos/add:
     post:
@@ -1928,6 +2433,7 @@ components:
         - apellido
         - fechaNacimiento
         - idResidencia
+        - documentoIdentidad
       properties:
         nombre:
           type: string
@@ -1943,6 +2449,9 @@ components:
           type: integer
           format: int64
           example: 1
+        documentoIdentidad:
+            type: string
+            example: Y8440460X
 
     Residente.ResponseDto:
       type: object
@@ -1965,6 +2474,9 @@ components:
           type: integer
           format: int64
           example: 1
+        documentoIdentidad:
+            type: string
+            example: Y8440460X
 
     User.Dto:
       type: object
@@ -1993,6 +2505,34 @@ components:
           format: int64
           example: 2
 
+    UserUpdate.Dto:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: Juan
+        apellido:
+          type: string
+          example: Garcia
+        email:
+          type: string
+          example: juan.garcia@ejemplo.com
+
+    UserUpdatePassword.Dto:
+        type: object
+        required:
+          - oldPassword
+          - newPassword
+        properties:
+          oldPassword:
+            type: string
+            example: 1234secure
+          newPassword:
+            type: string
+            example: 1234newsecure
+
+
+
     User.ResponseDto:
       type: object
       properties:
@@ -2017,6 +2557,7 @@ components:
           type: integer
           format: int64
           example: 2
+
     Juego.Dto:
       type: object
       required:

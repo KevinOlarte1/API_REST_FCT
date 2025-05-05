@@ -1,15 +1,19 @@
 package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.config.Conf;
+import com.kevinolarte.resibenissa.dto.in.UserDto;
+import com.kevinolarte.resibenissa.dto.in.auth.ChangePasswordUserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -30,6 +34,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final ResidenciaService residenciaService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     /**
      * Registra un nuevo usuario en el sistema a partir de los datos proporcionados.
@@ -80,42 +85,6 @@ public class UserService {
     } */
 
     /**
-     * Filtra usuarios del sistema según residencia, email o estado habilitado.
-     *
-     * @param idResidencia ID de la residencia (opcional).
-     * @param enable Estado de habilitación del usuario (opcional).
-     * @param email Email del usuario a buscar (opcional).
-     * @return Lista de usuarios que cumplen con los filtros.
-     */
-    public List<UserResponseDto> getUsers(Long idResidencia, Boolean enable, String email) {
-        List<User> baseList;
-
-        // Filtrado por residencia si se indica
-        if (idResidencia != null) {
-            baseList = userRepository.findByResidenciaId(idResidencia);
-        } else {
-            baseList = userRepository.findAll();
-        }
-
-        // Filtrado por email (case-insensitive)
-        if (email != null && !email.isEmpty()) {
-            baseList = baseList.stream()
-                    .filter(user -> user.getEmail().equalsIgnoreCase(email.trim()))
-                    .toList();
-        }
-
-        // Filtrado por habilitación
-        if (enable != null) {
-            baseList = baseList.stream()
-                    .filter(user -> user.isEnabled() == enable)
-                    .toList();
-        }
-
-
-        return baseList.stream().map(UserResponseDto::new).toList();
-    }
-
-    /**
      * Busca un usuario por su ID.
      * <p>
      * Este método consulta el repositorio de usuarios para recuperar una entidad {@link User}
@@ -129,60 +98,47 @@ public class UserService {
         return userRepository.findById(idUsuario).orElse(null);
     }
 
-    /**
-     * Elimina un usuario del sistema según su ID.
-     * <p>
-     * Este método busca el usuario por su identificador y, si existe, lo elimina del repositorio.
-     * Si el usuario no existe o tiene referencias que dependan de el , se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
-     * con el código de error correspondiente.
-     * </p>
-     *
-     * @param idUser ID del usuario que se desea eliminar.
-     * @return DTO con la información del usuario eliminado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe en el sistema o tiene referencias que dependan de el .
-     */
-    public UserResponseDto remove(Long idUser) {
-        User userTmp = userRepository.findById(idUser).orElse(null);
-        if (userTmp == null) {
+    
+    public void delete(Long idResidencia, Long idUser) {
+        if (idResidencia == null || idUser == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+       //validar si existe ese usuario
+        User userTmp = userRepository.findById(idUser)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+
+        //Validar si pertenece a esa residencia
+        if (userTmp.getResidencia() == null || !userTmp.getResidencia().getId().equals(idResidencia)) {
             throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
         }
-        if (!userTmp.getRegistroJuegos().isEmpty()){
+
+        // Comprobar juegos asociados
+        if (userTmp.getRegistroJuegos() != null && !userTmp.getRegistroJuegos().isEmpty()){
             throw new ApiException(ApiErrorCode.REFERENCIAS_DEPENDIENTES);
         }
+
         userRepository.delete(userTmp);
-        return new UserResponseDto(userTmp);
+
     }
 
 
-    /**
-     * Elimina un usuario del sistema desvinculando previamente todas las referencias asociadas.
-     * <p>
-     * Este método permite eliminar un usuario sin violar las restricciones de integridad referencial
-     * que impone la base de datos (por ejemplo, registros de juegos que aún apuntan al usuario).
-     * Para ello:
-     * <ul>
-     *   <li>Establece el campo {@code usuario} como {@code null} en todos los registros de juego asociados.</li>
-     *   <li>Elimina la relación entre el usuario y sus registros de juego.</li>
-     *   <li>Guarda el usuario actualizado sin referencias.</li>
-     * </ul>
-     * Finalmente, devuelve un DTO con los datos del usuario modificado.
-     * </p>
-     *
-     * @param idUser ID del usuario que se desea eliminar con limpieza de referencias.
-     * @return DTO del usuario una vez desvinculado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el usuario no existe.
-     */
-    public UserResponseDto removeReferencias(Long idUser) {
-        User userTmp = userRepository.findById(idUser).orElse(null);
-        if (userTmp == null) {
+
+    public void deleteReferencies(Long idResidencia, Long idUser) {
+        if (idResidencia == null || idUser == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        User userTmp = userRepository.findById(idUser)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+        //Validar si pertenece a esa residencia
+        if (!userTmp.getResidencia().getId().equals(idResidencia)) {
             throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
         }
+        // Desvincular el usuario de todos los registros de juego
         for(RegistroJuego reg : userTmp.getRegistroJuegos()){
             reg.setUsuario(null);
         }
         userTmp.setRegistroJuegos(new LinkedHashSet<>());
         userRepository.save(userTmp);
-        return new UserResponseDto(userTmp);
     }
 
     /**
@@ -210,5 +166,120 @@ public class UserService {
             throw new ApiException(ApiErrorCode.PROBLEMAS_CON_FILE);
         }
         return resource;
+    }
+
+    public UserResponseDto get(Long idResidencia, Long idUser) {
+        if (idResidencia == null || idUser == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        //Validar si existe ese usuario
+        User user = userRepository.findById(idUser)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+
+        //Validar si pertenece a esa residencia
+        if (user.getResidencia() == null || !user.getResidencia().getId().equals(idResidencia)) {
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+        // Si todo es correcto, devolver el usuario
+        return new UserResponseDto(user);
+
+    }
+
+    public List<UserResponseDto> getAll(Long idResidencia, String email, Boolean enabled, Long idJuego) {
+        if (idResidencia == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Validar si existe esa residencia
+        Residencia residenciaTmp = residenciaService.findById(idResidencia);
+        if (residenciaTmp == null) {
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+
+        List<User> usuarios = userRepository.findByResidenciaId(idResidencia);
+
+        // Filtrado por email (no-case-insensitive)
+        if (email != null && !email.isEmpty()) {
+            usuarios = usuarios.stream()
+                    .filter(user -> user.getEmail().equalsIgnoreCase(email.trim().toLowerCase()))
+                    .toList();
+        }
+        // Filtrado por habilitación
+        if (enabled != null) {
+            usuarios = usuarios.stream()
+                    .filter(user -> user.isEnabled() == enabled)
+                    .toList();
+        }
+        // Filtrado por ID de juego
+        if (idJuego != null) {
+            usuarios = usuarios.stream()
+                    .filter(user -> user.getRegistroJuegos().stream()
+                            .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego)))
+                    .toList();
+        }
+
+
+        return usuarios.stream().map(UserResponseDto::new).toList();
+    }
+
+    public UserResponseDto update(Long idResidencia, Long idUser, UserDto input) {
+        if (idResidencia == null || idUser == null)
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+
+        //Validar si existe ese usuario
+        User userTmp = userRepository.findById(idUser)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+        //Validar si pertenece a esa residencia
+        if (userTmp.getResidencia() == null || !userTmp.getResidencia().getId().equals(idResidencia)) {
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+
+        if (input != null){
+            //Validar si el nombre es valido
+            if (input.getNombre() != null && !input.getNombre().isEmpty()) {
+                userTmp.setNombre(input.getNombre().trim());
+            }
+            //Validar si el apellido es valido
+            if (input.getApellido() != null && !input.getApellido().isEmpty()) {
+                userTmp.setApellido(input.getApellido().trim());
+            }
+            //
+            //Validar si el email es valido
+            input.setEmail(input.getEmail().trim().toLowerCase());
+            if (EmailService.isEmailValid(input.getEmail())) {
+                //Validar si el email ya existe
+                if (userRepository.findByEmail(input.getEmail()).isPresent()) {
+                    throw new ApiException(ApiErrorCode.CORREO_DUPLICADO);
+                }
+                userTmp.setEmail(input.getEmail());
+            } else {
+                throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+            }
+
+        }
+        return new UserResponseDto(userRepository.save(userTmp));
+    }
+
+    public UserResponseDto updatePassword(Long idResidencia, Long idUser, ChangePasswordUserDto input) {
+        if (idResidencia == null || idUser == null || input == null ||
+                input.getOldPassword() == null || input.getNewPassword() == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Validar si existe ese usuario
+        User userTmp = userRepository.findById(idUser)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+        //Validar si pertenece a esa residencia
+        if (userTmp.getResidencia() == null || !userTmp.getResidencia().getId().equals(idResidencia)) {
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+        //Validar si la contraseña es correcta
+        if (!passwordEncoder.matches(input.getOldPassword(), userTmp.getPassword())) {
+            throw new ApiException(ApiErrorCode.CONTRASENA_INCORRECTA); // Asegúrate de definir este código si no existe
+        }
+
+        userTmp.setPassword(passwordEncoder.encode(input.getNewPassword()));
+
+        return new UserResponseDto(userRepository.save(userTmp));
+
     }
 }

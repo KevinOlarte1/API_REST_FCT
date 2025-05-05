@@ -42,8 +42,7 @@ public class ResidenteController {
             @PathVariable Long idResidencia,
             @RequestBody ResidenteDto residenteDto){
 
-        ResidenteResponseDto residente = residenteService.add(idResidencia, residenteDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(residente);
+        return ResponseEntity.status(HttpStatus.CREATED).body(residenteService.add(idResidencia, residenteDto));
 
     }
 
@@ -80,9 +79,11 @@ public class ResidenteController {
             @RequestParam(required = false) String documentoIdentidad,
             @RequestParam(required = false) LocalDate fechaNacimiento,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month){
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Long idJuego,
+            @RequestParam(required = false) Long idEventoSalida){
 
-        return ResponseEntity.ok(residenteService.getAll(idResidencia,fechaNacimiento, year, month, documentoIdentidad));
+        return ResponseEntity.ok(residenteService.getAll(idResidencia,fechaNacimiento, year, month, documentoIdentidad, idJuego, idEventoSalida));
     }
 
     /**
@@ -93,7 +94,7 @@ public class ResidenteController {
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
      */
     @DeleteMapping("/{idResidente}/delete")
-    public ResponseEntity<Void> remove(
+    public ResponseEntity<Void> delete(
             @PathVariable Long idResidencia,
             @PathVariable Long idResidente) {
         residenteService.delete(idResidencia,idResidente);
