@@ -116,6 +116,10 @@ public class ResidenciaService {
         residenciaRepository.delete(residenciaTmp);
     }
 
+    /**
+     * Obtiene una lista de todas las residencias en el sistema. con solo el nombre , correo e id.
+     * @return Lista de residencias públicas.
+     */
     public List<ResidenciaPublicResponseDto> getAll() {
         return residenciaRepository.findAll()
                 .stream().map(ResidenciaPublicResponseDto::new)

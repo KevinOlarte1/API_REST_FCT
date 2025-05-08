@@ -316,6 +316,8 @@ paths:
         - Residencia
       summary: Registrar una nueva residencia
       description: Crea una nueva residencia validando campos obligatorios, formato de correo y unicidad.
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -394,6 +396,8 @@ paths:
         - Residencia
       summary: Busca la residencia por id ingresado en el path
       description: Devuelve un dto Response con la residencia encontrada.
+      security:
+        - bearerAuth: []
       parameters:
         - name: idResidencia
           in: query
@@ -448,12 +452,31 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
+  /resi/getAll:
+    get:
+      tags:
+        - Residencia
+      summary: Lista de residencias.
+      description: Devuelve una lisra de residencias registradas en el sistema para que el que se ingrese un usuario nuevo.
+      responses:
+        '200':
+          description: Residencia encontrada
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Residencia.PublicResponseDto'
+
+
   /resi/{idResidencia}/delete:
     delete:
       tags:
         - Residencia
       summary: Eliminar una Residencia existente.
       description: Elimina una residencia en cascada, con todas las entidades relacionadas a el.
+      security:
+        - bearerAuth: []
       parameters:
         - name: idResidencia
           in: query
@@ -497,6 +520,8 @@ paths:
         - Residente
       summary: Registrar un nuevo residente.
       description: Crea un residente en una residencia existente en la base de datos, con ciertos campos.
+      security:
+        - bearerAuth: []
       parameters:
         - name: idResidencia
           in: query
@@ -595,6 +620,8 @@ paths:
         - Residente
       summary: Busca el residente por id ingresado en el path
       description: Devuelve un dto Response con el residente encontrada.
+      security:
+        - bearerAuth: []
       parameters:
         - name: idResidencia
           in: query
@@ -661,6 +688,8 @@ paths:
         - Residente
       summary: Obtener residentes
       description: Devuelve una lista de residentes.  Y filtrado por los sigueintes parametros. Hay que tener en cuenta sigue una proridad, documento de identidad, fecha de nacimiento y mes/año
+      security:
+        - bearerAuth: []
       parameters:
         - name: idResidencia
           in:  query
@@ -745,6 +774,8 @@ paths:
         - Residente
       summary: Eliminar un Residente.
       description: Elimina un Residente en cascada, con todas las entidades relacionadas que dependan de el.
+      security:
+        - bearerAuth: []
       parameters:
         - name: idResidencia
           in: query
@@ -808,6 +839,8 @@ paths:
         - Residente
       summary: Actualiza los datos de un residente
       description: Campos como nombre, apellido, documentoIdentidad, fecha de nacimiento.
+      security:
+        - bearerAuth: []
       parameters:
         - name: idResidencia
           in: query
@@ -2616,6 +2649,20 @@ components:
           example: contacto@resilapaz.com
 
     Residencia.ResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        nombre:
+          type: string
+          example: Residencia La Paz
+        email:
+          type: string
+          example: contacto@resilapaz.com
+
+    Residencia.PublicResponseDto:
       type: object
       properties:
         id:

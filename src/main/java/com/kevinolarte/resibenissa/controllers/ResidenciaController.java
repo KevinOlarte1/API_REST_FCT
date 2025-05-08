@@ -57,6 +57,11 @@ public class ResidenciaController {
         return ResponseEntity.ok(residenciaService.get(idResidencia));
     }
 
+    /**
+     * Obtiene todas las residencias.
+     *
+     * @return {@link ResponseEntity} con estado {@code 200 OK} y una lista de DTOs de residencias.
+     */
     @GetMapping("/getAll")
     public ResponseEntity<List<ResidenciaPublicResponseDto>> getAll() {
         return ResponseEntity.ok(residenciaService.getAll());
