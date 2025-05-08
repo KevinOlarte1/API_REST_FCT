@@ -1381,7 +1381,7 @@ paths:
                   status: 406
                   timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/add:
+  /resi/{idResidencia}/juego/add:
     post:
       tags:
         - Modulo - JUEGO
@@ -1750,12 +1750,25 @@ paths:
                   status: 409
                   timestamp: 2025-04-13T21:00:00
 
-  /resi/juegos/stats/add:
+  /resi/{idResidencia}/juego/{idJuego}/registro/add:
     post:
       tags:
-        - Modulo Juego
+        - Modulo - JUEGO
       summary: Registrar un nuevo registro de juego.
       description: Crea un nuevo registro de juego validando campos obligatorios,existencia de las referencias y valores validos.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idJuego
+          in: path
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -1763,19 +1776,19 @@ paths:
             schema:
               $ref: '#/components/schemas/RegistroJuego.Dto'
       responses:
-        '200':
+        '201':
           description: Registro de juego registrado con éxito
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegistroJuego.ResponseDto'
         '400':
-          description: Error de validacion o datos nulos/vacios o conflicto de referencias.
+          description: Datos nulos/vacios .
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
-              examples:
+              example:
                 CAMPOS_OBLIGATORIOS:
                   value:
                     mensaje: Faltan campos obligatorios
@@ -1842,111 +1855,70 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
               example:
-                CORREO_DUPLICADO:
+                CONFLICTO_REFERENCIAS:
                   value:
                     mensaje: Problemas con las referencias de las entidades, no corresponden a las mismas
                     codigo: 1011
                     status: 409
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/juegos/stats:
+  /resi/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/get:
     get:
       tags:
-        - Modulo Juego
-      summary: Obtener juegos
-      description: Devuelve una lista de juegos. Si se indica el id de la residencia sacara una lista de juegos de esa residencia.
+        - Modulo - JUEGO
+      summary: Obtener registro de juego
+      description: Devuelve los datos de una partida específica.
+      security:
+        - bearerAuth: []
       parameters:
-        - name: idResidente
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int64
         - name: idResidencia
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int64
-        - name: idJuego
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int64
-        - name: year
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int64
-        - name: month
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int64
-        - name: day
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Registro(s) Juego(s) encontrado(s)
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RegistroJuego.ResponseDto'
-        '400':
-          description: Error al recuperar los registros de los juegos.
-          content:
-            application/json:
-              schema:
-        '405':
-          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                ENDPOINT_PROTEGIDO:
-                  value:
-                    mensaje: Tiene que tener permiso para acceder aqui.
-                    codigo: 1020
-                    status: 405
-                    timestamp: 2025-04-13T21:00:0
-
-  /resi/juegos/stats/remove:
-    delete:
-      tags:
-        - Modulo Juego
-      summary: Eliminar una Registro de juego.
-      description: Elimina un Registro de juego.
-      parameters:
-        - name: idRegistroJuego
-          in: query
+          in: path
           required: true
           schema:
             type: integer
-            format: int64
+        - name: idJuego
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idRegistroJuego
+          in: path
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
-          description: Registro Juego borrada
+          description: Registro encontrado
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegistroJuego.ResponseDto'
-        '404':
-          description: Registro Juego invalido, no encontrado
+        '400':
+          description: Datos nulos/vacios .
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
               example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: juego/ registro_juego invalido, no existe en la base de datos.
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                JUEGO_INVALIDO:
+                  value:
+                    mensaje: Juego invalida
+                    codigo: 1008
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
                 REGISTRO_JUEGO_INVALIDO:
                   value:
                     mensaje: Registro Juego invalido
@@ -1965,7 +1937,267 @@ paths:
                     mensaje: Tiene que tener permiso para acceder aqui.
                     codigo: 1020
                     status: 405
-                    timestamp: 2025-04-13T21:00:0
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/{idResidencia}/juego/{idJuego}/dificultad/{dificultad}/getAll:
+    get:
+      tags:
+        - Modulo - JUEGO
+      summary: Listar registros por dificultad
+      description: Lista registros por dificultad y filtros opcionales.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idJuego
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: dificultad
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [ FACIL, MEDIO, DIFICIL ]
+        - name: idResidente
+          in: query
+          schema:
+            type: integer
+        - name: idUser
+          in: query
+          schema:
+            type: integer
+        - name: year
+          in: query
+          schema:
+            type: integer
+        - name: month
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de registros encontrada
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistroJuego.ResponseDto'
+        '400':
+          description: Datos nulos/vacios .
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Juego, Residente o Usuario invalido, no esixte ninguna referencia en la base de datos de estas entidades
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                JUEGO_INVALIDO:
+                  value:
+                    mensaje: Juego invalida
+                    codigo: 1008
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+                RESIDENTE_INVALIDO:
+                  value:
+                    mensaje: Residente invalida
+                    codigo: 1009
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalida
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/addComment:
+    patch:
+      tags:
+        - Modulo Juego
+      summary: Añadir comentario a registro
+      description: Actualiza la observación/comentario del registro.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idJuego
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idRegistroJuego
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroJuego.UpdateDto'
+      responses:
+        '200':
+          description: Comentario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroJuego.ResponseDto'
+        '400':
+          description: Datos nulos/vacios .
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: juego/ registro_juego invalido, no existe en la base de datos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                JUEGO_INVALIDO:
+                  value:
+                    mensaje: Juego invalida
+                    codigo: 1008
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+                REGISTRO_JUEGO_INVALIDO:
+                  value:
+                    mensaje: Registro Juego invalido
+                    codigo: 1012
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/delete:
+    delete:
+      tags:
+        - Modulo - JUEGO
+      summary: Eliminar registro de juego
+      description: Elimina un registro de juego de forma permanente.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idResidencia
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idJuego
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idRegistroJuego
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Registro eliminado correctamente
+        '400':
+          description: Datos nulos/vacios .
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: juego/ registro_juego invalido, no existe en la base de datos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                JUEGO_INVALIDO:
+                  value:
+                    mensaje: Juego invalida
+                    codigo: 1008
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+                REGISTRO_JUEGO_INVALIDO:
+                  value:
+                    mensaje: Registro Juego invalido
+                    codigo: 1012
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
+
 
   /resi/{idResidencia}/evento/{idSalida}/participante/add:
     post:
@@ -2851,10 +3083,6 @@ components:
     RegistroJuego.Dto:
       type: object
       properties:
-        idJuego:
-          type: integer
-          format: int64
-          example: 1
         idResidente:
           type: integer
           format: int64
@@ -2863,7 +3091,7 @@ components:
           type: integer
           format: int64
           example: 3
-        fallos:
+        num:
           type: integer
           example: 2
         duracion:
@@ -2874,6 +3102,13 @@ components:
           type: string
           enum: [ FACIL, MEDIA, DIFICIL ]
           example: MEDIA
+
+    RegistroJuego.UpdateDto:
+      type: object
+      properties:
+        observacion:
+          type: string
+          example: Muy lento
 
     RegistroJuego.ResponseDto:
       type: object

@@ -15,8 +15,6 @@ import com.kevinolarte.resibenissa.services.ResidenteService;
 import com.kevinolarte.resibenissa.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 import java.util.List;
@@ -24,12 +22,13 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Servicio que gestiona la lógica de negocio relacionada con los registros de juegos jugados
- * por los residentes de una residencia.
+ * Servicio encargado de gestionar los registros de juegos jugados por los residentes.
  * <p>
- * Permite crear registros, aplicar filtros por fechas y entidades, y eliminar entradas específicas.
- * También valida que los registros pertenezcan a una misma residencia para mantener coherencia.
+ * Proporciona métodos para agregar, consultar, actualizar y eliminar registros de juegos.
  * </p>
+ *
+ * Las operaciones incluyen validaciones de consistencia entre entidades relacionadas
+ * (residente, juego, usuario) y controles de integridad de datos.
  *
  * @author Kevin Olarte
  */
@@ -44,6 +43,16 @@ public class RegistroJuegoService {
 
 
 
+    /**
+     * Crea un nuevo registro de juego para un residente en una residencia y juego específicos.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param input Datos del registro de juego.
+     * @return El registro de juego creado.
+     * @throws ApiException si faltan campos obligatorios, si las entidades relacionadas no existen
+     *                      o no pertenecen a la misma residencia, o si se proporcionan valores inválidos.
+     */
     public RegistroJuegoResponseDto add(Long idResidencia, Long idJuego,RegistroJuegoDto input) throws ApiException {
         if (input == null || input.getDuracion() == null || input.getNum() == null ||
                 input.getIdResidente() == null || input.getIdUsuario() == null ||
@@ -99,10 +108,20 @@ public class RegistroJuegoService {
     }
 
 
-    public RegistroJuegoResponseDto update(Long idResidencia, Long idJuego, Long idRegistroJuego, RegistroJuegoDto input){
-       if (idResidencia == null || idJuego == null || idRegistroJuego == null)
-           throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-
+    /**
+     * Obtiene un registro de juego específico mediante su ID.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param idRegistroJuego ID del registro de juego.
+     * @return El registro de juego solicitado.
+     * @throws ApiException si algún parámetro es nulo, si el juego no existe o no pertenece a la residencia,
+     *                      o si el registro no existe o no corresponde con el juego indicado.
+     */
+    public RegistroJuegoResponseDto get(Long idResidencia, Long idJuego, Long idRegistroJuego) {
+        if (idResidencia == null || idJuego == null || idRegistroJuego == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
         //Comprobar si el juego existe
         Juego juego = juegoService.findById(idJuego);
         if (juego == null)
@@ -110,28 +129,31 @@ public class RegistroJuegoService {
         //Comprobar si el juego pertence a la residencia
         if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
-
         //Comprobar si existe el registro de juego
-        RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego).orElse(null);
-        if (registroJuego == null)
-            throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
+        RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO));
         //Comprobar si el registro pertenece al juego
         if (!Objects.equals(registroJuego.getJuego().getId(), idJuego))
             throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
 
-        //Comprobar si tiene observaciones el input
-        if (input != null){
-            if (input.getObservacion() != null){
-                registroJuego.setObservacion(input.getObservacion());
-                //guardar el registro
-                registroJuego = registroJuegoRepository.save(registroJuego);
-            }
-        }
         return new RegistroJuegoResponseDto(registroJuego);
+
     }
 
-
-
+    /**
+     * Obtiene todos los registros de juego filtrados por dificultad y parámetros opcionales.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param dificultad Dificultad de la partida (FACIL, MEDIO, DIFICIL).
+     * @param idResidente (opcional) ID del residente.
+     * @param idUser (opcional) ID del usuario que registró la partida.
+     * @param year (opcional) Año en que se jugó.
+     * @param month (opcional) Mes en que se jugó.
+     * @return Lista de registros de juego que cumplen con los filtros.
+     * @throws ApiException si faltan campos obligatorios, o si alguna de las entidades no existe
+     *                      o no pertenece a la residencia indicada.
+     */
     public List<RegistroJuegoResponseDto> getAll(Long idResidencia, Long idJuego, Dificultad dificultad, Long idResidente, Long idUser, Integer year, Integer month) {
         if (idResidencia == null || idJuego == null || dificultad == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -200,16 +222,13 @@ public class RegistroJuegoService {
 
 
     /**
-     * Elimina un registro de juego del sistema según su ID.
-     * <p>
-     * Este método busca el registro por su identificador y, si lo encuentra, devuelve un DTO con su información
-     * antes de eliminarlo del repositorio. Si no existe, lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
-     * con el código de error {@link com.kevinolarte.resibenissa.exceptions.ApiErrorCode#REGISTRO_JUEGO_INVALIDO}.
-     * </p>
+     * Elimina un registro de juego existente.
      *
-     * @param idRegistroJuego ID del registro de juego que se desea eliminar.
-     * @return DTO con la información del registro de juego eliminado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el registro de juego no existe.
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param idRegistroJuego ID del registro de juego.
+     * @throws ApiException si alguno de los parámetros es nulo, si el juego o el registro no existen,
+     *                      o si no pertenecen a la misma residencia o juego.
      */
     public void delete(Long idResidencia, Long idJuego, Long idRegistroJuego) {
         if (idResidencia == null || idJuego == null || idRegistroJuego == null){
@@ -233,10 +252,21 @@ public class RegistroJuegoService {
         registroJuegoRepository.delete(registroJuego);
     }
 
-    public RegistroJuegoResponseDto get(Long idResidencia, Long idJuego, Long idRegistroJuego) {
-        if (idResidencia == null || idJuego == null || idRegistroJuego == null){
+    /**
+     * Actualiza la observación de un registro de juego existente.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param idRegistroJuego ID del registro de juego.
+     * @param input DTO con la nueva observación.
+     * @return El registro de juego actualizado.
+     * @throws ApiException si alguno de los parámetros es nulo, si el juego o el registro no existen,
+     *                      o si no pertenecen a la misma residencia.
+     */
+    public RegistroJuegoResponseDto update(Long idResidencia, Long idJuego, Long idRegistroJuego, RegistroJuegoDto input){
+        if (idResidencia == null || idJuego == null || idRegistroJuego == null)
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
+
         //Comprobar si el juego existe
         Juego juego = juegoService.findById(idJuego);
         if (juego == null)
@@ -244,14 +274,24 @@ public class RegistroJuegoService {
         //Comprobar si el juego pertence a la residencia
         if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
         //Comprobar si existe el registro de juego
-        RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO));
+        RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego).orElse(null);
+        if (registroJuego == null)
+            throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
         //Comprobar si el registro pertenece al juego
         if (!Objects.equals(registroJuego.getJuego().getId(), idJuego))
             throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
 
+        //Comprobar si tiene observaciones el input
+        if (input != null){
+            if (input.getObservacion() != null){
+                registroJuego.setObservacion(input.getObservacion());
+                //guardar el registro
+                registroJuego = registroJuegoRepository.save(registroJuego);
+            }
+        }
         return new RegistroJuegoResponseDto(registroJuego);
-
     }
+
 }

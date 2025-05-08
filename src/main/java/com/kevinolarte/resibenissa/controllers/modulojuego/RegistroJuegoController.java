@@ -13,11 +13,11 @@ import java.util.List;
 /**
  * Controlador REST para gestionar los registros de juegos jugados por los residentes.
  * <p>
- * Permite agregar nuevos registros, consultar estadísticas con múltiples filtros
- * y eliminar registros específicos.
+ * Permite agregar nuevos registros, consultar estadísticas con múltiples filtros,
+ * actualizar observaciones y eliminar registros específicos.
  * </p>
  * <p>
- * Todas las rutas expuestas están bajo el prefijo <code>/resi/juegos/stats</code>.
+ * Todas las rutas expuestas están bajo el prefijo <code>/resi/{idResidencia}/juego/{idJuego}</code>.
  * </p>
  *
  * @author Kevin Olarte
@@ -30,6 +30,14 @@ public class RegistroJuegoController {
     private final RegistroJuegoService registroJuegoService;
 
 
+    /**
+     * Crea un nuevo registro de juego para un residente en una residencia y juego específicos.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param registroJuegoDto Datos del registro a guardar.
+     * @return El registro de juego creado.
+     */
     @PostMapping("/registro/add")
     public ResponseEntity<RegistroJuegoResponseDto> add(
             @PathVariable Long idResidencia,
@@ -40,6 +48,14 @@ public class RegistroJuegoController {
 
     }
 
+    /**
+     * Obtiene un registro de juego específico mediante su ID.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param idRegistroJuego ID del registro de juego.
+     * @return El registro de juego solicitado.
+     */
     @GetMapping("/registro/{idRegistroJuego}/get")
     public ResponseEntity<RegistroJuegoResponseDto> get(
             @PathVariable Long idResidencia,
@@ -48,6 +64,18 @@ public class RegistroJuegoController {
         return ResponseEntity.ok(registroJuegoService.get(idResidencia, idJuego, idRegistroJuego));
     }
 
+    /**
+     * Obtiene todos los registros de juego filtrados por dificultad, y opcionalmente por residente, usuario, año y mes.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param dificultad Dificultad del juego (FACIL, MEDIO o DIFICIL).
+     * @param idResidente (Opcional) ID del residente.
+     * @param idUser (Opcional) ID del usuario (trabajador).
+     * @param year (Opcional) Año de la partida.
+     * @param month (Opcional) Mes de la partida.
+     * @return Lista de registros de juego que coinciden con los filtros.
+     */
     @GetMapping("/dificultad/{dificultad}/getAll")
     public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
             @PathVariable Long idResidencia,
@@ -62,6 +90,15 @@ public class RegistroJuegoController {
 
     }
 
+    /**
+     * Actualiza un registro de juego existente añadiendo o modificando una observación.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param idRegistroJuego ID del registro a actualizar.
+     * @param registroJuegoDto DTO con los nuevos datos (principalmente observación).
+     * @return Registro de juego actualizado.
+     */
     @PatchMapping("/registro/{idRegistroJuego}/addComment")
     public ResponseEntity<RegistroJuegoResponseDto> update(
             @PathVariable Long idResidencia,
@@ -72,6 +109,14 @@ public class RegistroJuegoController {
     }
 
 
+    /**
+     * Elimina un registro de juego específico.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param idRegistroJuego ID del registro a eliminar.
+     * @return Respuesta sin contenido si la eliminación fue exitosa.
+     */
     @DeleteMapping("/registro/{idRegistroJuego}/delete")
     public ResponseEntity<Void> delete(
             @PathVariable Long idResidencia,
