@@ -17,7 +17,8 @@ public class Conf {
     public static final Long idResidenciaDefault = 1L;
     public static final Long idUsuarioDefault = 1L;
     public static final String emailDefault = "default@default.com";
-    public static final String pathPublic= "/auth/";
+    public static final String pathPublicAuth= "/auth/";
+    public static final String pathPublicSwagger = "/swagger-ui/";
 
     @Value("${upload.dir}")
     public static String imageResource;

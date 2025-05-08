@@ -2769,6 +2769,7 @@ components:
         nombre:
           type: string
           example: Memoria Visual
+
     JuegoFiltre.Dto:
       type: object
       properties:
@@ -2792,6 +2793,13 @@ components:
           type: integer
           format: int64
           example: 3
+
+    JuegoUpdate.Dto:
+      type: object
+      properties:
+          nombre:
+            type: string
+            example: Memoria Visual
 
     RegistroJuego.Dto:
       type: object
@@ -2992,3 +3000,9 @@ components:
         codigo: 1001
         status: 400
         timestamp: 2025-04-13T21:00:00
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

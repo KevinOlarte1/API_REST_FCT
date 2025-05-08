@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.dto.out;
 
+import com.kevinolarte.resibenissa.models.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,10 +19,14 @@ import lombok.Setter;
 @Setter
 public class LoginResponseDto {
     private String token;
-    private long expiresIn;
+    private Long expiresIn;
+    private Long idUser;
+    private Long idResidencia;
 
-    public LoginResponseDto(String token, long expiresIn) {
+    public LoginResponseDto(String token, long expiresIn, User user) {
         this.token = token;
         this.expiresIn = expiresIn;
+        this.idUser = user.getId();
+        this.idResidencia = user.getResidencia().getId();
     }
 }
