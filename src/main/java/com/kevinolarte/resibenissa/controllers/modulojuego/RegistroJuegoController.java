@@ -2,6 +2,7 @@ package com.kevinolarte.resibenissa.controllers.modulojuego;
 
 import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
+import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.services.modulojuego.RegistroJuegoService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,86 +22,63 @@ import java.util.List;
  *
  * @author Kevin Olarte
  */
-@RequestMapping("/resi/juegos/stats")
+@RequestMapping("/resi/{idResidencia}/juego/{idJuego}")
 @RestController
 @AllArgsConstructor
 public class RegistroJuegoController {
 
     private final RegistroJuegoService registroJuegoService;
 
-    /**
-     * Agrega un nuevo registro de juego al sistema.
-     * <p>
-     * Recibe un DTO con los datos de la partida (residente, juego, duración, fallos, etc.)
-     * y delega la persistencia al servicio correspondiente.
-     * </p>
-     *
-     * @param registroJuegoDto DTO con los datos del registro de juego.
-     * @return {@link ResponseEntity} con el DTO del registro guardado y estado HTTP 200.
-     */
-    @PostMapping("/add")
-    public ResponseEntity<RegistroJuegoResponseDto> addRegistroJuego(@RequestBody RegistroJuegoDto registroJuegoDto) {
-        RegistroJuegoResponseDto registroJuego = registroJuegoService.save(registroJuegoDto);
+
+    @PostMapping("/registro/add")
+    public ResponseEntity<RegistroJuegoResponseDto> add(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idJuego,
+            @RequestBody RegistroJuegoDto registroJuegoDto) {
+        RegistroJuegoResponseDto registroJuego = registroJuegoService.add(idResidencia, idJuego, registroJuegoDto);
         return ResponseEntity.ok(registroJuego);
 
     }
 
-    /**
-     * Obtiene las estadísticas de juegos jugados aplicando filtros opcionales.
-     * <p>
-     * Permite filtrar por ID de residente, ID de residencia, ID de juego, y por fecha (año, mes, día).
-     * Si no se aplica ningún filtro, se devuelven todos los registros.
-     * </p>
-     *
-     * @param idResidente  ID del residente (opcional).
-     * @param idResidencia ID de la residencia (opcional).
-     * @param idJuego      ID del juego (opcional).
-     * @param year         Año de ejecución del juego (opcional).
-     * @param month        Mes de ejecución del juego (opcional).
-     * @param day          Día de ejecución del juego (opcional).
-     * @return {@link ResponseEntity} con la lista de registros encontrados.
-     */
-    @GetMapping
-    public ResponseEntity<List<RegistroJuegoResponseDto>> getStats(
+    @GetMapping("/registro/{idRegistroJuego}/get")
+    public ResponseEntity<RegistroJuegoResponseDto> get(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idJuego,
+            @PathVariable Long idRegistroJuego) {
+        return ResponseEntity.ok(registroJuegoService.get(idResidencia, idJuego, idRegistroJuego));
+    }
+
+    @GetMapping("/dificultad/{dificultad}/getAll")
+    public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idJuego,
+            @PathVariable Dificultad dificultad,
             @RequestParam(required = false) Long idResidente,
-            @RequestParam(required = false) Long idResidencia,
-            @RequestParam(required = false) Long idJuego,
+            @RequestParam(required = false) Long idUser,
             @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer day){
-
-        List<RegistroJuegoResponseDto> resultados = registroJuegoService.getStats(idResidente, idResidencia, idJuego, year, month, day);
-        return ResponseEntity.ok(resultados);
+            @RequestParam(required = false) Integer month){
+        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, idResidente, idUser, year, month));
 
 
     }
 
-    @PatchMapping("/update")
+    @PatchMapping("/registro/{idRegistroJuego}/addComment")
     public ResponseEntity<RegistroJuegoResponseDto> update(
-            @RequestParam Long idResidencia,
-            @RequestParam Long idJuego,
-            @RequestParam Long idRegistroJuego,
+            @PathVariable Long idResidencia,
+            @PathVariable Long idJuego,
+            @PathVariable Long idRegistroJuego,
             @RequestBody RegistroJuegoDto registroJuegoDto){
-        RegistroJuegoResponseDto registroTmp = registroJuegoService.updateRegistro(idResidencia, idJuego, idRegistroJuego, registroJuegoDto);
-        return ResponseEntity.ok(registroTmp);
+        return ResponseEntity.ok(registroJuegoService.update(idResidencia, idJuego, idRegistroJuego, registroJuegoDto));
     }
 
-    /**
-     * Elimina un registro de juego del sistema.
-     * <p>
-     * Este método recibe un ID de registro de juego como parámetro y solicita al servicio
-     * {@link RegistroJuegoService} que elimine la entidad correspondiente.
-     * Si la eliminación es exitosa, se devuelve un DTO con los datos del registro eliminado.
-     * </p>
-     *
-     * @param idRegistroJuego ID del registro de juego que se desea eliminar. Debe existir en el sistema.
-     * @return {@link ResponseEntity} que contiene el DTO del registro eliminado y el estado HTTP 200 (OK).
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el registro no existe.
-     */
-    @DeleteMapping("/remove")
-    public ResponseEntity<RegistroJuegoResponseDto> remove(@RequestParam Long idRegistroJuego){
-        RegistroJuegoResponseDto registroTmp = registroJuegoService.remove(idRegistroJuego);
-        return ResponseEntity.ok(registroTmp);
+
+    @DeleteMapping("/registro/{idRegistroJuego}/delete")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idJuego,
+            @PathVariable Long idRegistroJuego){
+        registroJuegoService.delete(idResidencia, idJuego, idRegistroJuego);
+        return ResponseEntity.noContent().build();
     }
 
 }

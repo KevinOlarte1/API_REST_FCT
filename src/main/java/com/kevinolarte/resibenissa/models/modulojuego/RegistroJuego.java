@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.models.modulojuego;
 
+import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.User;
@@ -69,18 +70,12 @@ public class RegistroJuego {
     private Dificultad dificultad;
     private String observacion;
 
-    public RegistroJuego(Integer num, Double duracion, Dificultad dificultad, String observacion) {
-        this.num = num;
-        this.duracion = duracion;
+    public RegistroJuego(RegistroJuegoDto input) {
+        this.num = input.getNum();
+        this.duracion = input.getDuracion();
         this.fecha = LocalDateTime.now();
-        this.dificultad = dificultad;
-        this.observacion = observacion;
-    }
-    public RegistroJuego(Double duracion, Dificultad dificultad ){
-        this(0,duracion,dificultad,null);
-    }
-    public RegistroJuego(Integer num, Double duracion){
-        this(num,duracion,null,null);
+        this.dificultad = input.getDificultad();
+        this.observacion = "";
     }
 
     public RegistroJuego() {

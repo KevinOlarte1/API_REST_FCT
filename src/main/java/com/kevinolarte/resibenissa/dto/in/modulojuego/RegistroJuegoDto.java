@@ -20,7 +20,7 @@ public class RegistroJuegoDto {
     private Long idJuego;
     private Long idResidente;
     private Long idUsuario;
-    private Integer fallos;
+    private Integer num;
     private Double duracion;
     private Dificultad dificultad;
     private String observacion;
@@ -31,7 +31,7 @@ public class RegistroJuegoDto {
                 "idJuego=" + idJuego +
                 ", idResidente=" + idResidente +
                 ", idUsuario=" + idUsuario +
-                ", fallos=" + fallos +
+                ", fallos=" + num +
                 ", duracion=" + duracion +
                 ", dificultad=" + dificultad +
                 '}';

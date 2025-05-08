@@ -2,6 +2,7 @@ package com.kevinolarte.resibenissa.services.modulojuego;
 
 import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
+import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.modulojuego.Juego;
@@ -42,37 +43,38 @@ public class RegistroJuegoService {
     private final UserService userService;
 
 
-    /**
-     * Crea y guarda un nuevo registro de juego en la base de datos.
-     * <p>
-     * Realiza validaciones sobre los campos obligatorios, valores negativos, y que todas las entidades
-     * asociadas (juego, usuario, residente) existan y pertenezcan a la misma residencia.
-     * </p>
-     *
-     * @param input DTO de entrada con los datos del juego a registrar.
-     * @return DTO con los datos del registro creado.
-     * @throws ApiException si falta algún campo obligatorio, hay valores inválidos, o las entidades no son compatibles.
-     */
-    public RegistroJuegoResponseDto save(RegistroJuegoDto input) throws ApiException {
-        if (input.getDuracion() == null || input.getFallos() == null ||
-                input.getIdResidente() == null || input.getIdJuego() == null || input.getIdUsuario() == null ||
-                input.getObservacion() == null){
+
+    public RegistroJuegoResponseDto add(Long idResidencia, Long idJuego,RegistroJuegoDto input) throws ApiException {
+        if (input == null || input.getDuracion() == null || input.getNum() == null ||
+                input.getIdResidente() == null || input.getIdUsuario() == null ||
+                input.getDificultad() == null || idJuego == null || idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
-        //No puede haber fallos negativos
-        if (input.getFallos() < 0){
-            throw new ApiException(ApiErrorCode.VALORES_NEGATIVOS);
-        }
-        Juego juego = juegoService.findById(input.getIdJuego());
-        Residente residente = residenteService.findById(input.getIdResidente());
-        User usuario = userService.findById(input.getIdUsuario());
+        //Comprobar si el juego existe
+        Juego juego = juegoService.findById(idJuego);
         if (juego == null)
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        //Comprobar si el juego pertence a la residencia
+        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
+        //Comprobar si el residente existe
+        Residente residente = residenteService.findById(input.getIdResidente());
         if (residente == null)
             throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+        //Comprobar si el residente pertence a la residencia
+        if (!Objects.equals(residente.getResidencia().getId(), idResidencia))
+            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+
+        //Comprobar si el usuario existe
+        User usuario = userService.findById(input.getIdUsuario());
         if (usuario == null)
-            throw  new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        //Comprobar si el usuario pertence a la residencia
+        if (!Objects.equals(usuario.getResidencia().getId(), idResidencia))
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+
 
         //Ver si el juego es de la misma residencia que el residente
         if (!Objects.equals(juego.getResidencia().getId(), residente.getResidencia().getId())) {
@@ -82,7 +84,13 @@ public class RegistroJuegoService {
         if (!Objects.equals(usuario.getResidencia().getId(), juego.getResidencia().getId())) {
             throw new ApiException(ApiErrorCode.CONFLICTO_REFERENCIAS);
         }
-        RegistroJuego registroJuego = new RegistroJuego(input.getFallos(), input.getDuracion(), input.getDificultad(), input.getObservacion());
+
+        //No puede haber fallos negativos
+        if (input.getNum() < 0){
+            throw new ApiException(ApiErrorCode.VALORES_NEGATIVOS);
+        }
+
+        RegistroJuego registroJuego = new RegistroJuego(input);
         registroJuego.setJuego(juego);
         registroJuego.setResidente(residente);
         registroJuego.setUsuario(usuario);
@@ -91,8 +99,8 @@ public class RegistroJuegoService {
     }
 
 
-    public RegistroJuegoResponseDto updateRegistro(Long idResidencia, Long idJuego, Long idRegistroJuego, RegistroJuegoDto input){
-       if (idResidencia == null || idJuego == null || idRegistroJuego == null || input == null)
+    public RegistroJuegoResponseDto update(Long idResidencia, Long idJuego, Long idRegistroJuego, RegistroJuegoDto input){
+       if (idResidencia == null || idJuego == null || idRegistroJuego == null)
            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
 
         //Comprobar si el juego existe
@@ -103,7 +111,6 @@ public class RegistroJuegoService {
         if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
 
-
         //Comprobar si existe el registro de juego
         RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego).orElse(null);
         if (registroJuego == null)
@@ -113,65 +120,81 @@ public class RegistroJuegoService {
             throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
 
         //Comprobar si tiene observaciones el input
-        if (input.getObservacion() != null){
-            registroJuego.setObservacion(input.getObservacion());
+        if (input != null){
+            if (input.getObservacion() != null){
+                registroJuego.setObservacion(input.getObservacion());
+                //guardar el registro
+                registroJuego = registroJuegoRepository.save(registroJuego);
+            }
         }
         return new RegistroJuegoResponseDto(registroJuego);
     }
 
 
-    /**
-     * Recupera estadísticas de juegos jugados por los residentes, aplicando filtros dinámicos.
-     * <p>
-     * Filtros disponibles:
-     * <ul>
-     *   <li><b>idResidente</b>: juegos jugados por un residente específico</li>
-     *   <li><b>idResidencia</b>: juegos de todos los residentes de una residencia</li>
-     *   <li><b>idJuego</b>: juegos por tipo de juego</li>
-     *   <li><b>year, month, day</b>: filtro por fecha parcial o completa</li>
-     * </ul>
-     * </p>
-     *
-     * @param idResidente ID del residente (opcional)
-     * @param idResidencia ID de la residencia (opcional)
-     * @param idJuego ID del juego (opcional)
-     * @param year Año de juego (opcional)
-     * @param month Mes de juego (opcional)
-     * @param day Día de juego (opcional)
-     * @return Lista de registros de juego convertidos a DTO
-     */
-    public List<RegistroJuegoResponseDto> getStats(Long idResidente, Long idResidencia, Long idJuego, Integer year, Integer month, Integer day) {
+
+    public List<RegistroJuegoResponseDto> getAll(Long idResidencia, Long idJuego, Dificultad dificultad, Long idResidente, Long idUser, Integer year, Integer month) {
+        if (idResidencia == null || idJuego == null || dificultad == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
         List<RegistroJuego> baseList;
 
-        //1- filtro mira de mas pequeño a mas grade idResidente, idResidencia sino todo.
-        if (idResidente != null) {
-            baseList = registroJuegoRepository.findByResidenteId(idResidente);
-        } else if (idResidencia != null) {
-            baseList = registroJuegoRepository.findByResidente_Residencia_Id(idResidencia);
-        } else {
-            baseList = registroJuegoRepository.findAll();
+        //Comprobar si el juego existe
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        //Comprobar si el juego pertence a la residencia
+        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
+        User user = null;
+        if (idUser != null){
+            //Comprobar si el usuario existe
+            user = userService.findById(idUser);
+            if (user == null)
+                throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            //Comprobar si el usuario pertence a la residencia
+            if (!Objects.equals(user.getResidencia().getId(), idResidencia))
+                throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
         }
 
-        //Mira si tiene algún juego por filtrar
-        if (idJuego != null) {
-            baseList = baseList.stream()
-                    .filter(r -> r.getJuego().getId().equals(idJuego))
-                    .toList();
+
+        //Filtrar de residente y usuario
+        if (idResidente == null){
+            if (idUser == null){
+                baseList = registroJuegoRepository.findByJuegoAndDificultad(juego, dificultad);
+            }
+            else
+                baseList = registroJuegoRepository.findByJuegoAndDificultadAndUsuario(juego, dificultad, user);
+        }
+        else{
+            //Comprobar si el residente existe
+            Residente residente = residenteService.findById(idResidente);
+            if (residente == null)
+                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+            //Comprobar si el residente pertence a la residencia
+            if (!Objects.equals(residente.getResidencia().getId(), idResidencia))
+                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+
+            if (idUser == null){
+                baseList = registroJuegoRepository.findByJuegoAndDificultadAndResidente(juego, dificultad, residente);
+            }
+            else{
+                baseList = registroJuegoRepository.findByJuegoAndDificultadAndResidenteAndUsuario(juego, dificultad, residente, user);
+            }
         }
 
         //Filtra por dia, por mes, por año o combinado. //Mapping clase origen clase destino. DOZER, MapStruct
-        if (year != null || month != null || day != null) {
+        if (year != null || month != null) {
             baseList = baseList.stream()
                     .filter(r -> {
                         boolean match = true;
                         if (year != null) match = r.getFecha().getYear() == year;
                         if (month != null) match = match && r.getFecha().getMonthValue() == month;
-                        if (day != null) match = match && r.getFecha().getDayOfMonth() == day;
                         return match;
                     })
                     .toList();
         }
-        //TODO: -ALTERNATIVA QUERY DINAMICA
+
         return baseList.stream().map(RegistroJuegoResponseDto::new).collect(Collectors.toList());
     }
 
@@ -188,11 +211,47 @@ public class RegistroJuegoService {
      * @return DTO con la información del registro de juego eliminado.
      * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el registro de juego no existe.
      */
-    public RegistroJuegoResponseDto remove(Long idRegistroJuego) {
-        RegistroJuego registroTmp = registroJuegoRepository.findById(idRegistroJuego).orElse(null);
-        if (registroTmp == null){
-            throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
+    public void delete(Long idResidencia, Long idJuego, Long idRegistroJuego) {
+        if (idResidencia == null || idJuego == null || idRegistroJuego == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
-        return new RegistroJuegoResponseDto(registroTmp);
+        //Comprobar si el juego existe
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        //Comprobar si el juego pertence a la residencia
+        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        //Comprobar si existe el registro de juego
+        RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO));
+        //Comprobar si el registro pertenece al juego
+        if (!Objects.equals(registroJuego.getJuego().getId(), idJuego))
+            throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
+
+        //Eliminar el registro
+        registroJuegoRepository.delete(registroJuego);
+    }
+
+    public RegistroJuegoResponseDto get(Long idResidencia, Long idJuego, Long idRegistroJuego) {
+        if (idResidencia == null || idJuego == null || idRegistroJuego == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Comprobar si el juego existe
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        //Comprobar si el juego pertence a la residencia
+        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        //Comprobar si existe el registro de juego
+        RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO));
+        //Comprobar si el registro pertenece al juego
+        if (!Objects.equals(registroJuego.getJuego().getId(), idJuego))
+            throw new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO);
+
+        return new RegistroJuegoResponseDto(registroJuego);
+
     }
 }

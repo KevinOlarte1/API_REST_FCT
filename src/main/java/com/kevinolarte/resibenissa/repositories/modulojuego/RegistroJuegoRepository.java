@@ -1,5 +1,9 @@
 package com.kevinolarte.resibenissa.repositories.modulojuego;
 
+import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
+import com.kevinolarte.resibenissa.models.Residente;
+import com.kevinolarte.resibenissa.models.User;
+import com.kevinolarte.resibenissa.models.modulojuego.Juego;
 import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -34,4 +38,27 @@ public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Lo
      */
     List<RegistroJuego> findByResidenteId(Long idResidencia);
 
+    List<RegistroJuego> findByJuego_Id(Long juegoId);
+
+    List<RegistroJuego> findByJuego_IdAndUsuario_Id(Long juegoId, Long usuarioId);
+
+    List<RegistroJuego> findByJuego_IdAndResidente_Id(Long juegoId, Long residenteId);
+
+    List<RegistroJuego> findByJuego_IdAndResidente_IdAndUsuario_Id(Long juegoId, Long residenteId, Long usuarioId);
+
+    List<RegistroJuego> findByJuegoAndUsuario(Juego juego, User usuario);
+
+    List<RegistroJuego> findByJuegoAndResidente(Juego juego, Residente residente);
+
+    List<RegistroJuego> findByJuegoAndResidenteAndUsuario(Juego juego, Residente residente, User usuario);
+
+    List<RegistroJuego> findByJuego(Juego juego);
+
+    List<RegistroJuego> findByJuegoAndDificultad(Juego juego, Dificultad dificultad);
+
+    List<RegistroJuego> findByJuegoAndDificultadAndUsuario(Juego juego, Dificultad dificultad, User usuario);
+
+    List<RegistroJuego> findByJuegoAndDificultadAndResidente(Juego juego, Dificultad dificultad, Residente residente);
+
+    List<RegistroJuego> findByJuegoAndDificultadAndResidenteAndUsuario(Juego juego, Dificultad dificultad, Residente residente, User usuario);
 }
