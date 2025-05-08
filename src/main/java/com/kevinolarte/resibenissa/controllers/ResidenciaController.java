@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.controllers;
 
 import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
+import com.kevinolarte.resibenissa.dto.out.ResidenciaPublicResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.services.ResidenciaService;
@@ -54,6 +55,11 @@ public class ResidenciaController {
     public ResponseEntity<ResidenciaResponseDto> get(
             @PathVariable Long idResidencia) {
         return ResponseEntity.ok(residenciaService.get(idResidencia));
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<List<ResidenciaPublicResponseDto>> getAll() {
+        return ResponseEntity.ok(residenciaService.getAll());
     }
 
 

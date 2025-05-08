@@ -59,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
-
+        System.out.println("asdad");
         //Ver si esa cabeza esta nulla o no es un token bearer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
@@ -106,8 +106,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith(Conf.pathPublicAuth)
-                || path.startsWith("/swagger-ui/")
-                || path.startsWith("/v3/api-docs");
+        return path.startsWith(Conf.PATH_PUBLIC_SWAGGER)
+                || path.startsWith(Conf.PATH_PUBLIC_AUTH)
+                || path.startsWith(Conf.PATH_PUBLIC_RESI_GET);
     }
 }

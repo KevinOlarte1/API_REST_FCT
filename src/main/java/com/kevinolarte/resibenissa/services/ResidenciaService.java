@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
+import com.kevinolarte.resibenissa.dto.out.ResidenciaPublicResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
@@ -9,7 +10,9 @@ import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Servicio que gestiona la lógica de negocio relacionada con entidades {@link Residencia}.
@@ -111,5 +114,11 @@ public class ResidenciaService {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
         residenciaRepository.delete(residenciaTmp);
+    }
+
+    public List<ResidenciaPublicResponseDto> getAll() {
+        return residenciaRepository.findAll()
+                .stream().map(ResidenciaPublicResponseDto::new)
+                .collect(Collectors.toList());
     }
 }
