@@ -45,7 +45,7 @@ public class ParticipanteService {
      *                      el evento no pertenece a la residencia, el evento está cerrado o ya ha finalizado,
      *                      o el residente ya participa en otra salida el mismo día.
      */
-    public ParticipanteResponseDto addParticipante(ParticipanteDto input,
+    public ParticipanteResponseDto add(ParticipanteDto input,
                                                    Long idEventoSalida, Long idResidencia) {
         if (idEventoSalida == null || input.getIdResidente() == null || input.getAsistencia() == null || idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);

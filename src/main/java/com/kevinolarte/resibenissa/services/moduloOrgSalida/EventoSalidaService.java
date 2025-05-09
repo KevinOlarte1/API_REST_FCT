@@ -2,16 +2,23 @@ package com.kevinolarte.resibenissa.services.moduloOrgSalida;
 
 import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.EventoSalidaDto;
 import com.kevinolarte.resibenissa.dto.out.moduloOrgSalida.EventoSalidaResponseDto;
+import com.kevinolarte.resibenissa.enums.moduloOrgSalida.EstadoSalida;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
+import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
+import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.EventoSalidaRepository;
+import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
 import com.kevinolarte.resibenissa.services.ResidenciaService;
+import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Servicio que gestiona las operaciones relacionadas con los eventos de salida.
@@ -28,6 +35,8 @@ public class EventoSalidaService {
 
     private final EventoSalidaRepository eventoSalidaRepository;
     private final ResidenciaService residenciaService;
+    private final ResidenteService residenteService;
+    private final ParticipanteRepository participanteRepository;
 
 
     /**
@@ -39,10 +48,15 @@ public class EventoSalidaService {
      * @throws ApiException si falta algún campo obligatorio, la fecha es inválida,
      *                      la residencia no existe o el nombre ya está en uso en esa residencia.
      */
-    public EventoSalidaResponseDto addEventoSalida(EventoSalidaDto input, Long idResidencia) {
+    public EventoSalidaResponseDto add(EventoSalidaDto input, Long idResidencia) {
         if (input.getNombre() == null || input.getNombre().trim().isEmpty() || input.getDescripcion() == null || input.getDescripcion().trim().isEmpty()
             || input.getFecha() == null  || idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        Residencia res = residenciaService.findById(idResidencia);
+        if (res == null) {
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
         // Validar que la fecha no sea anterior a la fecha actual
@@ -50,10 +64,7 @@ public class EventoSalidaService {
             throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
         }
 
-        Residencia res = residenciaService.findById(idResidencia);
-        if (res == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
+
 
         //El nombre de la salida tiene que ser unico en esa misma residencia
         if (eventoSalidaRepository.existsByNombreAndResidenciaId(input.getNombre(), idResidencia)) {
@@ -82,21 +93,11 @@ public class EventoSalidaService {
      * @return DTO con los datos del evento actualizado.
      * @throws ApiException si los IDs son inválidos, el evento no existe o no pertenece a la residencia.
      */
-    public EventoSalidaResponseDto updateEventoSalida(EventoSalidaDto input,
+    public EventoSalidaResponseDto update(EventoSalidaDto input,
                                                       Long idResidencia, Long idEventoSalida) {
-        if(idResidencia == null || idEventoSalida == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
 
-        // Validar si existe ese evento
-        EventoSalida eventoSalida = eventoSalidaRepository
-                .findById(idEventoSalida)
-                .orElseThrow(() ->  new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO));
+        EventoSalida eventoSalida = validarEventoSalida(idResidencia, idEventoSalida);
 
-        // Validar si ese evento existe en esa residencia
-        if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
         // Validar que la fecha no sea anterior a la fecha actual
         if (input.getFecha() != null && input.getFecha().isBefore(java.time.LocalDate.now())) {
             throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
@@ -112,7 +113,8 @@ public class EventoSalidaService {
         }
         if (input.getNombre() != null) {
             // Comprobar si ya existe un evento de salida con ese nombre en esa residencia
-            if (eventoSalidaRepository.existsByNombreAndResidenciaId(input.getNombre(), idResidencia)) {
+            EventoSalida eventoSalida1 = eventoSalidaRepository.findByNombreAndResidencia_Id(input.getNombre(), idResidencia);
+            if (eventoSalida1 !=null && !eventoSalida1.getId().equals(idEventoSalida)) {
                 throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
             }
             eventoSalida.setNombre(input.getNombre());
@@ -132,21 +134,10 @@ public class EventoSalidaService {
      * @param idResidencia ID de la residencia asociada.
      * @throws ApiException si el evento no existe o no pertenece a la residencia.
      */
-    public void deleteEventoSalida(Long idEventoSalida, Long idResidencia) {
-        if (idEventoSalida == null || idResidencia == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-        // Validar que el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaRepository
-                .findById(idEventoSalida)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO));
+    public void delete(Long idEventoSalida, Long idResidencia) {
+        EventoSalida eventoSalida = validarEventoSalida(idEventoSalida, idResidencia);
 
-        // Validar que el evento de salida pertenece a la residencia
-        if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
-
-        eventoSalidaRepository.findById(idEventoSalida).ifPresent(eventoSalidaRepository::delete);
+        eventoSalidaRepository.delete(eventoSalida);
     }
 
     /**
@@ -167,20 +158,15 @@ public class EventoSalidaService {
      * @return DTO del evento de salida encontrado.
      * @throws ApiException si el evento no existe o no pertenece a la residencia.
      */
-    public EventoSalidaResponseDto getEventoSalida(Long idEventoSalida, Long idResidencia) {
+    public EventoSalidaResponseDto get(Long idEventoSalida, Long idResidencia) {
        EventoSalida eventoSalida = validarEventoSalida(idEventoSalida, idResidencia);
         return new EventoSalidaResponseDto(eventoSalida);
     }
 
-    /**
-     * Lista todos los eventos de salida de una residencia aplicando filtros opcionales.
-     *
-     * @param idResidencia ID de la residencia.
-     * @param input Filtros de búsqueda por estado y fecha (opcional).
-     * @return Lista de DTOs de eventos de salida encontrados.
-     * @throws ApiException si la residencia no existe o los datos son inválidos.
-     */
-    public List<EventoSalidaResponseDto> getEventoSalida(Long idResidencia, EventoSalidaDto input) {
+
+    public List<EventoSalidaResponseDto> getAll(Long idResidencia, LocalDate fecha,
+                                                Integer year, Integer month,
+                                                EstadoSalida estado, Long idResidente, Long idParticipante) {
         if (idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -191,25 +177,85 @@ public class EventoSalidaService {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
-
-
-
-        List<EventoSalida> eventosSalida;
-        if (input == null || (input.getEstado() == null && input.getFecha() == null)) {
-            //Devuelve todos los eventos de salida que pertenezcan a ese idResidencia
-            eventosSalida = eventoSalidaRepository.findByResidenciaId(idResidencia);
-        }else if (input.getEstado() == null) {
-            //Devuelve todos los eventos de salida que pertenezcan a ese idResidencia y a esa fecha.
-            eventosSalida = eventoSalidaRepository.findByFechaInicioAndResidenciaId(input.getFecha(), idResidencia);
-        }else if (input.getFecha() == null) {
-            //Devuelve todos los eventos de salida que pertenezcan a ese idResidencia y a ese estado.
-            eventosSalida = eventoSalidaRepository.findByEstadoAndResidenciaId(input.getEstado(), idResidencia);
+        //Validar fechas
+        if (fecha != null){
+            if (fecha.isBefore(java.time.LocalDate.now())) {
+                throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
+            }
         }else {
-            //Devuelve todos los eventos de salida que pertenezcan a ese idResidencia, a esa fecha y a ese estado.
-            eventosSalida = eventoSalidaRepository.findByFechaInicioAndEstadoAndResidenciaId(input.getFecha(), input.getEstado(), idResidencia);
+            if (year != null)
+                if (year < 0)
+                    throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
+            if (month != null)
+                if (month < 1 || month > 12)
+                    throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
         }
 
-        return eventosSalida.stream()
+        //No se puede filtrar por residente y participante a la vez
+        if (idResidente != null && idParticipante != null) {
+            throw new ApiException(ApiErrorCode.CONFLICTO_REFERENCIAS);
+        }
+
+        //Comprobar si el residente existe
+        Residente residente = null;
+        if (idResidente != null) {
+            residente = residenteService.findById(idResidente);
+            if (residente == null) {
+                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+            }
+            if (!residente.getResidencia().getId().equals(idResidencia)) {
+                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+            }
+        }
+        //Comprobar si el participante existe
+        Participante participante = null;
+        if (idParticipante != null) {
+            participante = participanteRepository.findById(idParticipante)
+                    .orElseThrow(() -> new ApiException(ApiErrorCode.PARTICIPANTE_INVALIDO));
+
+            if (!participante.getSalida().getResidencia().getId().equals(idResidencia)) {
+                throw new ApiException(ApiErrorCode.PARTICIPANTE_INVALIDO);
+            }
+        }
+        // Obtener todos los eventos de salida de la residencia
+        List<EventoSalida> baseList = eventoSalidaRepository.findByResidenciaId(idResidencia);
+        if( fecha != null){
+            baseList = baseList.stream()
+                    .filter(eventoSalida -> {
+                        boolean match = true;
+                        match = eventoSalida.getFechaInicio().isEqual(fecha);
+                        if (idParticipante != null) match = eventoSalida.getParticipantes().stream()
+                                .anyMatch(participante1 -> participante1.getId().equals(idParticipante));
+
+                        if(idResidente != null) match =eventoSalida.getParticipantes().stream()
+                                .anyMatch(participant ->
+                                        participant.getResidente().getId().equals(idResidente));
+                        if(estado != null) match = eventoSalida.getEstado().equals(estado);
+                        return match;
+
+                    }).toList();
+        }
+        else if (year != null || month != null){
+            baseList = baseList.stream()
+                    .filter(eventoSalida -> {
+                        boolean match = true;
+                        if (year != null) match = eventoSalida.getFechaInicio().getYear() == year;
+                        if (month != null) match = eventoSalida.getFechaInicio().getMonthValue() == month;
+                        if (idParticipante != null) match = eventoSalida.getParticipantes().stream()
+                                .anyMatch(participante1 -> participante1.getId().equals(idParticipante));
+
+                        if(idResidente != null) match =eventoSalida.getParticipantes().stream()
+                                .anyMatch(participant ->
+                                        participant.getResidente().getId().equals(idResidente));
+                        if(estado != null) match = eventoSalida.getEstado().equals(estado);
+                        return match;
+
+                    }).toList();
+        }
+
+
+
+        return baseList.stream()
                 .map(EventoSalidaResponseDto::new)
                 .toList();
 

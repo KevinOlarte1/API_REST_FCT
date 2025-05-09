@@ -56,4 +56,6 @@ public interface EventoSalidaRepository extends JpaRepository<EventoSalida, Long
      * @return Una lista de eventos de salida que coinciden con la fecha, estado y residencia especificados.
      */
     List<EventoSalida> findByFechaInicioAndEstadoAndResidenciaId(LocalDate fechaInicio, EstadoSalida estado, Long residencia_id);
+
+    EventoSalida findByNombreAndResidencia_Id(String nombre, Long residenciaId);
 }

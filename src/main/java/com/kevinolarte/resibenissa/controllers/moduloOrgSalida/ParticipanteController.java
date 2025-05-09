@@ -35,12 +35,12 @@ public class ParticipanteController {
      * @return {@link ResponseEntity} con el participante creado.
      */
     @PostMapping("/add")
-    public ResponseEntity<ParticipanteResponseDto> addParticipante(
+    public ResponseEntity<ParticipanteResponseDto> add(
                                                     @PathVariable Long idResidencia,
                                                     @PathVariable Long idSalida,
                                                     @RequestBody ParticipanteDto participanteDto) {
 
-        return ResponseEntity.ok(participanteService.addParticipante(participanteDto, idSalida, idResidencia));
+        return ResponseEntity.ok(participanteService.add(participanteDto, idSalida, idResidencia));
     }
 
     /**

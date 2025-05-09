@@ -1465,7 +1465,7 @@ paths:
     get:
       tags:
         - Modulo - JUEGO
-      summary: Obtener juegos
+      summary: Obtener juego
       description: Devuelve un juego.
       parameters:
         - name: idResidencia
@@ -2044,7 +2044,7 @@ paths:
   /resi/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/addComment:
     patch:
       tags:
-        - Modulo Juego
+        - Modulo - JUEGO
       summary: Añadir comentario a registro
       description: Actualiza la observación/comentario del registro.
       security:
