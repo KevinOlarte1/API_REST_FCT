@@ -145,5 +145,15 @@ public class User implements UserDetails {
         return this.enabled;
     }
 
-
+    @Override
+    public String toString() {
+        return "User{" +
+                "nombre='" + nombre + '\'' +
+                ", id=" + id +
+                ", email='" + email + '\'' +
+                ", apellido='" + apellido + '\'' +
+                ", password='" + password + '\'' +
+                ", residencia=" + residencia.getId() +
+                '}';
+    }
 }

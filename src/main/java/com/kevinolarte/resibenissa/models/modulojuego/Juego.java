@@ -57,4 +57,13 @@ public class Juego {
     }
     public Juego(){}
 
+
+    @Override
+    public String toString() {
+        return "Juego{" +
+                "id=" + id +
+                ", nombre='" + nombre + '\'' +
+                ", residencia=" + residencia +
+                '}';
+    }
 }

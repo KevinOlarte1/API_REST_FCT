@@ -85,6 +85,7 @@ public class AuthenticationService {
 
         User user = new User(input.getNombre(), input.getApellido(),input.getEmail(), passwordEncoder.encode(input.getPassword()));
         user.setVerificationCode(generateVerificationCode());
+        System.out.println(user.getVerificationCode());
         user.setVerificationExpiration(LocalDateTime.now().plusMinutes(15));
         user.setEnabled(false);
         sendVerificationEmail(user);
@@ -148,6 +149,9 @@ public class AuthenticationService {
         Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
         if(optionalUser.isPresent()){
             User user = optionalUser.get();
+            if (user.isEnabled()) {
+                throw new ApiException(ApiErrorCode.USER_YA_ACTIVADO);
+            }
 
 
             if(user.getVerificationExpiration().isBefore(LocalDateTime.now())){

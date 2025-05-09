@@ -145,10 +145,12 @@ public class JuegoService {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
-        List<Juego> juegoBaseList = juegoRepository.findByResidenciaId(idResidencia);
+        List<Juego> juegoBaseList = juegoRepository.findByResidencia(residencia);
 
+        System.out.println(juegoBaseList);
         // Filtrar por nombre de juego si se proporciona
         if (nombreJuego != null && !nombreJuego.trim().isEmpty()) {
+            System.out.println("Filtrando por nombre");
             juegoBaseList = juegoBaseList.stream()
                     .filter(juego -> juego.getNombre().toLowerCase().contains(nombreJuego.toLowerCase()))
                     .toList();
@@ -156,6 +158,7 @@ public class JuegoService {
 
         //Filtrar por max registros o min.
         if (maxRegistros != null){
+            System.out.println("Filtrando por max registros");
             if (maxRegistros){
                 Juego juego = juegoBaseList.get(0);
                 for(Juego j : juegoBaseList){
@@ -175,6 +178,7 @@ public class JuegoService {
                 juegoBaseList = List.of(juego);
             }
         }
+        System.out.println(juegoBaseList);
         // Mapear a DTO
         return juegoBaseList.stream()
                 .map(JuegoResponseDto::new)

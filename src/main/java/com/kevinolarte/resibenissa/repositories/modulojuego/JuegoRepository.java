@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.repositories.modulojuego;
 
+import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.modulojuego.Juego;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -33,4 +34,6 @@ public interface JuegoRepository extends JpaRepository<Juego, Long> {
      * @return Lista de juegos pertenecientes a esa residencia.
      */
     List<Juego> findByResidenciaId(Long idResidencia);
+
+    List<Juego> findByResidencia(Residencia residencia);
 }

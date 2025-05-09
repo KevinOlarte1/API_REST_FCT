@@ -37,4 +37,8 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
     List<Participante> findBySalida(EventoSalida salida);
 
     List<Participante> findByAyudaAndSalida(boolean ayuda, EventoSalida salida);
+
+    List<Participante> findByAyudaAndResidenteAndSalida(boolean ayuda, Residente residente, EventoSalida salida);
+
+    List<Participante> findByResidenteAndSalida(Residente residente, EventoSalida salida);
 }

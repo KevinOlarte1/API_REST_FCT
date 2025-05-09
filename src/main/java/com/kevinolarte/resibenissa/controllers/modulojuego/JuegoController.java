@@ -71,7 +71,7 @@ public class JuegoController {
     public ResponseEntity<List<JuegoResponseDto>> getAll(
             @PathVariable Long idResidencia,
             @RequestParam(required = false) String nombreJuego,
-            @RequestParam(required = false) boolean maxRegistros) {
+            @RequestParam(required = false) Boolean maxRegistros) {
         return ResponseEntity.ok(juegoService.getAll(idResidencia, nombreJuego, maxRegistros));
     }
 

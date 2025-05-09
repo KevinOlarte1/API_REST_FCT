@@ -223,7 +223,7 @@ public class ParticipanteService {
      * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
      *                      o no pertenecen a la residencia o evento.
      */
-    public ParticipanteResponseDto getParticipante(Long idResidencia, Long idEvento, Long idParticipante) {
+    public ParticipanteResponseDto get(Long idResidencia, Long idEvento, Long idParticipante) {
         if (idResidencia == null || idEvento == null || idParticipante == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -253,16 +253,8 @@ public class ParticipanteService {
 
     }
 
-    /**
-     * Lista todos los participantes de un evento de salida, aplicando filtros opcionales.
-     *
-     * @param idResdencia ID de la residencia.
-     * @param idEvento ID del evento de salida.
-     * @param input DTO con filtros de búsqueda (opcional).
-     * @return Lista de participantes encontrados.
-     * @throws ApiException si falta algún campo obligatorio o el evento es inválido.
-     */
-    public List<ParticipanteResponseDto> getParticiapnte(Long idResdencia, Long idEvento, ParticipanteDto input){
+
+    public List<ParticipanteResponseDto> get(Long idResdencia, Long idEvento, Boolean asistencia, Long idResidente) {
         if (idResdencia == null || idEvento == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -278,14 +270,35 @@ public class ParticipanteService {
             throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
 
-        //Verificar si tiene el filtrado de asistencia o no.
-        if (input != null && input.getAsistencia() != null)
-            return participanteRepository.findByAyudaAndSalida(input.getAsistencia(), eventoSalida)
-                    .stream()
-                    .map(ParticipanteResponseDto::new).toList();
-        else
-            return participanteRepository.findBySalida(eventoSalida)
-                    .stream()
+        Residente residente = null;
+        if (idResidente != null){
+            // Verificar si el residente existe
+            residente = residenteService.findById(idResidente);
+            if (residente == null) {
+                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+            }
+            // Verificar si el residente pertenece a la residencia
+            if (!residente.getResidencia().getId().equals(idResdencia)) {
+                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+            }
+        }
+        List<Participante> baseList = null;
+        if (residente == null) {
+            if (asistencia != null) {
+                baseList = participanteRepository.findByAyudaAndSalida(asistencia, eventoSalida);
+            }
+            else
+                baseList = participanteRepository.findBySalida(eventoSalida);
+        }
+        else{
+            if (asistencia != null) {
+                baseList = participanteRepository.findByAyudaAndResidenteAndSalida(asistencia, residente, eventoSalida);
+            }
+            else
+                baseList = participanteRepository.findByResidenteAndSalida(residente, eventoSalida);
+        }
+
+            return baseList.stream()
                     .map(ParticipanteResponseDto::new).toList();
 
 

@@ -4,11 +4,14 @@ import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaPublicResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.models.Residencia;
+import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.ResidenciaService;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,8 +43,13 @@ public class ResidenciaController {
      */
     @PostMapping("/add")
     public ResponseEntity<ResidenciaResponseDto> add(@RequestBody ResidenciaDto residenciaDto) {
-            ResidenciaResponseDto residencia = residenciaService.save(residenciaDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(residencia);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        User currentUser = (User) auth.getPrincipal();
+        System.out.println(currentUser.toString());
+        ResidenciaResponseDto residencia = residenciaService.save(residenciaDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(residencia);
 
     }
 

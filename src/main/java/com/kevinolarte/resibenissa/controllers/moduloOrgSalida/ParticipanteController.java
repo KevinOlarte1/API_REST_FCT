@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -52,29 +53,40 @@ public class ParticipanteController {
      * @return {@link ResponseEntity} con los datos del participante encontrado.
      */
     @GetMapping("{idParticipante}/get")
-    public ResponseEntity<ParticipanteResponseDto> getParticipante(
+    public ResponseEntity<ParticipanteResponseDto> get(
                                                     @PathVariable Long idResidencia,
                                                     @PathVariable Long idSalida,
                                                     @PathVariable Long idParticipante) {
-        return ResponseEntity.ok(participanteService.getParticipante(idResidencia, idSalida, idParticipante));
+        return ResponseEntity.ok(participanteService.get(idResidencia, idSalida, idParticipante));
+    }
+
+
+    @GetMapping("/getAll")
+    public ResponseEntity<List<ParticipanteResponseDto>> getAllParticipantes(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idSalida,
+            @RequestParam(required = false) Boolean asistencia,
+            @RequestParam(required = false) Long idResidente){
+        return ResponseEntity.ok(participanteService.get(idResidencia, idSalida, asistencia, idResidente));
+
     }
 
     /**
-     * Lista todos los participantes de un evento de salida, aplicando filtros opcionales.
+     * Elimina un participante de un evento de salida.
      *
      * @param idResidencia ID de la residencia.
      * @param idSalida ID del evento de salida.
-     * @param participanteDto (opcional) Filtros de búsqueda para los participantes (ej: asistencia).
-     * @return {@link ResponseEntity} con la lista de participantes encontrados.
+     * @param idParticipante ID del participante a eliminar.
      */
-    @GetMapping("/getAll")
-    public ResponseEntity<List<ParticipanteResponseDto>> getAllParticipantes(
-                                                        @PathVariable Long idResidencia,
-                                                        @PathVariable Long idSalida,
-                                                        @RequestBody(required = false) ParticipanteDto participanteDto) {
-        return ResponseEntity.ok(participanteService.getParticiapnte(idResidencia, idSalida, participanteDto));
-
+    @DeleteMapping("/{idParticipante}/delete")
+    public ResponseEntity<Void> deleteParticipante(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idSalida,
+            @PathVariable Long idParticipante) {
+        participanteService.deleteParticipante(idResidencia, idSalida, idParticipante);
+        return ResponseEntity.noContent().build();
     }
+
 
     /**
      * Actualiza los datos de un participante existente en un evento de salida.
@@ -86,7 +98,7 @@ public class ParticipanteController {
      * @return {@link ResponseEntity} con el participante actualizado.
      */
     @PatchMapping("/{idParticipante}/update")
-    public ResponseEntity<ParticipanteResponseDto> updateParticipante(
+    public ResponseEntity<ParticipanteResponseDto> update(
                                                     @PathVariable Long idResidencia,
                                                     @PathVariable Long idSalida,
                                                     @PathVariable Long idParticipante,
@@ -94,18 +106,5 @@ public class ParticipanteController {
         return ResponseEntity.ok(participanteService.updateParticipante(participanteDto, idResidencia, idSalida, idParticipante));
     }
 
-    /**
-     * Elimina un participante de un evento de salida.
-     *
-     * @param idResidencia ID de la residencia.
-     * @param idSalida ID del evento de salida.
-     * @param idParticipante ID del participante a eliminar.
-     */
-    @DeleteMapping("/{idParticipante}/delete")
-    public void deleteParticipante(
-                                    @PathVariable Long idResidencia,
-                                    @PathVariable Long idSalida,
-                                    @PathVariable Long idParticipante) {
-        participanteService.deleteParticipante(idResidencia, idSalida, idParticipante);
-    }
+
 }
