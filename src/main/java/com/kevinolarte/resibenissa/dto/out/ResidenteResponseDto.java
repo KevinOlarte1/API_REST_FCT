@@ -26,6 +26,7 @@ public class ResidenteResponseDto {
     private LocalDate fechaNacimiento;
     private String documentoIdentidad;
     private Long idResidencia;
+    private Boolean baja;
 
     public ResidenteResponseDto(Residente residente) {
         this.id = residente.getId();
@@ -34,5 +35,6 @@ public class ResidenteResponseDto {
         this.fechaNacimiento = residente.getFechaNacimiento();
         this.idResidencia = residente.getResidencia().getId();
         this.documentoIdentidad = residente.getDocuemntoIdentidad();
+        this.baja = residente.isBaja();
     }
 }

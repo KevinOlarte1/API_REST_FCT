@@ -3083,8 +3083,11 @@ components:
           format: int64
           example: 1
         documentoIdentidad:
-            type: string
-            example: Y8440460X
+          type: string
+          example: Y8440460X
+        baja:
+          type: boolean
+          example: false
 
     User.Dto:
       type: object
