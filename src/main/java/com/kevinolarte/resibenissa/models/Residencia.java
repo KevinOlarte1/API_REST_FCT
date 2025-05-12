@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,7 +45,7 @@ public class Residencia {
      * Usuarios asociados a esta residencia (por ejemplo, personal que la gestiona).
      * Relación uno a muchos.
      */
-    @OneToMany(mappedBy = "residencia", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "residencia", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<User> usuarios = new LinkedHashSet<>();
 
@@ -52,9 +53,12 @@ public class Residencia {
      * Residentes (personas mayores) que viven en esta residencia.
      * Relación uno a muchos.
      */
-    @OneToMany(mappedBy = "residencia", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "residencia", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Residente> residentes = new LinkedHashSet<>();
+
+    private boolean baja;
+    private LocalDateTime fecha_baja;
 
 
     /**
@@ -68,6 +72,7 @@ public class Residencia {
     public Residencia(String nombre, String email) {
         this.nombre = nombre;
         this.email = email;
+        this.baja = false;
 
     }
 

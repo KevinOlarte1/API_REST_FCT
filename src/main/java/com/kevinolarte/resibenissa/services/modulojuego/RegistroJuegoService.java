@@ -294,4 +294,19 @@ public class RegistroJuegoService {
         return new RegistroJuegoResponseDto(registroJuego);
     }
 
+    public List<RegistroJuegoResponseDto> getAll(Long idResidencia, Long idJuego) {
+        if (idResidencia == null || idJuego == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Comprobar si el juego existe
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+        //Comprobar si el juego pertence a la residencia
+        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
+        return registroJuegoRepository.findByJuego(juego).stream().map(RegistroJuegoResponseDto::new).toList();
+
+    }
 }

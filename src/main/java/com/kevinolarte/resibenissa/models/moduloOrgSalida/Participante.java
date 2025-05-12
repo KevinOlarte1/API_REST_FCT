@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 /**
  * Representa la participación de un residente en un evento de salida.
  * <p>
@@ -70,10 +72,15 @@ public class Participante {
      */
     private String postOpinion;
 
+
+    private boolean baja;
+    private LocalDateTime fechaBaja;
+
     public Participante() {
         this.ayuda = false;
         this.preOpinion = "";
         this.postOpinion = "";
+        this.baja = false;
     }
 
 

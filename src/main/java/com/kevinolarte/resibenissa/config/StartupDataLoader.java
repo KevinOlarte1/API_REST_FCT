@@ -1,12 +1,23 @@
 package com.kevinolarte.resibenissa.config;
 
+import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
+import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.models.Residencia;
+import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.User;
+import com.kevinolarte.resibenissa.models.modulojuego.Juego;
+import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
+import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
+import com.kevinolarte.resibenissa.repositories.modulojuego.JuegoRepository;
+import com.kevinolarte.resibenissa.repositories.modulojuego.RegistroJuegoRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
@@ -14,10 +25,74 @@ public class StartupDataLoader {
 
     private final ResidenciaRepository residenciaRepository;
     private final UserRepository userRepository;
+    private final ResidenteRepository residenteRepository;
+    private final JuegoRepository juegoRepository;
+    private final RegistroJuegoRepository registroJuegoRepository;
 
     @PostConstruct
     public void init() {
 
         Residencia residenciaDefault = residenciaRepository.save(new Residencia("Residencia Benissa", "resibenissa@gmail.com"));
+        User user = new User("Kevin", "olarte", "dafult@gmail.com", "default");
+        user.setResidencia(residenciaDefault);
+        user.setEnabled(true);
+        user = userRepository.save(user);
+        Residente residente1 = new Residente("Residente", "1", LocalDate.of(1999, 1,1), "000000001");
+        residente1.setResidencia(residenciaDefault);
+        Residente residente2 = new Residente("Residente", "2", LocalDate.of(1999, 1,1), "000000002");
+        residente2.setResidencia(residenciaDefault);
+        Residente residente3 = new Residente("Residente", "3", LocalDate.of(1999, 1,1), "000000003");
+        residente3.setResidencia(residenciaDefault);
+        Residente residente4 = new Residente("Residente", "4", LocalDate.of(1999, 1,1), "000000004");
+        residente4.setResidencia(residenciaDefault);
+        Residente residente5 = new Residente("Residente", "5", LocalDate.of(1999, 1,1), "000000005");
+        residente5.setResidencia(residenciaDefault);
+        Residente residente6 = new Residente("Residente", "6", LocalDate.of(1999, 1,1), "000000006");
+        residente6.setResidencia(residenciaDefault);
+        Residente residente7 = new Residente("Residente", "7", LocalDate.of(1999, 1,1), "000000007");
+        residente7.setResidencia(residenciaDefault);
+        Residente residente8 = new Residente("Residente", "8", LocalDate.of(1999, 1,1), "000000008");
+        residente8.setResidencia(residenciaDefault);
+        Residente residente9 = new Residente("Residente", "9", LocalDate.of(1999, 1,1), "000000009");
+        residente9.setResidencia(residenciaDefault);
+        Residente residente10 = new Residente("Residente", "10", LocalDate.of(1999, 1,1), "000000010");
+        residente10.setResidencia(residenciaDefault);
+
+        residente1 = residenteRepository.save(residente1);
+        residente2 = residenteRepository.save(residente2);
+        residente3 = residenteRepository.save(residente3);
+        residente4 = residenteRepository.save(residente4);
+        residente5 =  residenteRepository.save(residente5);
+        residente6 = residenteRepository.save(residente6);
+        residente7 =  residenteRepository.save(residente7);
+        residente8 =  residenteRepository.save(residente8);
+        residente9 = residenteRepository.save(residente9);
+        residente10 = residenteRepository.save(residente10);
+
+        Juego juego = new Juego("Juego 1");
+        juego.setResidencia(residenciaDefault);
+        juego = juegoRepository.save(juego);
+        Random rnd = new Random();
+
+        for(int i = 0; i < 25; i++){
+            RegistroJuegoDto dto = new RegistroJuegoDto();
+            dto.setIdJuego(juego.getId());
+            dto.setIdResidente(rnd.nextLong(1, 10));
+            dto.setDificultad(Dificultad.values()[rnd.nextInt(0, 3)]);
+            dto.setIdUsuario(user.getId());
+            dto.setNum(rnd.nextInt(1, 100));
+            dto.setDuracion(rnd.nextDouble(1, 100));
+            RegistroJuego registroJuego = new RegistroJuego(dto);
+            registroJuego.setJuego(juego);
+            registroJuego.setResidente(residenteRepository.findById(dto.getIdResidente()).orElseThrow());
+            registroJuego.setUsuario(user);
+            registroJuegoRepository.save(registroJuego);
+        }
+
+
+
+
+
+
     }
 }

@@ -91,6 +91,9 @@ public class User implements UserDetails {
     @JsonIgnore
     private Residencia residencia;
 
+    private boolean baja;
+    private LocalDateTime fecha_baja;
+
     /**
      * Relacion con los registros de los juegos que son los que se encargan de asignar el jugador.
      * Para llevar un mayor control.
@@ -107,6 +110,7 @@ public class User implements UserDetails {
         this.apellido = apellido;
         this.email = email;
         this.password = password;
+        this.baja = false;
 
 
     }

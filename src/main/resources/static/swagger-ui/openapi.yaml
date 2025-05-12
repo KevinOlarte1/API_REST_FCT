@@ -514,7 +514,7 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/{idResidencia}/resident/add:
+  /resi/resident/add:
     post:
       tags:
         - Residente
@@ -522,13 +522,6 @@ paths:
       description: Crea un residente en una residencia existente en la base de datos, con ciertos campos.
       security:
         - bearerAuth: []
-      parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
       requestBody:
         required: true
         content:
@@ -614,7 +607,7 @@ paths:
                     status: 409
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/resident/{idResidente}/get:
+  /resi/resident/{idResidente}/get:
     get:
       tags:
         - Residente
@@ -623,12 +616,6 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
         - name: idResidente
           in: query
           required: true
@@ -682,7 +669,7 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/{idResidencia}/resident/getAll:
+  /resi/resident/getAll:
     get:
       tags:
         - Residente
@@ -691,12 +678,6 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in:  query
-          required: true
-          schema:
-            type: integer
-            format: int64
         - name: documentoIdentidad
           in: query
           required: false
@@ -715,6 +696,18 @@ paths:
             type: integer
             format: int64
         - name: month
+          in: query
+          required: false
+          schema:
+              type: integer
+              format: int64
+        - name: maxAge
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: minAge
           in: query
           required: false
           schema:
@@ -767,8 +760,65 @@ paths:
                     codigo: 1020
                     status: 405
                     timestamp: 2025-04-13T21:00:0
+        '406':
+          description: Rango de edad invalido, el minimo no puede ser mayor que el maximo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RANGO_EDAD_INVALIDO:
+                  value:
+                    mensaje: Rango de edad invalido
+                    codigo: 1029
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+  /resi/resident/getAll/bajas:
+    get:
+      tags:
+        - Residente
+      summary: Obtener residentes en baja
+      description: Devuelve una lista de residentes en baja.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Residente(s) econtrado(s)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Residente.ResponseDto'
+        '404':
+          description: Residencia invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                value:
+                  mensaje: Residencia invalida
+                  codigo: 1006
+                  status: 404
+                  timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
 
-  /resi/{idResidencia}/resident/{idResidente}/delete:
+
+  /resi/resident/{idResidente}/delete:
     delete:
       tags:
         - Residente
@@ -777,12 +827,6 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
         - name: idResidente
           in: query
           required: true
@@ -833,7 +877,89 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/{idResidencia}/resident/{idResidente}/update:
+  /resi/resident/{idResidente}/baja:
+    patch:
+      tags:
+        - Residente
+      summary: Dar de baja a un residente
+      description: Cambia el estado de un residente a baja.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idResidente
+          in: query
+          required: true
+          schema:
+              type: integer
+              format: int64
+      responses:
+        '200':
+          description: Residente dado de baja
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Residente.ResponseDto'
+        '400':
+          description: Campos nulos/vacios de las variable path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Residencia invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+                RESIDENTE_INVALIDO:
+                  value:
+                    mensaje: Residente invalida
+                    codigo: 1009
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:0
+        '406':
+          description: Residente ya dado de baja
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENTE_BAJA:
+                  value:
+                    mensaje: Residente ya dado de baja
+                    codigo: 1028
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+
+
+  /resi/resident/{idResidente}/update:
     patch:
       tags:
         - Residente
@@ -842,12 +968,6 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
         - name: idResidente
           in: query
           required: true
@@ -898,6 +1018,12 @@ paths:
                   value:
                     mensaje: Documento de identidad no tiene el formato correcto
                     codigo: 1027
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+                RESIDENTE_BAJA:
+                  value:
+                    mensaje: Residente ya dado de baja
+                    codigo: 1028
                     status: 406
                     timestamp: 2025-04-13T21:00:00
         '409':

@@ -25,7 +25,7 @@ public interface ResidenteRepository extends JpaRepository<Residente, Long>{
      * @param residencia La entidad {@link Residencia} de la cual se desean obtener los residentes.
      * @return Lista de residentes que pertenecen a la residencia dada.
      */
-    List<Residente> findByResidencia(Residencia residencia);
+    List<Residente> findByResidenciaAndBajaFalse(Residencia residencia);
 
 
     /**
@@ -35,5 +35,5 @@ public interface ResidenteRepository extends JpaRepository<Residente, Long>{
      */
     Residente findByDocuemntoIdentidad(String docuemntoIdentidad);
 
-    List<Residente> findByResidenciaAndDocuemntoIdentidad(Residencia residencia, String docuemntoIdentidad);
+    List<Residente> findByResidenciaAndBajaTrue(Residencia residencia);
 }

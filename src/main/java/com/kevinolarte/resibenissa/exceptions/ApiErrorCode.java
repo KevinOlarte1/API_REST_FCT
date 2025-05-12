@@ -50,7 +50,9 @@ public enum ApiErrorCode {
     PARTICIPANTE_INMUTABLE(1026, "No se puede hacer esta operacion con el participante porque ahora mismo es inmutable", HttpStatus.NOT_ACCEPTABLE),
     DOCUMENTO_INVALIDO(1027,"El docuemnto de identidad no tiene el formato correcto" ,HttpStatus.NOT_ACCEPTABLE),
     DOCUMENTO_DUPLICADO(1028,"El docuemnto de identidad debe ser unico" ,HttpStatus.CONFLICT ),
-    CONTRASENA_INCORRECTA(1029,"Contraseña no valida" , HttpStatus.NOT_ACCEPTABLE ),;
+    CONTRASENA_INCORRECTA(1029,"Contraseña no valida" , HttpStatus.NOT_ACCEPTABLE ),
+    RESIDENTE_BAJA(1028, "Este residente ya esta dado de baja", HttpStatus.NOT_ACCEPTABLE ),
+    RANGO_EDAD_INVALIDO(1029, "Rango de edad inadecuado" , HttpStatus.NOT_ACCEPTABLE ),;
 
 
     private final int code;

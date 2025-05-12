@@ -11,9 +11,11 @@ import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
 public class ResidenteService {
     private final ResidenteRepository residenteRepository;
     private final ResidenciaService residenciaService;
-
+    private final PasswordEncoder passwordEncoder;
     /**
      * Registra un nuevo residente asociado a una residencia.
      *
@@ -121,7 +123,7 @@ public class ResidenteService {
      * @return Lista de residentes filtrados.
      * @throws ApiException si el ID de residencia es nulo o la residencia no existe.
      */
-    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, Integer year, Integer month, String documentoIdentidad, Long idJuego, Long idEventoSalida) {
+    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, Integer year, Integer month, Integer maxAge, Integer minAge, String documentoIdentidad, Long idJuego, Long idEventoSalida) {
         if (idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -131,9 +133,14 @@ public class ResidenteService {
         if(residencia == null){
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
+        if (minAge != null && maxAge != null){
+            if (minAge > maxAge){
+                throw new ApiException(ApiErrorCode.RANGO_EDAD_INVALIDO);
+            }
+        }
 
         // Obtener todos los residentes de la residencia
-        List<Residente> residentesBaseList =  residenteRepository.findByResidencia(residencia);
+        List<Residente> residentesBaseList =  residenteRepository.findByResidenciaAndBajaFalse(residencia);
 
         //Filtrar por documento
         if (documentoIdentidad != null){
@@ -152,19 +159,28 @@ public class ResidenteService {
                     .toList();
         }else {
             // Filtrar por año y mes de nacimiento
-            if (year != null){
-                // Filtrar por año de nacimiento
+            if (year != null || month != null){
                 residentesBaseList = residentesBaseList.stream()
-                        .filter(r -> r.getFechaNacimiento().getYear() == year)
-                        .toList();
-            }
-            if (month != null){
-                // Filtrar por mes de nacimiento
-                residentesBaseList = residentesBaseList.stream()
-                        .filter(r -> r.getFechaNacimiento().getMonthValue() == month)
+                        .filter(residente -> {
+                            boolean match = true;
+                            if (year != null) match = residente.getFechaNacimiento().getYear() == year;
+                            if (month != null) match = residente.getFechaNacimiento().getMonthValue() == month;
+                            return match;
+                        })
                         .toList();
             }
         }
+        // Filtrar por edad calculada a partir de la fecha nacimiento
+        if (maxAge != null || minAge != null){
+            residentesBaseList = residentesBaseList.stream().filter(residente -> {
+                boolean match = true;
+                if (maxAge != null) match = residente.getFechaNacimiento().plusYears(maxAge).isAfter(LocalDate.now());
+                if (minAge != null) match = residente.getFechaNacimiento().plusYears(minAge).isBefore(LocalDate.now());
+                return match;
+
+            }).toList();
+        }
+
         // Filtrar por juego
         if (idJuego != null){
             // Filtrar por juego
@@ -200,10 +216,35 @@ public class ResidenteService {
      * @param idResidente ID del residente.
      * @throws ApiException si no existe el residente o no pertenece a la residencia.
      */
-    public void delete(Long idResidencia, Long idResidente) {
+    public void deleteFisico(Long idResidencia, Long idResidente) {
         Residente residenteTmp = getResidente(idResidencia, idResidente);
         // Eliminar el residente
         residenteRepository.delete(residenteTmp);
+
+    }
+
+    /**
+     * Elimina un residente de forma lógica, marcándolo como dado de baja.
+     * @param idResidencia ID de la residencia.
+     * @param idResidente ID del residente.
+     */
+    public void deleteLogico(Long idResidencia, Long idResidente) {
+        // Validar que el residente existe
+        Residente residenteUpdatable = getResidente(idResidencia, idResidente);
+
+        //Dar de baja al residente
+        if (residenteUpdatable.isBaja())
+            throw new ApiException(ApiErrorCode.RESIDENTE_BAJA);
+
+        residenteUpdatable.setBaja(true);
+        residenteUpdatable.setFechaBaja(LocalDateTime.now());
+        residenteUpdatable.setDocuemntoIdentidad(passwordEncoder.encode(residenteUpdatable.getDocuemntoIdentidad()));
+        residenteUpdatable.getParticipantes().forEach(participante -> {
+            participante.setFechaBaja(LocalDateTime.now());
+            participante.setBaja(true);
+        });
+        residenteRepository.save(residenteUpdatable);
+
 
     }
 
@@ -216,12 +257,17 @@ public class ResidenteService {
      * @return DTO del residente actualizado.
      * @throws ApiException si los datos son inválidos o se detecta duplicidad de documento.
      */
-    public ResidenteResponseDto     update(Long idResidencia, Long idResidente, ResidenteDto input) {
+    public ResidenteResponseDto update(Long idResidencia, Long idResidente, ResidenteDto input) {
         if (idResidencia == null || idResidente == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         // Validar que el residente existe
         Residente residenteUpdatable = getResidente(idResidencia, idResidente);
+
+        //Comprobar si el residente ya se ha dado de baja
+        if (residenteUpdatable.isBaja()){
+            throw new ApiException(ApiErrorCode.RESIDENTE_BAJA);
+        }
 
         //Si ha añadido algun campo en el input para actualizar
         if (input != null){
@@ -286,4 +332,24 @@ public class ResidenteService {
         return residenteTmp;
     }
 
+
+    /**
+     * Obtiene todos los residentes dados de baja de una residencia.
+     * @param idResidencia ID de la residencia.
+     * @return Lista de residentes dados de baja.
+     * @throws ApiException si el ID de residencia es nulo o la residencia no existe.
+     */
+    public List<ResidenteResponseDto> getAllBajas(Long idResidencia) {
+        if (idResidencia == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        // Validar que la residencia existe
+        Residencia residencia = residenciaService.findById(idResidencia);
+        if (residencia == null){
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+        // Obtener todos los residentes de la residencia
+        List<Residente> residentesBaseList =  residenteRepository.findByResidenciaAndBajaTrue(residencia);
+        return residentesBaseList.stream().map(ResidenteResponseDto::new).toList();
+    }
 }

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -67,15 +68,19 @@ public class Residente {
     /**
      * Conjunto de veces que participa el resudente a las excuirsiones.
      */
-    @OneToMany(mappedBy = "residente", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "residente", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Participante> participantes = new LinkedHashSet<>();
 
+    private boolean baja;
+    private LocalDateTime fechaBaja;
     public Residente(String nombre, String apellido, LocalDate fechaNacimiento, String documentoIdentidad) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.fechaNacimiento = fechaNacimiento;
         this.docuemntoIdentidad = documentoIdentidad;
+        this.baja = false;
+
 
     }
 

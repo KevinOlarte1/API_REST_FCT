@@ -25,6 +25,8 @@ public class RegistroJuegoDto {
     private Dificultad dificultad;
     private String observacion;
 
+
+
     @Override
     public String toString() {
         return "RegistroJuegoDto{" +

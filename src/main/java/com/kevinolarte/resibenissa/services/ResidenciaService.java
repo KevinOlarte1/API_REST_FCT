@@ -10,6 +10,7 @@ import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -110,9 +111,11 @@ public class ResidenciaService {
      */
     public void remove(Long idResidencia) {
         Residencia residenciaTmp = residenciaRepository.findById(idResidencia).orElse(null);
+
         if(residenciaTmp == null){
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
+
         residenciaRepository.delete(residenciaTmp);
     }
 

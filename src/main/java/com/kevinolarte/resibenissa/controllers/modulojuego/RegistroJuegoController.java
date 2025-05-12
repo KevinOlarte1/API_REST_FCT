@@ -64,6 +64,13 @@ public class RegistroJuegoController {
         return ResponseEntity.ok(registroJuegoService.get(idResidencia, idJuego, idRegistroJuego));
     }
 
+    @GetMapping("/registro/getAll")
+    public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
+            @PathVariable Long idResidencia,
+            @PathVariable Long idJuego) {
+        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego));
+    }
+
     /**
      * Obtiene todos los registros de juego filtrados por dificultad, y opcionalmente por residente, usuario, año y mes.
      *
