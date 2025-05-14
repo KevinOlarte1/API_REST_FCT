@@ -431,7 +431,37 @@ public class UserService {
 
     }
 
-    public UserResponseDto save(Long idResidencia, UserDto userDto) {
+    public UserResponseDto save(Long idResidencia, UserDto input) {
+        if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getPassword() == null || input.getPassword().trim().isEmpty()
+                || input.getIdResidencia() == null || input.getNombre() == null || input.getNombre().trim().isEmpty() || input.getApellido() == null || input.getApellido().trim().isEmpty()){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        input.setEmail(input.getEmail().trim().toLowerCase());
+        if (!EmailService.isEmailValid(input.getEmail())){
+            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+        }
+
+        //Miramos si ese usuario y residencia existen
+        User userTest =  userRepository.findByEmail(input.getEmail());
+        Residencia residenciaTest = residenciaService.findById(input.getIdResidencia());
+        if(userTest != null){
+            if (userTest.isBaja())
+                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+            throw new ApiException(ApiErrorCode.USER_EXIST);
+        }
+        if (residenciaTest == null) {
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+        if (residenciaTest.isBaja())
+            throw new ApiException(ApiErrorCode.RESIDENCIA_BAJA);
+
+        User user = new User(input.getNombre(), input.getApellido(),input.getEmail(), passwordEncoder.encode(input.getPassword()));
+        user.setResidencia(residenciaTest);
+        user.setEnabled(true);
+        user.setFotoPerfil("/uploads/" + Conf.imageDefault);
+        User savedUser = userRepository.save(user);
+        return new UserResponseDto(savedUser);
 
     }
 }

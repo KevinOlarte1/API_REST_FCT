@@ -64,9 +64,6 @@ public class RegistroJuegoService {
         Juego juego = juegoService.findById(idJuego);
         if (juego == null)
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
-        //Comprobar si el juego pertence a la residencia
-        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
-            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
 
         //Comprobar si el residente existe
         Residente residente = residenteService.findById(input.getIdResidente());
@@ -83,16 +80,6 @@ public class RegistroJuegoService {
         //Comprobar si el usuario pertence a la residencia
         if (!Objects.equals(usuario.getResidencia().getId(), idResidencia))
             throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
-
-
-        //Ver si el juego es de la misma residencia que el residente
-        if (!Objects.equals(juego.getResidencia().getId(), residente.getResidencia().getId())) {
-            throw new ApiException(ApiErrorCode.CONFLICTO_REFERENCIAS);
-        }
-        //Ver si el juego es de la misma residencia que el usuario/trabajador.
-        if (!Objects.equals(usuario.getResidencia().getId(), juego.getResidencia().getId())) {
-            throw new ApiException(ApiErrorCode.CONFLICTO_REFERENCIAS);
-        }
 
         //No puede haber fallos negativos
         if (input.getNum() < 0){
@@ -126,9 +113,7 @@ public class RegistroJuegoService {
         Juego juego = juegoService.findById(idJuego);
         if (juego == null)
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
-        //Comprobar si el juego pertence a la residencia
-        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
-            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
         //Comprobar si existe el registro de juego
         RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO));
@@ -164,9 +149,7 @@ public class RegistroJuegoService {
         Juego juego = juegoService.findById(idJuego);
         if (juego == null)
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
-        //Comprobar si el juego pertence a la residencia
-        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
-            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
 
         User user = null;
         if (idUser != null){
@@ -238,9 +221,6 @@ public class RegistroJuegoService {
         Juego juego = juegoService.findById(idJuego);
         if (juego == null)
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
-        //Comprobar si el juego pertence a la residencia
-        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
-            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
         //Comprobar si existe el registro de juego
         RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.REGISTRO_JUEGO_INVALIDO));
@@ -271,9 +251,7 @@ public class RegistroJuegoService {
         Juego juego = juegoService.findById(idJuego);
         if (juego == null)
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
-        //Comprobar si el juego pertence a la residencia
-        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
-            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+     ;
 
         //Comprobar si existe el registro de juego
         RegistroJuego registroJuego = registroJuegoRepository.findById(idRegistroJuego).orElse(null);
@@ -301,9 +279,6 @@ public class RegistroJuegoService {
         //Comprobar si el juego existe
         Juego juego = juegoService.findById(idJuego);
         if (juego == null)
-            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
-        //Comprobar si el juego pertence a la residencia
-        if (!Objects.equals(juego.getResidencia().getId(), idResidencia))
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
 
         return registroJuegoRepository.findByJuego(juego).stream().map(RegistroJuegoResponseDto::new).toList();

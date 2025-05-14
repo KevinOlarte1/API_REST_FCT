@@ -18,22 +18,17 @@ import java.util.List;
 @Repository
 public interface JuegoRepository extends JpaRepository<Juego, Long> {
 
-    /**
-     * Verifica si ya existe un juego con el mismo nombre en una residencia específica.
-     *
-     * @param nombre       Nombre del juego.
-     * @param residenciaId ID de la residencia.
-     * @return true si existe un juego con ese nombre en la residencia, false en caso contrario.
-     */
-    boolean existsByNombreAndResidenciaId(String nombre, Long residenciaId);
+
+
+
+    boolean existsByNombre(String nombre);
+
+    List<Juego> findByNombre(String nombre);
 
     /**
-     * Devuelve todos los juegos asociados a una residencia específica.
-     *
-     * @param idResidencia ID de la residencia.
-     * @return Lista de juegos pertenecientes a esa residencia.
+     * Busca juegos cuyo nombre contenga una cadena específica, ignorando mayúsculas y minúsculas.
+     * @param nombre Cadena a buscar en el nombre del juego.
+     * @return Lista de juegos que contienen la cadena en su nombre.
      */
-    List<Juego> findByResidenciaId(Long idResidencia);
-
-    List<Juego> findByResidencia(Residencia residencia);
+    List<Juego> findByNombreContainingIgnoreCase(String nombre);
 }

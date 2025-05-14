@@ -20,11 +20,9 @@ import lombok.Setter;
 public class JuegoResponseDto {
     private Long id;
     private String nombre;
-    private Long idResidencia;
 
     public JuegoResponseDto(Juego juego){
         this.id = juego.getId();
         this.nombre = juego.getNombre();
-        this.idResidencia = juego.getResidencia().getId();
     }
 }

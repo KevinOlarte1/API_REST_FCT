@@ -86,7 +86,6 @@ public class StartupDataLoader {
         residente10 = residenteRepository.save(residente10);
 
         Juego juego = new Juego("Juego 1");
-        juego.setResidencia(residenciaDefault);
         juego = juegoRepository.save(juego);
         Random rnd = new Random();
 
