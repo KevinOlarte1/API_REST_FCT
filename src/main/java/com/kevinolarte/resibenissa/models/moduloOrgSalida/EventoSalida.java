@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.models.moduloOrgSalida;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.EventoSalidaDto;
 import com.kevinolarte.resibenissa.enums.moduloOrgSalida.EstadoSalida;
 import com.kevinolarte.resibenissa.models.Residencia;
 import jakarta.persistence.*;
@@ -75,11 +76,11 @@ public class EventoSalida {
     @JoinColumn(name = "fk_residencia")
     private Residencia residencia;
 
-    public EventoSalida(String nombre, String descripcion, LocalDate fechaInicio) {
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.fechaInicio = fechaInicio;
-        this.estado = EstadoSalida.ABIERTA;
+    public EventoSalida(EventoSalidaDto e) {
+        this.nombre = e.getNombre();
+        this.descripcion = e.getDescripcion();
+        this.fechaInicio = e.getFecha();
+        this.estado = e.getEstado();
     }
     public EventoSalida() {}
 }

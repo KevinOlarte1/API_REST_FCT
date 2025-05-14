@@ -2,7 +2,11 @@ package com.kevinolarte.resibenissa.repositories.moduloOrgSalida;
 
 import com.kevinolarte.resibenissa.enums.moduloOrgSalida.EstadoSalida;
 import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 
@@ -16,7 +20,14 @@ public interface EventoSalidaRepository extends JpaRepository<EventoSalida, Long
      */
     boolean existsByNombreAndResidenciaId(String nombre, Long residenciaId);
 
-
+    /**
+     * Elimina todos los eventos de salida asociados a una residencia.
+     * @param idResidencia ID de la residencia cuyos eventos de salida
+     */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM EventoSalida p WHERE p.residencia.id = :idResidencia")
+    void deleteAllByResidenciaId(@Param("idResidencia") Long idResidencia);
     /**
      * Consulta un evento de salida por su ID y el ID de la residencia.
      * @param idEventoSalida ID del evento de salida a buscar.

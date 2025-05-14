@@ -47,7 +47,6 @@ public class ResidenciaController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         User currentUser = (User) auth.getPrincipal();
-        System.out.println(currentUser.toString());
         ResidenciaResponseDto residencia = residenciaService.save(residenciaDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(residencia);
 
@@ -56,13 +55,14 @@ public class ResidenciaController {
     /**
      * Obtiene una residencia por su ID.
      *
-     * @param idResidencia ID de la residencia a recuperar.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el DTO de la residencia encontrada.
      */
-    @GetMapping("/{idResidencia}/get")
-    public ResponseEntity<ResidenciaResponseDto> get(
-            @PathVariable Long idResidencia) {
-        return ResponseEntity.ok(residenciaService.get(idResidencia));
+    @GetMapping("/get")
+    public ResponseEntity<ResidenciaResponseDto> get() {
+        System.out.println("Resi");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        return ResponseEntity.ok(residenciaService.get(currentUser.getResidencia().getId()));
     }
 
     /**
@@ -75,17 +75,43 @@ public class ResidenciaController {
         return ResponseEntity.ok(residenciaService.getAll());
     }
 
+    /**
+     * Elimina una residencia de forma lógica. Dandolo de baja.
+     *
+     *
+     * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
+     */
+    @PatchMapping("/baja")
+    public ResponseEntity<Void> baja() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        residenciaService.baja(currentUser.getResidencia().getId());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+
+    //EndPoint para ADMIN
 
     /**
      * Elimina una residencia por su ID.
      *
-     * @param idResidencia ID de la residencia a eliminar.
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
      */
     @DeleteMapping("/{idResidencia}/delete")
-    public ResponseEntity<Void> remove(@PathVariable Long idResidencia){
+    public ResponseEntity<Void> remove(@PathVariable Long idResidencia) {
         residenciaService.remove(idResidencia);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    /**
+     * Obtiene una residencia por su ID.
+     * @param idResidencia ID de la residencia a recuperar.
+     * @return {@link ResponseEntity} con estado {@code 200 OK} y el DTO de la residencia encontrada.
+     */
+    @GetMapping("/{idResidencia}/get")
+    public ResponseEntity<ResidenciaResponseDto> get(
+            @PathVariable Long idResidencia) {
+        return ResponseEntity.ok(residenciaService.get(idResidencia));
     }
 
 }

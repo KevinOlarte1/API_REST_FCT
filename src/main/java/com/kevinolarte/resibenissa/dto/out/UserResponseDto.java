@@ -27,6 +27,7 @@ public class UserResponseDto {
     private boolean enabled;
     private Long idResidencia;
     private String fotoPerfil;
+    private boolean baja;
 
 
     public UserResponseDto(User user) {
@@ -37,6 +38,7 @@ public class UserResponseDto {
         this.enabled = user.isEnabled();
         this.idResidencia = user.getResidencia().getId();
         this.fotoPerfil = user.getFotoPerfil();
+        this.baja = user.isBaja();
     }
 
 

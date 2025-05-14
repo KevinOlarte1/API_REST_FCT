@@ -74,6 +74,7 @@ public class Residente {
 
     private boolean baja;
     private LocalDateTime fechaBaja;
+
     public Residente(String nombre, String apellido, LocalDate fechaNacimiento, String documentoIdentidad) {
         this.nombre = nombre;
         this.apellido = apellido;

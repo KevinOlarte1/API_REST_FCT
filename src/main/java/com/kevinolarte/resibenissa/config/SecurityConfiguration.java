@@ -56,9 +56,12 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
+
                         .requestMatchers(Conf.PATH_PUBLIC_AUTH + "**").permitAll()
                         .requestMatchers(Conf.PATH_PUBLIC_SWAGGER + "**").permitAll()
                         .requestMatchers(Conf.PATH_PUBLIC_RESI_GET).permitAll()
+
+
 
                         .anyRequest().authenticated()
                 )

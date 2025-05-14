@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -58,11 +59,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
+        System.out.println("Ejecutando el filtro de JWT");
         final String authHeader = request.getHeader("Authorization");
+        System.out.println("Bienvenida al filtro de JWT");
         //Ver si esa cabeza esta nulla o no es un token bearer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("No hay token");
             handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
-            filterChain.doFilter(request, response);
+            System.out.println("Pasando al siguiente filtro");
             return;
         }
         try{
@@ -79,6 +83,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 //Obtenemos ese userDetail para ver si exsite, busca por correo, configurado en la AplicationConfiguration
                 UserDetails userDetails =this.userDetailsService.loadUserByUsername(userEmail);
 
+                //Comprobamos si el usuario es admin.
+                if(request.getRequestURI().matches("^/resi/\\d+/.*")){
+
+                    //Si el token es de un usuario normal, lanzamos la exception
+                    User user = (User) userDetails;
+                    if (!user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))){
+
+                        handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
+                        filterChain.doFilter(request, response);
+                        return;
+
+                    }
+                }
+
                 //Comprobamos si ese token es de ese usario y no esta expirado
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     //Damos authorizacion
@@ -90,12 +108,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
+                else {
+                    //Si no es valido, lanzamos la exception
+                    handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
+                }
             }
 
             filterChain.doFilter(request, response);
+        }catch(ApiException e){
+            System.out.println(e.getMessage());
+            handlerExceptionResolver.resolveException(request, response, null, e);
         }catch(Exception e){
             System.out.println(e.getMessage());
-            handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
         }
 
 

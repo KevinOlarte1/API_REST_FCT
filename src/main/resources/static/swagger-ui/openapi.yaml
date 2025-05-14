@@ -781,6 +781,12 @@ paths:
       description: Devuelve una lista de residentes en baja.
       security:
         - bearerAuth: []
+      parameters:
+        - name: documentoIdentidad
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Residente(s) econtrado(s)
@@ -1040,19 +1046,15 @@ paths:
                         status: 409
                         timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/user/{idUser}/get:
+  /resi/user/{idUser}/get:
     get:
       tags:
         - User
       summary: Obtener usuario
       description: Busca el usuario por id ingresado en el path.
+      security:
+        - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-              type: integer
-              format: int64
         - name: idUser
           in: query
           required: true
@@ -1106,19 +1108,15 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/{idResidencia}/user/getAll:
+  /resi/user/getAll:
     get:
       tags:
         - User
       summary: Obtener ususarios.
       description: Devuelve una lista de residentes. Con filtrado.
+      security:
+        - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
         - name: enabled
           in: query
           required: false
@@ -1130,6 +1128,18 @@ paths:
           schema:
             type: string
         - name: idJuego
+          in: query
+          required: false
+          schema:
+              type: integer
+              format: int64
+        - name: minRegistro
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: maxRegistro
           in: query
           required: false
           schema:
@@ -1184,19 +1194,57 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/user/{idUser}/delete:
+  /resi/user/getAll/bajas:
+    get:
+      tags:
+        - User
+      summary: Obten lista de usuarios en baja
+      description: Una lista de todos los usuarios dados de baja
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '404':
+          description: Residencia invalida, no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                RESIDENCIA_INVALIDO:
+                  value:
+                    mensaje: Residencia invalida
+                    codigo: 1006
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/user/{idUser}/delete:
     delete:
       tags:
           - User
       summary: Eliminar un Usuario.
       description: Elimina un usuario en cascada, con todas las entidades relacionadas a el. Pero el registro de jeugo no se borra
+      security:
+        - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
         - name: idUser
           in: query
           required: true
@@ -1259,19 +1307,21 @@ paths:
                     status: 409
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/user/{idUser}/delete/referencies:
+  /resi/user/{idUser}/delete/referencies:
     delete:
       tags:
         - User
       summary: Borrar la relacion usuario.
       description: Borra y pone a null el parametro relacionado en el registro de juego.
+      security:
+        - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
         - name: idUser
           in: query
           required: true
+          schema:
+            type: integer
+            format: int64
       responses:
         '204':
           description: Relaciones eliminadas.
@@ -1315,36 +1365,27 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/user/defaultImage:
+  /resi/user/defaultImage:
     get:
       tags:
         - User
       summary: Obtienes foto perfil
       description: Obten el recurso default del img defecto del personaje .png
-      parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Recurso .PNG en binario con la imagen default de perfil.
 
-  /resi/{idResidencia}/user/{idUser}/update:
+  /resi/user/{idUser}/update:
     patch:
       tags:
         - User
       summary: Actualizar valores del user.
       description: Actualiza nombre, apellido y correo, no password (al hacer esto, se debe vovlver hacer el login por el token.)
+      security:
+        - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
         - name: idUser
           in: query
           required: true
@@ -1386,19 +1427,6 @@ paths:
                     codigo: 1010
                     status: 404
                     timestamp: 2025-04-13T21:00:00
-        '406':
-          description: correo invalido
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CORREO_INVALIDO:
-                  value:
-                    mensaje: Email invalid
-                    codigo: 1002
-                    status: 406
-                    timestamp: 2025-04-13T21:00:00
         '405':
           description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
           content:
@@ -1412,6 +1440,26 @@ paths:
                     codigo: 1020
                     status: 405
                     timestamp: 2025-04-13T21:00:00
+        '406':
+          description: correo invalido o usuario de baja
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                CORREO_INVALIDO:
+                  value:
+                    mensaje: Email invalid
+                    codigo: 1002
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+                USUARIO_BAJA:
+                  value:
+                    mensaje: Usuario dado de baja
+                    codigo: 1030
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+
         '409':
           description: Correo duplicado
           content:
@@ -1426,19 +1474,15 @@ paths:
                     status: 409
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/user/{idUser}/update/changePassword:
+  /resi/user/{idUser}/update/changePassword:
     patch:
       tags:
         - User
       summary: Actualizar password
       description: Cambia la contraseña de un usuario.
+      security:
+        - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
         - name: idUser
           in: query
           required: true
@@ -1494,18 +1538,101 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:00
         '406':
-          description: Password invalido
+          description: Password invalido o usuario dado de baja
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                PASSWORD_INVALIDO:
+                  value:
+                    mensaje: Contraseña invalida
+                    codigo: 1029
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+                USUARIO_BAJA:
+                  value:
+                    mensaje: Usuario dado de baja
+                    codigo: 1030
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/user/{idUser}/baja:
+    patch:
+      tags:
+        - User
+      summary: dar de baja a user
+      description: Da de baja a un usuario.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idUser
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Password actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ResponseDto'
+        '400':
+          description: Campos nulos/vacios de la variable de la url o del requestBody
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error.ResponseDto'
               example:
-                PASSWORD_INVALIDO:
-                value:
-                  mensaje: Contraseña invalida
-                  codigo: 1029
-                  status: 406
-                  timestamp: 2025-04-13T21:00:00
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '404':
+          description: Usuario invalido, no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                USUARIO_INVALIDO:
+                  value:
+                    mensaje: Usuario invalido
+                    codigo: 1010
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+        '406':
+          description: Usuario ya dado de baja
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                USUARIO_BAJA:
+                  value:
+                    mensaje: Usuario dado de baja
+                    codigo: 1030
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+
+
 
   /resi/{idResidencia}/juego/add:
     post:

@@ -6,11 +6,18 @@ import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
+import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
+import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
 import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
+import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
+import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.EventoSalidaRepository;
+import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,6 +35,10 @@ import java.util.stream.Collectors;
 public class ResidenciaService {
 
     private final ResidenciaRepository residenciaRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final ResidenteRepository residenteRepository;
+    private final ParticipanteRepository participanteRepository;
+    private final EventoSalidaRepository eventoSalidaRepository;
 
 
     /**
@@ -127,5 +138,60 @@ public class ResidenciaService {
         return residenciaRepository.findAll()
                 .stream().map(ResidenciaPublicResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    public void baja(Long id) {
+        Residencia residencia = residenciaRepository.findById(id).orElse(null);
+        if (residencia == null) {
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+        /*
+        // Cambiar el estado de la residencia a inactiva
+
+
+        //Eliminar todos los eventosSalida de la residencia
+        eventoSalidaRepository.deleteAll(residencia.getEventos());
+
+        // Cambiar el estado de los residentes y usuarios a inactivos
+        residencia.getEventos().forEach(event -> {
+            participanteRepository.deleteAll(event.getParticipantes());
+            event.setParticipantes(new LinkedHashSet<>());
+        });
+
+        eventoSalidaRepository.deleteAll();
+
+        /*
+        residencia.getUsuarios().forEach(usuario -> {
+            usuario.setBaja(true);
+            usuario.setFechaBaja(LocalDateTime.now());
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }); */
+
+        //Borrar todos los eventos y participantes.
+
+        residencia.setBaja(true);
+        residencia.setFechaBaja(LocalDateTime.now());
+        residencia.setEmail(passwordEncoder.encode(residencia.getEmail()));
+
+        // Cambiar el estado de los residentes a inactivos
+        residencia.getResidentes().forEach(residente -> {
+            residente.setBaja(true);
+            residente.setFechaBaja(LocalDateTime.now());
+            residente.setDocuemntoIdentidad(passwordEncoder.encode(residente.getDocuemntoIdentidad()));
+            residenteRepository.save(residente);
+        });
+        // Cambiar el estado de los usuarios a inactivos
+        residencia.getUsuarios().forEach(usuario -> {
+            usuario.setBaja(true);
+            usuario.setFechaBaja(LocalDateTime.now());
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        });
+
+        participanteRepository.deleteAllByResidenciaId(residencia.getId());
+        eventoSalidaRepository.deleteAllByResidenciaId(residencia.getId());
+
+
+
+        residenciaRepository.save(residencia);
     }
 }

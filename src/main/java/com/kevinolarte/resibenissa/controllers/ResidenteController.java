@@ -85,11 +85,13 @@ public class ResidenteController {
             @RequestParam(required = false) Integer maxAge,
             @RequestParam(required = false) Integer minAge,
             @RequestParam(required = false) Long idJuego,
-            @RequestParam(required = false) Long idEventoSalida){
+            @RequestParam(required = false) Long idEventoSalida,
+            @RequestParam(required = false) Long minRegistro,
+            @RequestParam(required = false) Long maxRegistro) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
 
-        return ResponseEntity.ok(residenteService.getAll(currentUser.getResidencia().getId(),fechaNacimiento, year, month, maxAge, minAge, documentoIdentidad, idJuego, idEventoSalida));
+        return ResponseEntity.ok(residenteService.getAll(currentUser.getResidencia().getId(),fechaNacimiento, year, month, maxAge, minAge, documentoIdentidad, idJuego, idEventoSalida, minRegistro, maxRegistro));
     }
 
     /**
@@ -97,11 +99,12 @@ public class ResidenteController {
      * @return {@link ResponseEntity} con la lista de residentes dados de baja.
      */
     @GetMapping("/getAll/bajas")
-    public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(){
+    public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
+            @RequestParam(required = false) String documentoIdentidad){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(residenteService.getAllBajas(currentUser.getResidencia().getId()));
+        return ResponseEntity.ok(residenteService.getAllBajas(currentUser.getResidencia().getId(), documentoIdentidad));
     }
 
     /**
@@ -126,7 +129,7 @@ public class ResidenteController {
      * @param idResidente ID del residente a eliminar.
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
      */
-    @DeleteMapping("/{idResidente}/baja")
+    @PatchMapping("/{idResidente}/baja")
     public ResponseEntity<Void> deleteLogico(
             @PathVariable Long idResidente) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

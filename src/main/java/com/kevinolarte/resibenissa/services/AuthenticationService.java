@@ -1,6 +1,6 @@
 package com.kevinolarte.resibenissa.services;
 
-import ch.qos.logback.core.model.INamedModel;
+
 import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.auth.LoginUserDto;
 import com.kevinolarte.resibenissa.dto.in.auth.RegisterUserDto;
@@ -10,19 +10,16 @@ import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.User;
-import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -74,14 +71,18 @@ public class AuthenticationService {
         }
 
         //Miramos si ese usuario y residencia existen
-        Optional<User> userTest =  userRepository.findByEmail(input.getEmail());
+        User userTest =  userRepository.findByEmail(input.getEmail());
         Residencia residenciaTest = residenciaService.findById(input.getIdResidencia());
-        if(userTest.isPresent()){
+        if(userTest != null){
+            if (userTest.isBaja())
+                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
             throw new ApiException(ApiErrorCode.USER_EXIST);
         }
         if (residenciaTest == null) {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
+        if (residenciaTest.isBaja())
+            throw new ApiException(ApiErrorCode.RESIDENCIA_BAJA);
 
         User user = new User(input.getNombre(), input.getApellido(),input.getEmail(), passwordEncoder.encode(input.getPassword()));
         user.setVerificationCode(generateVerificationCode());
@@ -113,12 +114,19 @@ public class AuthenticationService {
         }
 
         //Ver si ese usuario existe o no
-        User user = userRepository.findByEmail(input.getEmail())
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+        User user = userRepository.findByEmail(input.getEmail());
+
+        if (user == null){
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
 
         //Ver si esta activado
         if(!user.isEnabled()){
             throw new ApiException(ApiErrorCode.USER_NO_ACTIVADO);
+        }
+        //Ver si esta de baja
+        if(user.isBaja()){
+            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
         }
 
         //Autehnticamos
@@ -146,12 +154,17 @@ public class AuthenticationService {
         if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getVerificationCode() == null || input.getVerificationCode().trim().isEmpty()){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
-        Optional<User> optionalUser = userRepository.findByEmail(input.getEmail());
-        if(optionalUser.isPresent()){
-            User user = optionalUser.get();
+        User user = userRepository.findByEmail(input.getEmail());
+        if(user != null){
+
+            if (user.isBaja()) {
+                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+            }
             if (user.isEnabled()) {
                 throw new ApiException(ApiErrorCode.USER_YA_ACTIVADO);
             }
+
+
 
 
             if(user.getVerificationExpiration().isBefore(LocalDateTime.now())){
@@ -185,10 +198,12 @@ public class AuthenticationService {
         if (!EmailService.isEmailValid(email)){
             throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
         }
-        Optional<User> optionalUser = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email);
 
-        if(optionalUser.isPresent()){
-            User user = optionalUser.get();
+        if(user != null){
+            if (user.isBaja()) {
+                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+            }
             if (user.isEnabled()){
                 throw new ApiException(ApiErrorCode.USER_YA_ACTIVADO);
             }

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class UserService {
     private final ResidenciaService residenciaService;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    /**
+    /*
      * Registra un nuevo usuario en el sistema a partir de los datos proporcionados.
      * <p>
      * Este método realiza las siguientes validaciones antes de persistir al usuario:
@@ -114,7 +115,7 @@ public class UserService {
      * @param idUser ID del usuario a eliminar.
      * @throws ApiException si los datos son inválidos o si hay referencias dependientes.
      */
-    public void delete(Long idResidencia, Long idUser) {
+    public void deleteFisico(Long idResidencia, Long idUser) {
         if (idResidencia == null || idUser == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -133,6 +134,39 @@ public class UserService {
         }
 
         userRepository.delete(userTmp);
+
+    }
+
+    /**
+     * Marca un usuario como "baja" (inactivo) en el sistema.
+     * @param idResidencia ID de la residencia del usuario.
+     * @param idUser ID del usuario a dar de baja.
+     * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
+     */
+    public void deleteLogico(Long idResidencia, Long idUser) {
+        if (idResidencia == null || idUser == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Verificamos si existe el usuario
+        User user = userRepository.findById(idUser).orElse(null);
+        if (user == null){
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+        //Validamos si pertenece a la residencia
+        if (!user.getResidencia().getId().equals(idResidencia)){
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+
+        //Validamos si el usuario ya esta de baja
+        if (user.isBaja()){
+            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+        }
+
+        //Dar de baja
+        user.setBaja(true);
+        user.setEmail(passwordEncoder.encode(user.getEmail()));
+        user.setFechaBaja(LocalDateTime.now());
+        userRepository.save(user);
 
     }
 
@@ -244,7 +278,7 @@ public class UserService {
      * @return Lista de usuarios que cumplen con los filtros aplicados.
      * @throws ApiException si la residencia no existe o el ID es nulo.
      */
-    public List<UserResponseDto> getAll(Long idResidencia, String email, Boolean enabled, Long idJuego) {
+    public List<UserResponseDto> getAll(Long idResidencia, String email, Boolean enabled, Long idJuego, Long minRegistros, Long maxRegistros) {
         if (idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -254,28 +288,21 @@ public class UserService {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
-        List<User> usuarios = userRepository.findByResidenciaId(idResidencia);
+        List<User> usuarios = userRepository.findByBajaFalseAndResidenciaId(idResidencia);
 
-        // Filtrado por email (no-case-insensitive)
-        if (email != null && !email.isEmpty()) {
-            usuarios = usuarios.stream()
-                    .filter(user -> user.getEmail().equalsIgnoreCase(email.trim().toLowerCase()))
-                    .toList();
-        }
-        // Filtrado por habilitación
-        if (enabled != null) {
-            usuarios = usuarios.stream()
-                    .filter(user -> user.isEnabled() == enabled)
-                    .toList();
-        }
-        // Filtrado por ID de juego
-        if (idJuego != null) {
-            usuarios = usuarios.stream()
-                    .filter(user -> user.getRegistroJuegos().stream()
-                            .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego)))
-                    .toList();
-        }
+        usuarios = usuarios.stream()
+                .filter( u -> {
+                    boolean match = true;
 
+                    if (email != null && !email.isEmpty()) match = u.getEmail().equalsIgnoreCase(email.trim());
+                    if (enabled != null) match = u.isEnabled() == enabled;
+                    if (idJuego != null) match = u.getRegistroJuegos().stream()
+                            .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego));
+                    if (maxRegistros != null && minRegistros != null) match = u.getRegistroJuegos().size() >= minRegistros && u.getRegistroJuegos().size() <= maxRegistros;
+                    else if (maxRegistros != null) match = u.getRegistroJuegos().size() <= maxRegistros;
+                    else if (minRegistros != null) match = u.getRegistroJuegos().size() >= minRegistros;
+                    return match;
+                }).toList();
 
         return usuarios.stream().map(UserResponseDto::new).toList();
     }
@@ -303,6 +330,10 @@ public class UserService {
         if (userTmp.getResidencia() == null || !userTmp.getResidencia().getId().equals(idResidencia)) {
             throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
         }
+        //Comprobar si elm usuario esta de baja
+        if (userTmp.isBaja()) {
+            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+        }
 
         if (input != null){
             //Validar si el nombre es valido
@@ -318,7 +349,7 @@ public class UserService {
             input.setEmail(input.getEmail().trim().toLowerCase());
             if (EmailService.isEmailValid(input.getEmail())) {
                 //Validar si el email ya existe
-                if (userRepository.findByEmail(input.getEmail()).isPresent()) {
+                if (userRepository.findByEmail(input.getEmail()) != null) {
                     throw new ApiException(ApiErrorCode.CORREO_DUPLICADO);
                 }
                 userTmp.setEmail(input.getEmail());
@@ -355,8 +386,12 @@ public class UserService {
         User userTmp = userRepository.findById(idUser)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
         //Validar si pertenece a esa residencia
-        if (userTmp.getResidencia() == null || !userTmp.getResidencia().getId().equals(idResidencia)) {
+        if (!userTmp.getResidencia().getId().equals(idResidencia)) {
             throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+        //Comprobar si elm usuario esta de baja
+        if (userTmp.isBaja()) {
+            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
         }
         //Validar si la contraseña es correcta
         if (!passwordEncoder.matches(input.getOldPassword(), userTmp.getPassword())) {
@@ -366,6 +401,33 @@ public class UserService {
         userTmp.setPassword(passwordEncoder.encode(input.getNewPassword()));
 
         return new UserResponseDto(userRepository.save(userTmp));
+
+    }
+
+
+    /**
+     * Obtiene una lista de usuarios dados de baja en una residencia específica.
+     * <p>
+     *     Este método valida que la residencia exista y que el ID no sea nulo.
+     * @param idResidencia ID de la residencia.
+     * @return Lista de usuarios dados de baja en la residencia.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<UserResponseDto> getAllBajas(Long idResidencia, String email) {
+        if (idResidencia == null) throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        //Validar si existe esa residencia
+        Residencia residenciaTmp = residenciaService.findById(idResidencia);
+        if (residenciaTmp == null) {
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+        List<User> usuarios = userRepository.findByBajaTrueAndResidenciaId(idResidencia);
+        if (email != null && !email.isEmpty()) {
+            usuarios = usuarios.stream()
+                    .filter(u -> u.getEmail().equalsIgnoreCase(email.trim()))
+                    .toList();
+        }
+
+        return usuarios.stream().map(UserResponseDto::new).toList();
 
     }
 }

@@ -1,22 +1,33 @@
 package com.kevinolarte.resibenissa.config;
 
+import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.EventoSalidaDto;
+import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.ParticipanteDto;
 import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
+import com.kevinolarte.resibenissa.enums.Role;
+import com.kevinolarte.resibenissa.enums.moduloOrgSalida.EstadoSalida;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.User;
+import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
+import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
 import com.kevinolarte.resibenissa.models.modulojuego.Juego;
 import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
+import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.EventoSalidaRepository;
+import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
 import com.kevinolarte.resibenissa.repositories.modulojuego.JuegoRepository;
 import com.kevinolarte.resibenissa.repositories.modulojuego.RegistroJuegoRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Random;
 
 @Component
@@ -28,14 +39,19 @@ public class StartupDataLoader {
     private final ResidenteRepository residenteRepository;
     private final JuegoRepository juegoRepository;
     private final RegistroJuegoRepository registroJuegoRepository;
+    private final EventoSalidaRepository eventoSalidaRepository;
+    private final ParticipanteRepository participanteRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @PostConstruct
     public void init() {
 
         Residencia residenciaDefault = residenciaRepository.save(new Residencia("Residencia Benissa", "resibenissa@gmail.com"));
-        User user = new User("Kevin", "olarte", "dafult@gmail.com", "default");
-        user.setResidencia(residenciaDefault);
+        Residencia residenciaAdmin = residenciaRepository.save(new Residencia("Residencia Admin", "resiAdmin@gmail.com"));
+        User user = new User("Kevin", "olarte", "dafult@gmail.com", passwordEncoder.encode("default"), Role.ADMIN);
+        user.setResidencia(residenciaAdmin);
         user.setEnabled(true);
+
         user = userRepository.save(user);
         Residente residente1 = new Residente("Residente", "1", LocalDate.of(1999, 1,1), "000000001");
         residente1.setResidencia(residenciaDefault);
@@ -87,6 +103,33 @@ public class StartupDataLoader {
             registroJuego.setResidente(residenteRepository.findById(dto.getIdResidente()).orElseThrow());
             registroJuego.setUsuario(user);
             registroJuegoRepository.save(registroJuego);
+        }
+
+        EventoSalidaDto eventoSalidaDto = new EventoSalidaDto();
+        eventoSalidaDto.setNombre("Casa 1");
+        eventoSalidaDto.setDescripcion("Salida a casa 1");
+        eventoSalidaDto.setFecha(LocalDate.now().plusYears(1));
+        eventoSalidaDto.setEstado(EstadoSalida.ABIERTA);
+
+        EventoSalida eventoSalida = new EventoSalida(eventoSalidaDto);
+        eventoSalida.setResidencia(residenciaDefault);
+        eventoSalidaRepository.save(eventoSalida);
+
+        List<Residente> residentes = residenteRepository.findAll();
+        for (Residente residente : residentes) {
+            ParticipanteDto par = new ParticipanteDto();
+            par.setAsistencia(false);
+            par.setPreOpinion("No me gusta");
+            par.setIdResidente(residente.getId());
+            Participante participante = new Participante();
+            participante.setSalida(eventoSalida);
+            participante.setResidente(residente);
+            participante.setAyuda(par.getAsistencia());
+            participante.setPreOpinion(par.getPreOpinion());
+
+            participanteRepository.save(participante);
+
+
         }
 
 

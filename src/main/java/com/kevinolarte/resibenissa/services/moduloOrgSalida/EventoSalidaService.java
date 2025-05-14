@@ -73,7 +73,7 @@ public class EventoSalidaService {
 
 
         // Crear el evento de salida
-        EventoSalida eventoSalida = new EventoSalida(input.getNombre(), input.getDescripcion(), input.getFecha());
+        EventoSalida eventoSalida = new EventoSalida(input);
         eventoSalida.setResidencia(res);
         EventoSalida newEventoSalida = eventoSalidaRepository.save(eventoSalida);
 

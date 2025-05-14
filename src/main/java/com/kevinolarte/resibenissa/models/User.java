@@ -1,18 +1,17 @@
 package com.kevinolarte.resibenissa.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kevinolarte.resibenissa.enums.Role;
 import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Entidad que representa un usuario del sistema.
@@ -92,7 +91,7 @@ public class User implements UserDetails {
     private Residencia residencia;
 
     private boolean baja;
-    private LocalDateTime fecha_baja;
+    private LocalDateTime fechaBaja;
 
     /**
      * Relacion con los registros de los juegos que son los que se encargan de asignar el jugador.
@@ -104,19 +103,37 @@ public class User implements UserDetails {
     @JsonIgnore
     private Set<RegistroJuego> registroJuegos = new LinkedHashSet<>();
 
-    public User() {}
+    private Role role;
+
+    public User() {
+
+    }
     public User(String nombre, String apellido, String email, String password){
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
         this.password = password;
         this.baja = false;
-
+        this.role = Role.NORMAL;
 
     }
+    public User(String nombre, String apellido, String email, String password, Role role){
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.password = password;
+        this.baja = false;
+        this.role = role;
+
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (role != null) {
+            return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+        }
         return List.of();
+
     }
 
     @Override

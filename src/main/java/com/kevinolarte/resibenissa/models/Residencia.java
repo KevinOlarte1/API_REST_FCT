@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.models;
 
+import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
 import com.kevinolarte.resibenissa.models.modulojuego.Juego;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -57,10 +58,6 @@ public class Residencia {
     @JsonIgnore
     private Set<Residente> residentes = new LinkedHashSet<>();
 
-    private boolean baja;
-    private LocalDateTime fecha_baja;
-
-
     /**
      * Juego que tienen implementados en esta reisdencia
      * Relacion uno a muchos
@@ -68,6 +65,20 @@ public class Residencia {
     @OneToMany(mappedBy = "residencia", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Set<Juego> juegos = new LinkedHashSet<>();
+
+    /**
+     * Eventos que tienen implementados en esta residencia
+     * Relacion uno a muchos
+     */
+    @OneToMany(mappedBy = "residencia", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Set<EventoSalida> eventos = new LinkedHashSet<>();
+
+    private boolean baja;
+    private LocalDateTime fechaBaja;
+
+
+
 
     public Residencia(String nombre, String email) {
         this.nombre = nombre;

@@ -1,5 +1,7 @@
 package com.kevinolarte.resibenissa.config;
 
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import com.kevinolarte.resibenissa.models.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -35,9 +38,17 @@ public class AplicationConfiguration {
      */
     @Bean
     UserDetailsService userDetailsService(){
-    return email -> userRepository.findByEmail(email).
-            orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
-}
+    return email -> {
+        User user = userRepository.findByEmail(email);
+        if(user == null){
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+        if (user.isBaja()){
+            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+        }
+        return user;
+    };
+    }
     @Bean
     BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

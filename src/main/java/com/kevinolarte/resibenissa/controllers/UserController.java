@@ -4,10 +4,13 @@ import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.UserDto;
 import com.kevinolarte.resibenissa.dto.in.auth.ChangePasswordUserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
+import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,11 +29,11 @@ import org.springframework.web.bind.annotation.RestController;
  * dentro del contexto de una residencia específica.
  * </p>
  *
- * Ruta base: <b>/resi/{idResidencia}/user</b>
+ * Ruta base: <b>/resi/user</b>
  *
  * @author Kevin Olarte
  */
-@RequestMapping("/resi/{idResidencia}/user")
+@RequestMapping("/resi/user")
 @RestController
 @AllArgsConstructor
 public class UserController {
@@ -41,23 +44,22 @@ public class UserController {
     /**
      * Obtiene los datos de un usuario específico dentro de una residencia.
      *
-     * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario a consultar.
      * @return {@link ResponseEntity} con los datos del usuario.
      */
     @GetMapping("/{idUser}/get")
     public ResponseEntity<UserResponseDto> get(
-            @PathVariable Long idResidencia,
             @PathVariable Long idUser) {
 
-        return ResponseEntity.ok(userService.get(idResidencia, idUser));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        return ResponseEntity.ok(userService.get(currentUser.getResidencia().getId(), idUser));
 
     }
 
     /**
      * Obtiene una lista de usuarios dentro de una residencia, aplicando filtros opcionales.
      *
-     * @param idResidencia ID de la residencia.
      * @param email Filtro por email (opcional).
      * @param enabled Filtro por estado habilitado (opcional).
      * @param idJuego Filtro por ID de juego asociado (opcional).
@@ -65,12 +67,25 @@ public class UserController {
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
-            @PathVariable Long idResidencia,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) Boolean enabled,
-            @RequestParam(required = false) Long idJuego) {
+            @RequestParam(required = false) Long idJuego,
+            @RequestParam(required = false) Long minRegistro,
+            @RequestParam(required = false) Long maxRegistro) {
 
-        return ResponseEntity.ok(userService.getAll(idResidencia, email, enabled, idJuego));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        return ResponseEntity.ok(userService.getAll(currentUser.getResidencia().getId(), email, enabled, idJuego, minRegistro, maxRegistro));
+
+    }
+
+    @GetMapping("/getAll/bajas")
+    public ResponseEntity<List<UserResponseDto>> getAllBajas(
+            @RequestParam(required = false) String email) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        return ResponseEntity.ok(userService.getAllBajas(currentUser.getResidencia().getId(), email));
 
     }
 
@@ -78,15 +93,15 @@ public class UserController {
     /**
      * Elimina un usuario si pertenece a la residencia y no tiene registros dependientes.
      *
-     * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario a eliminar.
      * @return {@link ResponseEntity} con estado 204 No Content si se elimina correctamente.
      */
     @DeleteMapping("/{idUser}/delete")
     public ResponseEntity<Void> delete(
-            @PathVariable Long idResidencia,
             @PathVariable Long idUser) {
-        userService.delete(idResidencia,idUser);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        userService.deleteFisico(currentUser.getResidencia().getId(),idUser);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -94,15 +109,16 @@ public class UserController {
     /**
      * Elimina las referencias a registros de juego de un usuario sin eliminarlo.
      *
-     * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario.
      * @return {@link ResponseEntity} con estado 204 No Content si se eliminan correctamente las referencias.
      */
     @DeleteMapping("/{idUser}/delete/referencies")
     public ResponseEntity<Void> deleteReferencies(
-            @PathVariable Long idResidencia,
             @PathVariable Long idUser) {
-        userService.deleteReferencies(idResidencia, idUser);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        userService.deleteReferencies(currentUser.getResidencia().getId(), idUser);
         return  ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -128,38 +144,55 @@ public class UserController {
     /**
      * Actualiza los datos básicos de un usuario.
      *
-     * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario.
      * @param userDto Datos a actualizar.
      * @return {@link ResponseEntity} con los datos del usuario actualizado.
      */
     @PatchMapping("/{idUser}/update")
     public ResponseEntity<UserResponseDto> update(
-            @PathVariable Long idResidencia,
             @PathVariable Long idUser,
             @RequestBody UserDto userDto) {
 
-        return ResponseEntity.ok(userService.update(idResidencia, idUser, userDto));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        return ResponseEntity.ok(userService.update(currentUser.getResidencia().getId(), idUser, userDto));
     }
 
     /**
      * Cambia la contraseña de un usuario validando la anterior.
      *
-     * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario.
      * @param changePasswordUserDto DTO con la contraseña actual y la nueva.
      * @return {@link ResponseEntity} con los datos del usuario tras el cambio.
      */
     @PatchMapping("/{idUser}/update/changePassword")
     public ResponseEntity<UserResponseDto> changePassword(
-            @PathVariable Long idResidencia,
             @PathVariable Long idUser,
             @RequestBody ChangePasswordUserDto changePasswordUserDto) {
 
-        return ResponseEntity.ok(userService.updatePassword(idResidencia, idUser, changePasswordUserDto));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        return ResponseEntity.ok(userService.updatePassword(currentUser.getResidencia().getId(), idUser, changePasswordUserDto));
     }
 
+
     /**
+     * Desactiva un usuario sin eliminarlo físicamente.
+     *
+     * @param idUser ID del usuario a desactivar.
+     * @return {@link ResponseEntity} con estado 204 No Content si se desactiva correctamente.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error.
+     */
+    @PatchMapping("/{idUser}/baja")
+    public ResponseEntity<Void> baja(
+            @PathVariable Long idUser) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        userService.deleteLogico(currentUser.getResidencia().getId(), idUser);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    /*
      * Registra un nuevo usuario a partir de los datos proporcionados en el DTO.
      * <p>
      * Se validan los campos obligatorios, el formato y unicidad del email, y la existencia de la residencia.
@@ -175,9 +208,4 @@ public class UserController {
     return ResponseEntity.ok(user);
 
     } */
-
-
-
-
-
 }

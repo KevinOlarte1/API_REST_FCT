@@ -10,6 +10,7 @@ import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
+import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,8 @@ public class ResidenteService {
     private final ResidenteRepository residenteRepository;
     private final ResidenciaService residenciaService;
     private final PasswordEncoder passwordEncoder;
+    private final ParticipanteRepository participanteRepository;
+
     /**
      * Registra un nuevo residente asociado a una residencia.
      *
@@ -123,7 +126,7 @@ public class ResidenteService {
      * @return Lista de residentes filtrados.
      * @throws ApiException si el ID de residencia es nulo o la residencia no existe.
      */
-    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, Integer year, Integer month, Integer maxAge, Integer minAge, String documentoIdentidad, Long idJuego, Long idEventoSalida) {
+    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, Integer year, Integer month, Integer maxAge, Integer minAge, String documentoIdentidad, Long idJuego, Long idEventoSalida, Long minRegistro, Long maxRegistro) {
         if (idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -142,68 +145,29 @@ public class ResidenteService {
         // Obtener todos los residentes de la residencia
         List<Residente> residentesBaseList =  residenteRepository.findByResidenciaAndBajaFalse(residencia);
 
-        //Filtrar por documento
-        if (documentoIdentidad != null){
-            documentoIdentidad = documentoIdentidad.trim().toUpperCase();
-            // Filtrar por documento de identidad
-            String finalDocumentoIdentidad = documentoIdentidad;
-            residentesBaseList = residentesBaseList.stream()
-                    .filter(r -> r.getDocuemntoIdentidad().equals(finalDocumentoIdentidad))
-                    .toList();
-        }
-        // Filtrar por fecha de nacimiento
-        if (fechaNacimiento != null){
-            // Filtrar por fecha de nacimiento
-            residentesBaseList = residentesBaseList.stream()
-                    .filter(r -> r.getFechaNacimiento().equals(fechaNacimiento))
-                    .toList();
-        }else {
-            // Filtrar por año y mes de nacimiento
-            if (year != null || month != null){
-                residentesBaseList = residentesBaseList.stream()
-                        .filter(residente -> {
-                            boolean match = true;
-                            if (year != null) match = residente.getFechaNacimiento().getYear() == year;
-                            if (month != null) match = residente.getFechaNacimiento().getMonthValue() == month;
-                            return match;
-                        })
-                        .toList();
-            }
-        }
-        // Filtrar por edad calculada a partir de la fecha nacimiento
-        if (maxAge != null || minAge != null){
-            residentesBaseList = residentesBaseList.stream().filter(residente -> {
-                boolean match = true;
-                if (maxAge != null) match = residente.getFechaNacimiento().plusYears(maxAge).isAfter(LocalDate.now());
-                if (minAge != null) match = residente.getFechaNacimiento().plusYears(minAge).isBefore(LocalDate.now());
-                return match;
 
-            }).toList();
-        }
+        residentesBaseList = residentesBaseList.stream()
+                .filter(residente -> {
+                    boolean match = true;
+                    if (documentoIdentidad != null) match = residente.getDocuemntoIdentidad().equalsIgnoreCase(documentoIdentidad);
+                    if (fechaNacimiento != null) match = residente.getFechaNacimiento().isEqual(fechaNacimiento);
+                    else{
+                        if (year != null) match = residente.getFechaNacimiento().getYear() == year;
+                        if (month != null) match = residente.getFechaNacimiento().getMonthValue() == month;
+                    }
+                    if (maxAge != null) match = residente.getFechaNacimiento().plusYears(maxAge).isAfter(LocalDate.now());
+                    if (minAge != null) match = residente.getFechaNacimiento().plusYears(minAge).isBefore(LocalDate.now());
+                    if (idJuego != null)match = residente.getRegistros().stream()
+                                            .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego));
+                    if (idEventoSalida != null) match = residente.getParticipantes().stream().
+                            anyMatch(participante -> participante.getSalida().getId().equals(idEventoSalida));
 
-        // Filtrar por juego
-        if (idJuego != null){
-            // Filtrar por juego
-            residentesBaseList = residentesBaseList.stream()
-                    .filter(r -> r.getRegistros().stream()
-                            .anyMatch(registro -> registro.getJuego().getId().equals(idJuego))
-                    )
-                    .toList();
+                    if (minRegistro != null && maxRegistro != null) match = residente.getRegistros().size() >= minRegistro && residente.getRegistros().size() <= maxRegistro;
+                    else if(minRegistro != null) match = residente.getRegistros().size() >= minRegistro;
+                    else if(maxRegistro != null) match = residente.getRegistros().size() <= maxRegistro;
 
-        }
-        // Filtrar por evento de salida
-        if (idEventoSalida != null){
-            // Filtrar por evento de salida
-            residentesBaseList = residentesBaseList.stream()
-                    .filter(r -> r.getParticipantes().stream()
-                            .anyMatch(participante ->
-                                    participante.getSalida().getId().equals(idEventoSalida))
-                    )
-                    .toList();
-        }
-
-
-
+                    return match;
+                }).toList();
 
         return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
     }
@@ -239,10 +203,7 @@ public class ResidenteService {
         residenteUpdatable.setBaja(true);
         residenteUpdatable.setFechaBaja(LocalDateTime.now());
         residenteUpdatable.setDocuemntoIdentidad(passwordEncoder.encode(residenteUpdatable.getDocuemntoIdentidad()));
-        residenteUpdatable.getParticipantes().forEach(participante -> {
-            participante.setFechaBaja(LocalDateTime.now());
-            participante.setBaja(true);
-        });
+        participanteRepository.deleteAll(residenteUpdatable.getParticipantes());
         residenteRepository.save(residenteUpdatable);
 
 
@@ -339,7 +300,7 @@ public class ResidenteService {
      * @return Lista de residentes dados de baja.
      * @throws ApiException si el ID de residencia es nulo o la residencia no existe.
      */
-    public List<ResidenteResponseDto> getAllBajas(Long idResidencia) {
+    public List<ResidenteResponseDto> getAllBajas(Long idResidencia, String documentoIdentidad) {
         if (idResidencia == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -350,6 +311,13 @@ public class ResidenteService {
         }
         // Obtener todos los residentes de la residencia
         List<Residente> residentesBaseList =  residenteRepository.findByResidenciaAndBajaTrue(residencia);
+
+        if(documentoIdentidad != null && !documentoIdentidad.trim().isEmpty()){
+            // Filtrar por documento de identidad
+            residentesBaseList = residentesBaseList.stream()
+                    .filter(residente -> residente.getDocuemntoIdentidad().equalsIgnoreCase(documentoIdentidad))
+                    .toList();
+        }
         return residentesBaseList.stream().map(ResidenteResponseDto::new).toList();
     }
 }
