@@ -59,14 +59,6 @@ public class Residencia {
     private Set<Residente> residentes = new LinkedHashSet<>();
 
     /**
-     * Juego que tienen implementados en esta reisdencia
-     * Relacion uno a muchos
-     */
-    @OneToMany(mappedBy = "residencia", cascade = CascadeType.REMOVE)
-    @JsonIgnore
-    private Set<Juego> juegos = new LinkedHashSet<>();
-
-    /**
      * Eventos que tienen implementados en esta residencia
      * Relacion uno a muchos
      */

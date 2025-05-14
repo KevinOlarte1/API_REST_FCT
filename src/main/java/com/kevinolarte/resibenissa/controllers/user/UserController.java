@@ -1,4 +1,4 @@
-package com.kevinolarte.resibenissa.controllers;
+package com.kevinolarte.resibenissa.controllers.user;
 
 import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.UserDto;
@@ -90,20 +90,6 @@ public class UserController {
     }
 
 
-    /**
-     * Elimina un usuario si pertenece a la residencia y no tiene registros dependientes.
-     *
-     * @param idUser ID del usuario a eliminar.
-     * @return {@link ResponseEntity} con estado 204 No Content si se elimina correctamente.
-     */
-    @DeleteMapping("/{idUser}/delete")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long idUser) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-        userService.deleteFisico(currentUser.getResidencia().getId(),idUser);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
 
 
     /**
@@ -192,20 +178,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    /*
-     * Registra un nuevo usuario a partir de los datos proporcionados en el DTO.
-     * <p>
-     * Se validan los campos obligatorios, el formato y unicidad del email, y la existencia de la residencia.
-     * </p>
-     *
-     * param userDto DTO con los datos del nuevo usuario.
-     * @return {@link ResponseEntity} con los datos del usuario creado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en casi de multiples casos.
 
-    PostMapping("/add")
-    public ResponseEntity<UserResponseDto> addUser(@RequestBody UserDto userDto) {
-    UserResponseDto user = userService.save(userDto);
-    return ResponseEntity.ok(user);
 
-    } */
+
 }

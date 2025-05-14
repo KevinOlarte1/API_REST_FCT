@@ -1,4 +1,4 @@
-package com.kevinolarte.resibenissa.controllers;
+package com.kevinolarte.resibenissa.controllers.residencia;
 
 import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaPublicResponseDto;
@@ -6,7 +6,6 @@ import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.ResidenciaService;
-import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +31,6 @@ import java.util.List;
 public class ResidenciaController {
 
     private final ResidenciaService residenciaService;
-    private final ResidenteService residenteService;
 
 
     /**
@@ -90,28 +88,9 @@ public class ResidenciaController {
     }
 
 
-    //EndPoint para ADMIN
 
-    /**
-     * Elimina una residencia por su ID.
-     *
-     * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
-     */
-    @DeleteMapping("/{idResidencia}/delete")
-    public ResponseEntity<Void> remove(@PathVariable Long idResidencia) {
-        residenciaService.remove(idResidencia);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
 
-    /**
-     * Obtiene una residencia por su ID.
-     * @param idResidencia ID de la residencia a recuperar.
-     * @return {@link ResponseEntity} con estado {@code 200 OK} y el DTO de la residencia encontrada.
-     */
-    @GetMapping("/{idResidencia}/get")
-    public ResponseEntity<ResidenciaResponseDto> get(
-            @PathVariable Long idResidencia) {
-        return ResponseEntity.ok(residenciaService.get(idResidencia));
-    }
+
+
 
 }

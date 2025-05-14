@@ -430,4 +430,8 @@ public class UserService {
         return usuarios.stream().map(UserResponseDto::new).toList();
 
     }
+
+    public UserResponseDto save(Long idResidencia, UserDto userDto) {
+
+    }
 }

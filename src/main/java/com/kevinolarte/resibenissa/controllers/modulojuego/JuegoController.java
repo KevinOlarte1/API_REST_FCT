@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author Kevin Olarte
  */
-@RequestMapping("/resi/{idResidencia}/juego")
+@RequestMapping("/resi/juego")
 @RestController
 @AllArgsConstructor
 public class JuegoController {
@@ -39,7 +39,6 @@ public class JuegoController {
     public ResponseEntity<JuegoResponseDto> add(
             @PathVariable Long idResidencia,
             @RequestBody JuegoDto juegoDto) {
-
             return ResponseEntity.status(HttpStatus.CREATED).body(juegoService.save(idResidencia,juegoDto));
 
     }

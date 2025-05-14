@@ -19,10 +19,8 @@ import java.util.Set;
  */
 @Entity
 @Table(
-        name = "juego",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"nombre", "fk_residencia"})
-        }
+        name = "juego"
+
 )
 @Getter
 @Setter
@@ -35,15 +33,9 @@ public class Juego {
     /**
      * Nombre del juego. Debe ser único dentro de cada residencia.
      */
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String nombre;
 
-    /**
-     * Residencia en la que está disponible este juego.
-     */
-    @ManyToOne
-    @JoinColumn(name = "fk_residencia", nullable = false)
-    private Residencia residencia;
 
     /**
      * Registros de uso de este juego por parte de residentes.
@@ -63,7 +55,6 @@ public class Juego {
         return "Juego{" +
                 "id=" + id +
                 ", nombre='" + nombre + '\'' +
-                ", residencia=" + residencia +
                 '}';
     }
 }
