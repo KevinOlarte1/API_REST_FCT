@@ -194,4 +194,8 @@ public class ResidenciaService {
 
         residenciaRepository.save(residencia);
     }
+
+    public List<ResidenciaPublicResponseDto> getAllBaja() {
+        return residenciaRepository.findByBajaTrue().stream().map(ResidenciaPublicResponseDto::new).toList();
+    }
 }

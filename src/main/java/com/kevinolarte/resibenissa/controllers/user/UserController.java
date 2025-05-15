@@ -89,25 +89,6 @@ public class UserController {
 
     }
 
-
-
-
-    /**
-     * Elimina las referencias a registros de juego de un usuario sin eliminarlo.
-     *
-     * @param idUser ID del usuario.
-     * @return {@link ResponseEntity} con estado 204 No Content si se eliminan correctamente las referencias.
-     */
-    @DeleteMapping("/{idUser}/delete/referencies")
-    public ResponseEntity<Void> deleteReferencies(
-            @PathVariable Long idUser) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-        userService.deleteReferencies(currentUser.getResidencia().getId(), idUser);
-        return  ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
     /**
      * Descarga la imagen por defecto del sistema como un archivo adjunto.
      * <p>

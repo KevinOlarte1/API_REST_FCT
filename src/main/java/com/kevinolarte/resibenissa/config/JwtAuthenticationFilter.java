@@ -82,10 +82,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 //Obtenemos ese userDetail para ver si exsite, busca por correo, configurado en la AplicationConfiguration
                 UserDetails userDetails =this.userDetailsService.loadUserByUsername(userEmail);
-
+                System.out.println("asdasd");
                 //Comprobamos si el usuario es admin.
-                if(request.getRequestURI().matches("^/resi/\\d+/.*")){
-
+                System.out.println(request.getRequestURI());
+                if(request.getRequestURI().matches("^/admin/resi/.*")){
+                    System.out.println("asd");
                     //Si el token es de un usuario normal, lanzamos la exception
                     User user = (User) userDetails;
                     if (!user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))){

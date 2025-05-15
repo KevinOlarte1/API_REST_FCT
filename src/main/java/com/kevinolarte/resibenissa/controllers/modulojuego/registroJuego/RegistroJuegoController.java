@@ -1,4 +1,4 @@
-package com.kevinolarte.resibenissa.controllers.modulojuego;
+package com.kevinolarte.resibenissa.controllers.modulojuego.registroJuego;
 
 import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;

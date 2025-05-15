@@ -1,11 +1,9 @@
-package com.kevinolarte.resibenissa.controllers.modulojuego;
+package com.kevinolarte.resibenissa.controllers.modulojuego.juego;
 
-import com.kevinolarte.resibenissa.dto.in.modulojuego.JuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.JuegoResponseDto;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.modulojuego.JuegoService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

@@ -36,4 +36,7 @@ public interface ResidenteRepository extends JpaRepository<Residente, Long>{
     Residente findByDocuemntoIdentidad(String docuemntoIdentidad);
 
     List<Residente> findByResidenciaAndBajaTrue(Residencia residencia);
+
+    List<Residente> findByBajaFalse();
+    List<Residente> findByBajaTrue();
 }

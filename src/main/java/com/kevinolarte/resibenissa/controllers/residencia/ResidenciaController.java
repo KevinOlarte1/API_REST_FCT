@@ -34,23 +34,6 @@ public class ResidenciaController {
 
 
     /**
-     * Crea una nueva residencia.
-     *
-     * @param residenciaDto DTO con los datos de la residencia a crear.
-     * @return {@link ResponseEntity} con estado {@code 201 Created} y el DTO de la residencia creada.
-     */
-    @PostMapping("/add")
-    public ResponseEntity<ResidenciaResponseDto> add(@RequestBody ResidenciaDto residenciaDto) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        User currentUser = (User) auth.getPrincipal();
-        ResidenciaResponseDto residencia = residenciaService.save(residenciaDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(residencia);
-
-    }
-
-    /**
      * Obtiene una residencia por su ID.
      *
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el DTO de la residencia encontrada.

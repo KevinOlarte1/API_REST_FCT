@@ -21,7 +21,7 @@ import java.util.List;
  *
  * Autor: Kevin Olarte
  */
-@RequestMapping("/resi/{idResidencia}/resident")
+@RequestMapping("/admin/resi/")
 @RestController
 @AllArgsConstructor
 public class ResidenteAdminController {
@@ -35,7 +35,7 @@ public class ResidenteAdminController {
      * @param residenteDto DTO con los datos del nuevo residente.
      * @return {@link ResponseEntity} con estado {@code 201 Created} y el residente creado.
      */
-    @PostMapping("/add")
+    @PostMapping("/{idResidencia}/resident/add")
     public ResponseEntity<ResidenteResponseDto> add(
             @PathVariable Long idResidencia,
             @RequestBody ResidenteDto residenteDto){
@@ -50,7 +50,7 @@ public class ResidenteAdminController {
      * @param idResidente ID del residente.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el residente encontrado.
      */
-    @GetMapping("/{idResidente}/get")
+    @GetMapping("/{idResidencia}/resident/{idResidente}/get")
     public ResponseEntity<ResidenteResponseDto> get(
             @PathVariable Long idResidencia,
             @PathVariable Long idResidente) {
@@ -69,7 +69,7 @@ public class ResidenteAdminController {
      * @param month Mes de nacimiento del residente (opcional).
      * @return {@link ResponseEntity} con la lista de residentes encontrados.
      */
-    @GetMapping("/getAll")
+    @GetMapping("/{idResidencia}/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
             @PathVariable Long idResidencia,
             @RequestParam(required = false) String documentoIdentidad,
@@ -85,6 +85,20 @@ public class ResidenteAdminController {
 
         return ResponseEntity.ok(residenteService.getAll(idResidencia,fechaNacimiento, year, month, maxAge, minAge, documentoIdentidad, idJuego, idEventoSalida, minRegistro, maxRegistro));
     }
+    @GetMapping("/resident/getAll")
+    public ResponseEntity<List<ResidenteResponseDto>> getAll(
+            @RequestParam(required = false) String documentoIdentidad,
+            @RequestParam(required = false) LocalDate fechaNacimiento,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer maxAge,
+            @RequestParam(required = false) Integer minAge,
+            @RequestParam(required = false) Long idJuego,
+            @RequestParam(required = false) Long idEventoSalida,
+            @RequestParam(required = false) Long minRegistro,
+            @RequestParam(required = false) Long maxRegistro){
+        return ResponseEntity.ok(residenteService.getAll(fechaNacimiento, year, month, maxAge, minAge, documentoIdentidad, idJuego, idEventoSalida, minRegistro, maxRegistro));
+    }
 
     /**
      * Lista todos los residentes dados de baja en una residencia.
@@ -92,11 +106,22 @@ public class ResidenteAdminController {
      * @param idResidencia ID de la residencia.
      * @return {@link ResponseEntity} con la lista de residentes dados de baja.
      */
-    @GetMapping("/getAll/bajas")
+    @GetMapping("/{idResidencia}/resident/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
             @PathVariable Long idResidencia,
             @RequestParam(required = false) String documentoIdentidad){
         return ResponseEntity.ok(residenteService.getAllBajas(idResidencia, documentoIdentidad));
+    }
+
+    /**
+     * Lista todos los residentes dados de baja.
+     *
+     * @return {@link ResponseEntity} con la lista de residentes dados de baja.
+     */
+    @GetMapping("/resident/getAll/bajas")
+    public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
+            @RequestParam(required = false) String documentoIdentidad){
+        return ResponseEntity.ok(residenteService.getAllBajas(documentoIdentidad));
     }
 
     /**
@@ -106,7 +131,7 @@ public class ResidenteAdminController {
      * @param idResidente ID del residente a eliminar.
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
      */
-    @DeleteMapping("/{idResidente}/delete")
+    @DeleteMapping("/{idResidencia}/resident/{idResidente}/delete")
     public ResponseEntity<Void> delete(
             @PathVariable Long idResidencia,
             @PathVariable Long idResidente) {
@@ -122,7 +147,7 @@ public class ResidenteAdminController {
      * @param idResidente ID del residente a eliminar.
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
      */
-    @PatchMapping("/{idResidente}/baja")
+    @PatchMapping("{idResidencia}/resident/{idResidente}/baja")
     public ResponseEntity<Void> deleteLogico(
             @PathVariable Long idResidencia,
             @PathVariable Long idResidente) {
@@ -137,7 +162,7 @@ public class ResidenteAdminController {
      * @param residenteDto DTO con los datos a actualizar.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el residente actualizado.
      */
-    @PatchMapping("/{idResidente}/update")
+    @PatchMapping("{idResidencia}/resident/{idResidente}/update")
     public ResponseEntity<ResidenteResponseDto> update(
             @PathVariable Long idResidencia,
             @PathVariable Long idResidente,
