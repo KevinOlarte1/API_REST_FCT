@@ -37,7 +37,7 @@ public class JuegoController {
      */
     @GetMapping("/{idJuego}/get")
     public ResponseEntity<JuegoResponseDto> get(
-            @PathVariable Long idJuego) {
+                                            @PathVariable Long idJuego) {
 
         return ResponseEntity.ok(juegoService.get(idJuego));
     }
@@ -51,11 +51,9 @@ public class JuegoController {
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<JuegoResponseDto>> getAll(
-            @RequestParam(required = false) String nombreJuego,
-            @RequestParam(required = false) Boolean maxRegistros) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(juegoService.getAll(idResidencia, nombreJuego, maxRegistros));
+                                                @RequestParam(required = false) String nombreJuego,
+                                                @RequestParam(required = false) Boolean maxRegistros) {
+        return ResponseEntity.ok(juegoService.getAll(nombreJuego, maxRegistros));
     }
 
 

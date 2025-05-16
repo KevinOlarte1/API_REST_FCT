@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author Kevin Olarte
  */
-@RequestMapping("/resi/{idResidencia}/juego")
+@RequestMapping("/admin/resi/juego")
 @RestController
 @AllArgsConstructor
 public class JuegoAdminController {
@@ -33,22 +33,42 @@ public class JuegoAdminController {
      */
     @PostMapping("/add")
     public ResponseEntity<JuegoResponseDto> add(
-            @RequestBody JuegoDto juegoDto) {
+                                            @RequestBody JuegoDto juegoDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(juegoService.save(juegoDto));
 
     }
 
     /**
+     * Obtiene los datos de un juego específico en una residencia.
+     * @param idJuego ID del juego a consultar.
+     * @return {@link ResponseEntity} con los datos del juego solicitado y estado 200 OK.
+     */
+    @GetMapping("/{idJuego}/get")
+    public ResponseEntity<JuegoResponseDto> get(
+                                            @PathVariable Long idJuego) {
+        return ResponseEntity.ok(juegoService.get(idJuego));
+    }
+
+    /**
+     * Obtiene una lista de todos los juegos registrados en una residencia.
+     *
+     * @return {@link ResponseEntity} con la lista de juegos y estado 200 OK.
+     */
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getAll(
+                                @RequestParam(required = false) String nombreJuego,
+                                @RequestParam(required = false) Boolean maxRegistros) {
+        return ResponseEntity.ok(juegoService.getAll(nombreJuego, maxRegistros));
+    }
+    /**
      * Elimina un juego de una residencia si no tiene referencias dependientes.
      *
-     * @param idResidencia ID de la residencia.
      * @param idJuego ID del juego a eliminar.
      * @return {@link ResponseEntity} con estado 204 NO CONTENT si la eliminación es exitosa.
      */
     @DeleteMapping("/{idJuego}/delete")
     public ResponseEntity<Void> delete(
-            @PathVariable Long idResidencia,
-            @PathVariable Long idJuego) {
+                                @PathVariable Long idJuego) {
 
         juegoService.delete(idJuego);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -57,16 +77,14 @@ public class JuegoAdminController {
     /**
      * Actualiza los datos de un juego ya registrado en una residencia.
      *
-     * @param idResidencia ID de la residencia.
      * @param idJuego ID del juego a actualizar.
      * @param juegoDto Datos nuevos del juego.
      * @return {@link ResponseEntity} con los datos del juego actualizado.
      */
     @PatchMapping("/{idJuego}/update")
     public ResponseEntity<JuegoResponseDto> update(
-            @PathVariable Long idResidencia,
-            @PathVariable Long idJuego,
-            @RequestBody JuegoDto juegoDto) {
+                                            @PathVariable Long idJuego,
+                                            @RequestBody JuegoDto juegoDto) {
         return ResponseEntity.ok(juegoService.update(idJuego, juegoDto));
     }
 

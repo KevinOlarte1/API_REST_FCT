@@ -5,18 +5,25 @@ import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.modulojuego.Juego;
 import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.User;
+import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
 import com.kevinolarte.resibenissa.repositories.modulojuego.RegistroJuegoRepository;
 
+import com.kevinolarte.resibenissa.services.ResidenciaService;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import com.kevinolarte.resibenissa.services.UserService;
+import com.kevinolarte.resibenissa.specifications.RegistroJuegoSpecification;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,7 +47,8 @@ public class RegistroJuegoService {
     private final ResidenteService residenteService;
     private final JuegoService juegoService;
     private final UserService userService;
-
+    private final ResidenciaService residenciaService;
+    private final ResidenciaRepository residenciaRepository;
 
 
     /**
@@ -127,6 +135,123 @@ public class RegistroJuegoService {
 
     /**
      * Obtiene todos los registros de juego filtrados por dificultad y parámetros opcionales.
+     * @param idResidencia ID de la residencia.
+     * @param idJuego ID del juego.
+     * @param dificultad Dificultad de la partida (FACIL, MEDIO, DIFICIL).
+     * @param edad (opcional) Edad del residente.
+     * @param minEdad (opcional) Edad mínima del residente.
+     * @param maxEdad (opcional) Edad máxima del residente.
+     * @param idResidente (opcional) ID del residente.
+     * @param fecha (opcional) Fecha de la partida.
+     * @param minFecha (opcional) Fecha mínima de la partida.
+     * @param maxFecha (opcional) Fecha máxima de la partida.
+     * @param promedio (opcional) Si se debe filtrar por duración promedio.
+     * @param masPromedio (opcional) Si se debe filtrar por duración mayor al promedio.
+     * @param menosPromedio (opcional) Si se debe filtrar por duración menor al promedio.
+     * @param ordenFecha (opcional) Si se debe ordenar por fecha descendente o ascendente.
+     * @return Lista de registros de juego que cumplen con los filtros.
+     */
+    public List<RegistroJuegoResponseDto> getAll(Long idResidencia, Long idJuego,
+                                                 Dificultad dificultad, Integer edad, Integer minEdad,
+                                                 Integer maxEdad, Long idResidente, LocalDate fecha,
+                                                 LocalDate minFecha, LocalDate maxFecha,
+                                                 boolean promedio, boolean masPromedio,
+                                                 boolean menosPromedio, boolean ordenFecha) {
+        if (idResidencia == null || idJuego == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
+        Residencia residencia = residenciaRepository.findById(idResidencia)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO));
+
+        Specification<RegistroJuego> spec = RegistroJuegoSpecification.withDynamicFilters(
+               idResidencia, idJuego,idResidente, edad, minEdad, maxEdad, fecha, minFecha, maxFecha, dificultad
+        );
+
+        return getRegistroJuegoResponseDtos(promedio, masPromedio, menosPromedio, ordenFecha, spec);
+    }
+
+    /**
+     * Obtiene todos los registros de juego filtrados por dificultad y parámetros opcionales.
+     *
+     * @param idJuego ID del juego.
+     * @param dificultad Dificultad de la partida (FACIL, MEDIO, DIFICIL).
+     * @param edad (opcional) Edad del residente.
+     * @param minEdad (opcional) Edad mínima del residente.
+     * @param maxEdad (opcional) Edad máxima del residente.
+     * @param idResidente (opcional) ID del residente.
+     * @param fecha (opcional) Fecha de la partida.
+     * @param minFecha (opcional) Fecha mínima de la partida.
+     * @param maxFecha (opcional) Fecha máxima de la partida.
+     * @param promedio (opcional) Si se debe filtrar por duración promedio.
+     * @param masPromedio (opcional) Si se debe filtrar por duración mayor al promedio.
+     * @param menosPromedio (opcional) Si se debe filtrar por duración menor al promedio.
+     * @param ordenFecha (opcional) Si se debe ordenar por fecha descendente o ascendente.
+     * @return Lista de registros de juego que cumplen con los filtros.
+     */
+    public List<RegistroJuegoResponseDto> getAll(Long idJuego,
+                                                 Dificultad dificultad, Integer edad, Integer minEdad,
+                                                 Integer maxEdad, Long idResidente, LocalDate fecha,
+                                                 LocalDate minFecha, LocalDate maxFecha,
+                                                 boolean promedio, boolean masPromedio,
+                                                 boolean menosPromedio, boolean ordenFecha) {
+
+        if (idJuego == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
+
+        Specification<RegistroJuego> spec = RegistroJuegoSpecification.withDynamicFilters(
+                null, idJuego,idResidente, edad, minEdad, maxEdad, fecha, minFecha, maxFecha, dificultad
+        );
+
+        return getRegistroJuegoResponseDtos(promedio, masPromedio, menosPromedio, ordenFecha, spec);
+    }
+
+    private List<RegistroJuegoResponseDto> getRegistroJuegoResponseDtos(boolean promedio, boolean masPromedio, boolean menosPromedio, boolean ordenFecha, Specification<RegistroJuego> spec) {
+        Sort sort = Sort.by(ordenFecha ? Sort.Direction.DESC : Sort.Direction.ASC, "fecha");
+        List<RegistroJuego> registros = registroJuegoRepository.findAll(spec, sort);
+
+        if (promedio || masPromedio || menosPromedio) {
+            double duracionPromedio = registros.stream()
+                    .mapToDouble(RegistroJuego::getDuracion)
+                    .average()
+                    .orElse(0.0);
+
+            if (promedio) {
+                // ±5% de margen respecto al promedio
+                double margen = duracionPromedio * 0.05;
+                registros = registros.stream()
+                        .filter(r -> Math.abs(r.getDuracion() - duracionPromedio) <= margen)
+                        .toList();
+            } else if (masPromedio) {
+                registros = registros.stream()
+                        .filter(r -> r.getDuracion() > duracionPromedio)
+                        .toList();
+            } else if (menosPromedio) {
+                registros = registros.stream()
+                        .filter(r -> r.getDuracion() < duracionPromedio)
+                        .toList();
+            }
+        }
+
+
+        return registros.stream()
+                .map(RegistroJuegoResponseDto::new)
+                .toList();
+    }
+
+
+    /**
+     * Obtiene todos los registros de juego filtrados por dificultad y parámetros opcionales.
      *
      * @param idResidencia ID de la residencia.
      * @param idJuego ID del juego.
@@ -201,6 +326,23 @@ public class RegistroJuegoService {
         }
 
         return baseList.stream().map(RegistroJuegoResponseDto::new).collect(Collectors.toList());
+    }
+
+    public List<RegistroJuegoResponseDto> getAll(Long idResidencia, Long idJuego, Dificultad dificultad){
+        if (idResidencia == null || idJuego == null || dificultad == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Comprobar si el juego existe
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
+        //Comprobar si la residencia existe
+        Residencia residencia = residenciaRepository.findById(idResidencia)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO));
+
+        return registroJuegoRepository.findByJuegoAndDificultadAndResidente_Residencia(juego, dificultad, residencia)
+                .stream().map(RegistroJuegoResponseDto::new).toList();
     }
 
 
@@ -281,7 +423,49 @@ public class RegistroJuegoService {
         if (juego == null)
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
 
+        //Comprobar si la residencia existe
+        Residencia residencia = residenciaRepository.findById(idResidencia)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO));
+
+        return registroJuegoRepository.findByJuegoAndResidente_Residencia(juego,residencia).stream().map(RegistroJuegoResponseDto::new).toList();
+
+    }
+
+    /**
+     * Obtiene todos los registros de juego de un juego específico.
+     *
+     * @param idJuego ID del juego.
+     * @return Lista de registros de juego asociados al juego.
+     * @throws ApiException si el ID del juego es nulo o no existe.
+     */
+    public List<RegistroJuegoResponseDto> getAll(Long idJuego) {
+        if (idJuego == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Comprobar si el juego existe
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
         return registroJuegoRepository.findByJuego(juego).stream().map(RegistroJuegoResponseDto::new).toList();
+    }
+
+    /**
+     * Obtiene todos los registros de juego de un juego específico filtrados por dificultad.
+     * @param idJuego ID del juego.
+     * @param dificuldad Dificultad del juego. Representa diferentes niveles de dificultad.
+     * @return Lista de registros de juego asociados al juego y dificultad especificados.
+     */
+    public List<RegistroJuegoResponseDto> getAll(Long idJuego, Dificultad dificuldad) {
+        if (idJuego == null || dificuldad == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Comprobar si el juego existe
+        Juego juego = juegoService.findById(idJuego);
+        if (juego == null)
+            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
+
+        return registroJuegoRepository.findByJuegoAndDificultad(juego, dificuldad).stream().map(RegistroJuegoResponseDto::new).toList();
 
     }
 }

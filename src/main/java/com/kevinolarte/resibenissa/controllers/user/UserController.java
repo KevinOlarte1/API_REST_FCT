@@ -49,7 +49,7 @@ public class UserController {
      */
     @GetMapping("/{idUser}/get")
     public ResponseEntity<UserResponseDto> get(
-            @PathVariable Long idUser) {
+                                            @PathVariable Long idUser) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -67,11 +67,11 @@ public class UserController {
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) Boolean enabled,
-            @RequestParam(required = false) Long idJuego,
-            @RequestParam(required = false) Long minRegistro,
-            @RequestParam(required = false) Long maxRegistro) {
+                                                @RequestParam(required = false) String email,
+                                                @RequestParam(required = false) Boolean enabled,
+                                                @RequestParam(required = false) Long idJuego,
+                                                @RequestParam(required = false) Long minRegistro,
+                                                @RequestParam(required = false) Long maxRegistro) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -81,7 +81,7 @@ public class UserController {
 
     @GetMapping("/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
-            @RequestParam(required = false) String email) {
+                                                @RequestParam(required = false) String email) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -117,8 +117,8 @@ public class UserController {
      */
     @PatchMapping("/{idUser}/update")
     public ResponseEntity<UserResponseDto> update(
-            @PathVariable Long idUser,
-            @RequestBody UserDto userDto) {
+                                        @PathVariable Long idUser,
+                                        @RequestBody UserDto userDto) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -134,8 +134,8 @@ public class UserController {
      */
     @PatchMapping("/{idUser}/update/changePassword")
     public ResponseEntity<UserResponseDto> changePassword(
-            @PathVariable Long idUser,
-            @RequestBody ChangePasswordUserDto changePasswordUserDto) {
+                                        @PathVariable Long idUser,
+                                        @RequestBody ChangePasswordUserDto changePasswordUserDto) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -152,7 +152,7 @@ public class UserController {
      */
     @PatchMapping("/{idUser}/baja")
     public ResponseEntity<Void> baja(
-            @PathVariable Long idUser) {
+                                @PathVariable Long idUser) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
         userService.deleteLogico(currentUser.getResidencia().getId(), idUser);

@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.repositories.modulojuego;
 
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
+import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.models.modulojuego.Juego;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -61,4 +63,8 @@ public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Lo
     List<RegistroJuego> findByJuegoAndDificultadAndResidente(Juego juego, Dificultad dificultad, Residente residente);
 
     List<RegistroJuego> findByJuegoAndDificultadAndResidenteAndUsuario(Juego juego, Dificultad dificultad, Residente residente, User usuario);
+
+    List<RegistroJuego> findByJuegoAndDificultadAndResidente_Residencia(Juego juego, Dificultad dificultad, Residencia residenteResidencia);
+
+    List<RegistroJuego> findByJuegoAndResidente_Residencia(Juego juego, Residencia residenteResidencia);
 }

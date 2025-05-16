@@ -109,18 +109,7 @@ public class JuegoService {
      * @return Lista de juegos mapeados a DTO.
      * @throws ApiException si la residencia no existe o el ID es nulo.
      */
-    public List<JuegoResponseDto> getAll(Long idResidencia, String nombreJuego, Boolean maxRegistros) {
-        if (maxRegistros != null && idResidencia == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-        //Comprobar si existe la residencia
-        Residencia residencia = null;
-        if (idResidencia != null && maxRegistros != null){
-            residencia = residenciaService.findById(idResidencia);
-            if (residencia == null){
-                throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-            }
-        }
+    public List<JuegoResponseDto> getAll(String nombreJuego, Boolean maxRegistros) {
 
         List<Juego> juegoBaseList = juegoRepository.findAll();
 

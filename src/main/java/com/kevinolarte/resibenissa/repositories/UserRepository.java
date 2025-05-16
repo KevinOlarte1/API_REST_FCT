@@ -30,4 +30,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
     List<User> findByBajaTrueAndResidenciaId(Long idResidencia);
+
+    List<User> findByBajaFalse();
+    List<User> findByBajaTrue();
 }

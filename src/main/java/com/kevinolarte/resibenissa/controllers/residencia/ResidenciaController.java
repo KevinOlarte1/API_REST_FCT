@@ -40,7 +40,6 @@ public class ResidenciaController {
      */
     @GetMapping("/get")
     public ResponseEntity<ResidenciaResponseDto> get() {
-        System.out.println("Resi");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
         return ResponseEntity.ok(residenciaService.get(currentUser.getResidencia().getId()));

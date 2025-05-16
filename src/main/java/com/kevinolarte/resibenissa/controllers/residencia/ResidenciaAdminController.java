@@ -40,7 +40,7 @@ public class ResidenciaAdminController {
      */
     @PostMapping("/add")
     public ResponseEntity<ResidenciaResponseDto> add(
-            @RequestBody ResidenciaDto residenciaDto) {
+                                                @RequestBody ResidenciaDto residenciaDto) {
         ResidenciaResponseDto residencia = residenciaService.save(residenciaDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(residencia);
 
@@ -54,7 +54,7 @@ public class ResidenciaAdminController {
      */
     @GetMapping("/{idResidencia}/get")
     public ResponseEntity<ResidenciaResponseDto> get(
-            @PathVariable Long idResidencia) {
+                                                @PathVariable Long idResidencia) {
         return ResponseEntity.ok(residenciaService.get(idResidencia));
     }
 
@@ -83,7 +83,8 @@ public class ResidenciaAdminController {
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
      */
     @DeleteMapping("/{idResidencia}/delete")
-    public ResponseEntity<Void> remove(@PathVariable Long idResidencia) {
+    public ResponseEntity<Void> remove(
+                                @PathVariable Long idResidencia) {
         residenciaService.remove(idResidencia);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -95,7 +96,7 @@ public class ResidenciaAdminController {
      */
     @PatchMapping("/{idResidencia}/baja")
     public ResponseEntity<Void> baja(
-            @PathVariable Long idResidencia) {
+                                @PathVariable Long idResidencia) {
         residenciaService.baja(idResidencia);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

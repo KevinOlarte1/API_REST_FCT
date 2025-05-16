@@ -37,8 +37,8 @@ public class ResidenteAdminController {
      */
     @PostMapping("/{idResidencia}/resident/add")
     public ResponseEntity<ResidenteResponseDto> add(
-            @PathVariable Long idResidencia,
-            @RequestBody ResidenteDto residenteDto){
+                                                @PathVariable Long idResidencia,
+                                                @RequestBody ResidenteDto residenteDto){
         return ResponseEntity.status(HttpStatus.CREATED).body(residenteService.add(idResidencia, residenteDto));
 
     }
@@ -52,8 +52,8 @@ public class ResidenteAdminController {
      */
     @GetMapping("/{idResidencia}/resident/{idResidente}/get")
     public ResponseEntity<ResidenteResponseDto> get(
-            @PathVariable Long idResidencia,
-            @PathVariable Long idResidente) {
+                                                @PathVariable Long idResidencia,
+                                                @PathVariable Long idResidente) {
 
         return ResponseEntity.ok(residenteService.get(idResidencia, idResidente));
 
@@ -71,32 +71,32 @@ public class ResidenteAdminController {
      */
     @GetMapping("/{idResidencia}/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
-            @PathVariable Long idResidencia,
-            @RequestParam(required = false) String documentoIdentidad,
-            @RequestParam(required = false) LocalDate fechaNacimiento,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer maxAge,
-            @RequestParam(required = false) Integer minAge,
-            @RequestParam(required = false) Long idJuego,
-            @RequestParam(required = false) Long idEventoSalida,
-            @RequestParam(required = false) Long minRegistro,
-            @RequestParam(required = false) Long maxRegistro) {
+                                                    @PathVariable Long idResidencia,
+                                                    @RequestParam(required = false) String documentoIdentidad,
+                                                    @RequestParam(required = false) LocalDate fechaNacimiento,
+                                                    @RequestParam(required = false) Integer year,
+                                                    @RequestParam(required = false) Integer month,
+                                                    @RequestParam(required = false) Integer maxAge,
+                                                    @RequestParam(required = false) Integer minAge,
+                                                    @RequestParam(required = false) Long idJuego,
+                                                    @RequestParam(required = false) Long idEventoSalida,
+                                                    @RequestParam(required = false) Long minRegistro,
+                                                    @RequestParam(required = false) Long maxRegistro) {
 
         return ResponseEntity.ok(residenteService.getAll(idResidencia,fechaNacimiento, year, month, maxAge, minAge, documentoIdentidad, idJuego, idEventoSalida, minRegistro, maxRegistro));
     }
     @GetMapping("/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
-            @RequestParam(required = false) String documentoIdentidad,
-            @RequestParam(required = false) LocalDate fechaNacimiento,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer maxAge,
-            @RequestParam(required = false) Integer minAge,
-            @RequestParam(required = false) Long idJuego,
-            @RequestParam(required = false) Long idEventoSalida,
-            @RequestParam(required = false) Long minRegistro,
-            @RequestParam(required = false) Long maxRegistro){
+                                                    @RequestParam(required = false) String documentoIdentidad,
+                                                    @RequestParam(required = false) LocalDate fechaNacimiento,
+                                                    @RequestParam(required = false) Integer year,
+                                                    @RequestParam(required = false) Integer month,
+                                                    @RequestParam(required = false) Integer maxAge,
+                                                    @RequestParam(required = false) Integer minAge,
+                                                    @RequestParam(required = false) Long idJuego,
+                                                    @RequestParam(required = false) Long idEventoSalida,
+                                                    @RequestParam(required = false) Long minRegistro,
+                                                    @RequestParam(required = false) Long maxRegistro){
         return ResponseEntity.ok(residenteService.getAll(fechaNacimiento, year, month, maxAge, minAge, documentoIdentidad, idJuego, idEventoSalida, minRegistro, maxRegistro));
     }
 
@@ -108,8 +108,8 @@ public class ResidenteAdminController {
      */
     @GetMapping("/{idResidencia}/resident/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
-            @PathVariable Long idResidencia,
-            @RequestParam(required = false) String documentoIdentidad){
+                                                    @PathVariable Long idResidencia,
+                                                    @RequestParam(required = false) String documentoIdentidad){
         return ResponseEntity.ok(residenteService.getAllBajas(idResidencia, documentoIdentidad));
     }
 
@@ -120,7 +120,7 @@ public class ResidenteAdminController {
      */
     @GetMapping("/resident/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
-            @RequestParam(required = false) String documentoIdentidad){
+                                                    @RequestParam(required = false) String documentoIdentidad){
         return ResponseEntity.ok(residenteService.getAllBajas(documentoIdentidad));
     }
 
@@ -133,8 +133,8 @@ public class ResidenteAdminController {
      */
     @DeleteMapping("/{idResidencia}/resident/{idResidente}/delete")
     public ResponseEntity<Void> delete(
-            @PathVariable Long idResidencia,
-            @PathVariable Long idResidente) {
+                                @PathVariable Long idResidencia,
+                                @PathVariable Long idResidente) {
 
         residenteService.deleteFisico(idResidencia,idResidente);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -149,8 +149,8 @@ public class ResidenteAdminController {
      */
     @PatchMapping("{idResidencia}/resident/{idResidente}/baja")
     public ResponseEntity<Void> deleteLogico(
-            @PathVariable Long idResidencia,
-            @PathVariable Long idResidente) {
+                                @PathVariable Long idResidencia,
+                                @PathVariable Long idResidente) {
         residenteService.deleteLogico(idResidencia,idResidente);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -164,9 +164,9 @@ public class ResidenteAdminController {
      */
     @PatchMapping("{idResidencia}/resident/{idResidente}/update")
     public ResponseEntity<ResidenteResponseDto> update(
-            @PathVariable Long idResidencia,
-            @PathVariable Long idResidente,
-            @RequestBody ResidenteDto residenteDto) {
+                                                @PathVariable Long idResidencia,
+                                                @PathVariable Long idResidente,
+                                                @RequestBody ResidenteDto residenteDto) {
         return ResponseEntity.ok(residenteService.update(idResidencia, idResidente, residenteDto));
     }
 }

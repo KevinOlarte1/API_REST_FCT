@@ -308,6 +308,44 @@ public class UserService {
     }
 
     /**
+     * Obtiene una lista de todos los usuarios asociados a una residencia con filtros opcionales.
+     * <p>
+     * Este método permite filtrar por:
+     * <ul>
+     *   <li>Email (no sensible a mayúsculas/minúsculas).</li>
+     *   <li>Estado habilitado.</li>
+     *   <li>ID de juego al que el usuario esté asociado.</li>
+     * </ul>
+     *
+     * @param idResidencia ID de la residencia.
+     * @param email Email para filtrar (opcional).
+     * @param enabled Estado habilitado para filtrar (opcional).
+     * @param idJuego ID del juego para filtrar (opcional).
+     * @return Lista de usuarios que cumplen con los filtros aplicados.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<UserResponseDto> getAll(String email, Boolean enabled, Long idJuego, Long minRegistros, Long maxRegistros) {
+
+        List<User> usuarios = userRepository.findByBajaFalse();
+
+        usuarios = usuarios.stream()
+                .filter( u -> {
+                    boolean match = true;
+
+                    if (email != null && !email.isEmpty()) match = u.getEmail().equalsIgnoreCase(email.trim());
+                    if (enabled != null) match = u.isEnabled() == enabled;
+                    if (idJuego != null) match = u.getRegistroJuegos().stream()
+                            .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego));
+                    if (maxRegistros != null && minRegistros != null) match = u.getRegistroJuegos().size() >= minRegistros && u.getRegistroJuegos().size() <= maxRegistros;
+                    else if (maxRegistros != null) match = u.getRegistroJuegos().size() <= maxRegistros;
+                    else if (minRegistros != null) match = u.getRegistroJuegos().size() >= minRegistros;
+                    return match;
+                }).toList();
+
+        return usuarios.stream().map(UserResponseDto::new).toList();
+    }
+
+    /**
      * Actualiza los datos de un usuario existente.
      * <p>
      * Este método permite modificar nombre, apellido y correo electrónico del usuario,
@@ -421,6 +459,27 @@ public class UserService {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
         List<User> usuarios = userRepository.findByBajaTrueAndResidenciaId(idResidencia);
+        if (email != null && !email.isEmpty()) {
+            usuarios = usuarios.stream()
+                    .filter(u -> u.getEmail().equalsIgnoreCase(email.trim()))
+                    .toList();
+        }
+
+        return usuarios.stream().map(UserResponseDto::new).toList();
+
+    }
+
+    /**
+     * Obtiene una lista de usuarios dados de baja en una residencia específica.
+     * <p>
+     *     Este método valida que la residencia exista y que el ID no sea nulo.
+     * @return Lista de usuarios dados de baja en la residencia.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<UserResponseDto> getAllBajas(String email) {
+
+        List<User> usuarios = userRepository.findByBajaTrue();
+
         if (email != null && !email.isEmpty()) {
             usuarios = usuarios.stream()
                     .filter(u -> u.getEmail().equalsIgnoreCase(email.trim()))
