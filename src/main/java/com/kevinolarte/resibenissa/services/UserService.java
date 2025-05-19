@@ -27,7 +27,9 @@ import java.util.List;
 /**
  * Servicio que gestiona la lógica relacionada con los usuarios del sistema.
  * <p>
- * Permite registrar nuevos usuarios con validaciones y filtros para consultas.
+ * Permite registrar, consultar, actualizar, eliminar y dar de baja usuarios,
+ * así como aplicar filtros en búsquedas.
+ * </p>
  *
  * @author Kevin Olarte
  */
@@ -39,63 +41,12 @@ public class UserService {
     private final ResidenciaService residenciaService;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    /*
-     * Registra un nuevo usuario en el sistema a partir de los datos proporcionados.
-     * <p>
-     * Este método realiza las siguientes validaciones antes de persistir al usuario:
-     * <ul>
-     *   <li>Todos los campos obligatorios (nombre, apellido, email, contraseña, residencia) deben estar presentes y no vacíos.</li>
-     *   <li>El formato del correo electrónico debe ser válido.</li>
-     *   <li>El correo electrónico no debe estar ya registrado.</li>
-     *   <li>La residencia asociada debe existir en la base de datos.</li>
-     * </ul>
-     * Si alguna de estas validaciones falla, se lanza una excepción {@link com.kevinolarte.resibenissa.exceptions.ApiException}
-     * con un código de error correspondiente del enum {@link com.kevinolarte.resibenissa.exceptions.ApiErrorCode}.
-     * </p>
-     *
-     * @param input DTO con los datos del nuevo usuario.
-     * @return DTO de respuesta con los datos del usuario registrado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si los datos de entrada son inválidos,
-     *         el correo es inválido o ya está en uso, o la residencia no existe.
-     *
-    public UserResponseDto save(UserDto input) throws RuntimeException{
-
-        if (input.getNombre() == null || input.getApellido() == null || input.getEmail() == null || input.getPassword() == null ||
-                input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty() || input.getEmail().trim().isEmpty() || input.getPassword().isEmpty() ||
-                input.getIdResidencia() == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-
-
-        input.setEmail(input.getEmail().toLowerCase().trim());
-        if(!EmailService.isEmailValid(input.getEmail().toLowerCase().trim())){
-            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
-        }
-
-        if (userRepository.findByEmail(input.getEmail()).isPresent()){
-            throw new ApiException(ApiErrorCode.CORREO_DUPLICADO);
-        }
-
-        Residencia residenciaOpt = residenciaService.findById(input.getIdResidencia());
-        if(residenciaOpt == null){
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
-
-        User user = new User(input.getNombre(), input.getApellido(), input.getEmail(), input.getPassword());
-        user.setResidencia(residenciaOpt);
-        User savedUser = userRepository.save(user);
-        return new UserResponseDto(savedUser);
-    } */
 
     /**
      * Busca un usuario por su ID.
-     * <p>
-     * Este método consulta el repositorio de usuarios para recuperar una entidad {@link User}
-     * que coincida con el ID proporcionado.
-     * </p>
      *
      * @param idUsuario ID del usuario a buscar.
-     * @return Objeto {@link User} si existe en la base de datos, o {@code null} si no se encuentra.
+     * @return Objeto {@link User} si existe, o {@code null} si no se encuentra.
      */
     public User findById(Long idUsuario) {
         return userRepository.findById(idUsuario).orElse(null);
@@ -118,17 +69,7 @@ public class UserService {
      * @throws ApiException si los datos son inválidos o si hay referencias dependientes.
      */
     public void deleteFisico(Long idResidencia, Long idUser) {
-        if (idResidencia == null || idUser == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-       //validar si existe ese usuario
-        User userTmp = userRepository.findById(idUser)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
-
-        //Validar si pertenece a esa residencia
-        if (userTmp.getResidencia() == null || !userTmp.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
-        }
+        User userTmp = getUsuario(idResidencia, idUser);
 
         // Comprobar juegos asociados
         if (userTmp.getRegistroJuegos() != null && !userTmp.getRegistroJuegos().isEmpty()){
@@ -246,20 +187,9 @@ public class UserService {
      * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
      */
     public UserResponseDto get(Long idResidencia, Long idUser) {
-        if (idResidencia == null || idUser == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-
-        //Validar si existe ese usuario
-        User user = userRepository.findById(idUser)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
-
-        //Validar si pertenece a esa residencia
-        if (user.getResidencia() == null || !user.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
-        }
+        User userTmp = getUsuario(idResidencia, idUser);
         // Si todo es correcto, devolver el usuario
-        return new UserResponseDto(user);
+        return new UserResponseDto(userTmp);
 
     }
 
@@ -294,7 +224,6 @@ public class UserService {
      * </ul>
      *
      * @param idResidencia ID de la residencia.
-     * @param email Email para filtrar (opcional).
      * @param enabled Estado habilitado para filtrar (opcional).
      * @param idJuego ID del juego para filtrar (opcional).
      * @return Lista de usuarios que cumplen con los filtros aplicados.
@@ -323,7 +252,6 @@ public class UserService {
      *   <li>ID de juego al que el usuario esté asociado.</li>
      * </ul>
      *
-     * @param email Email para filtrar (opcional).
      * @param enabled Estado habilitado para filtrar (opcional).
      * @param idJuego ID del juego para filtrar (opcional).
      * @return Lista de usuarios que cumplen con los filtros aplicados.
@@ -351,16 +279,7 @@ public class UserService {
      * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
      */
     public UserResponseDto update(Long idResidencia, Long idUser, UserDto input) {
-        if (idResidencia == null || idUser == null)
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-
-        //Validar si existe ese usuario
-        User userTmp = userRepository.findById(idUser)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
-        //Validar si pertenece a esa residencia
-        if (userTmp.getResidencia() == null || !userTmp.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
-        }
+        User userTmp = getUsuario(idResidencia, idUser);
         //Comprobar si elm usuario esta de baja
         if (userTmp.isBaja()) {
             throw new ApiException(ApiErrorCode.USUARIO_BAJA);
@@ -502,5 +421,20 @@ public class UserService {
         User savedUser = userRepository.save(user);
         return new UserResponseDto(savedUser);
 
+    }
+
+    public User getUsuario(Long idResidencia, Long idUsuario) {
+        if (idResidencia == null || idUsuario == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //validar si existe ese usuario
+        User userTmp = userRepository.findById(idUsuario)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+
+        //Validar si pertenece a esa residencia
+        if (userTmp.getResidencia() == null || !userTmp.getResidencia().getId().equals(idResidencia)) {
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+        return userTmp;
     }
 }

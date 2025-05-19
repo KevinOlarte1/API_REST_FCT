@@ -49,6 +49,11 @@ public class Residente {
     @Column(name = "documento_identidad", nullable = false, unique = true)
     private String docuemntoIdentidad;
 
+    @Column(nullable = false)
+    private String familiar1;
+
+    private String familiar2;
+
     /**
      * Relación con la residencia donde vive este residente.
      * Múltiples residentes pueden estar en una misma residencia.
@@ -75,12 +80,14 @@ public class Residente {
     private boolean baja;
     private LocalDateTime fechaBaja;
 
-    public Residente(String nombre, String apellido, LocalDate fechaNacimiento, String documentoIdentidad) {
+    public Residente(String nombre, String apellido, LocalDate fechaNacimiento, String documentoIdentidad, String familiar1, String familiar2) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.fechaNacimiento = fechaNacimiento;
         this.docuemntoIdentidad = documentoIdentidad;
         this.baja = false;
+        this.familiar1 = familiar1;
+        this.familiar2 = familiar2;
 
 
     }

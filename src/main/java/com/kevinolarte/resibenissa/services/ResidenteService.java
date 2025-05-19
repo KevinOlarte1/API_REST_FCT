@@ -39,6 +39,7 @@ public class ResidenteService {
     private final ResidenciaService residenciaService;
     private final PasswordEncoder passwordEncoder;
     private final ParticipanteRepository participanteRepository;
+    private final EmailService emailService;
 
     /**
      * Registra un nuevo residente asociado a una residencia.
@@ -50,7 +51,8 @@ public class ResidenteService {
      */
     public ResidenteResponseDto add(Long idResidencia, ResidenteDto input) throws ApiException {
         if (input.getNombre() == null || input.getApellido() == null || input.getFechaNacimiento() == null || input.getDocumentoIdentidad() == null ||
-                input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty() || input.getDocumentoIdentidad().trim().isEmpty() || idResidencia == null) {
+                input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty() || input.getDocumentoIdentidad().trim().isEmpty() || idResidencia == null ||
+            input.getFamiliar1() == null || input.getFamiliar1().trim().isEmpty()) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
@@ -59,6 +61,17 @@ public class ResidenteService {
         if (input.getDocumentoIdentidad().length() != 8) {
             throw new ApiException(ApiErrorCode.DOCUMENTO_INVALIDO);
         }
+
+        //Validar correo familiar 1
+        if (!EmailService.isEmailValid(input.getFamiliar1().toLowerCase().trim())){
+            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+        }
+        //Validar correo familiar 2
+        if (input.getFamiliar2() != null && !input.getFamiliar2().trim().isEmpty())
+            if (!EmailService.isEmailValid(input.getFamiliar2().toLowerCase().trim()))
+                throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+
+
 
         // Validar que la fecha de nacimiento no sea futura
         if (input.getFechaNacimiento().isAfter(LocalDate.now())) {
@@ -78,7 +91,7 @@ public class ResidenteService {
         }
 
         // Crear el nuevo residente
-        Residente residente = new Residente(input.getNombre(), input.getApellido(), input.getFechaNacimiento(), input.getDocumentoIdentidad());
+        Residente residente = new Residente(input.getNombre(), input.getApellido(), input.getFechaNacimiento(), input.getDocumentoIdentidad(), input.getFamiliar1(), input.getFamiliar2());
         residente.setResidencia(residencia);
         Residente residenteSaved = residenteRepository.save(residente);
         return new ResidenteResponseDto(residenteSaved);
@@ -161,14 +174,13 @@ public class ResidenteService {
         if (residenteUpdatable.isBaja())
             throw new ApiException(ApiErrorCode.RESIDENTE_BAJA);
 
-        residenteUpdatable.setBaja(true);
-        residenteUpdatable.setFechaBaja(LocalDateTime.now());
-        residenteUpdatable.setDocuemntoIdentidad(passwordEncoder.encode(residenteUpdatable.getDocuemntoIdentidad()));
+        darBajaUser(residenteUpdatable, passwordEncoder);
         participanteRepository.deleteAll(residenteUpdatable.getParticipantes());
         residenteRepository.save(residenteUpdatable);
 
 
     }
+
 
     /**
      * Actualiza los datos de un residente.
@@ -273,4 +285,14 @@ public class ResidenteService {
 
         return lista.stream().map(ResidenteResponseDto::new).toList();
     }
+
+    static void darBajaUser(Residente residenteUpdatable, PasswordEncoder passwordEncoder) {
+        residenteUpdatable.setBaja(true);
+        residenteUpdatable.setFechaBaja(LocalDateTime.now());
+        residenteUpdatable.setDocuemntoIdentidad(passwordEncoder.encode(residenteUpdatable.getDocuemntoIdentidad()));
+        residenteUpdatable.setFamiliar1(passwordEncoder.encode(residenteUpdatable.getFamiliar1()));
+        if (residenteUpdatable.getFamiliar2() != null && !residenteUpdatable.getFamiliar2().trim().isEmpty())
+            residenteUpdatable.setFamiliar2(passwordEncoder.encode(residenteUpdatable.getFamiliar2()));
+    }
+
 }

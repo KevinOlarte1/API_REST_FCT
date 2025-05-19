@@ -24,14 +24,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controlador REST que gestiona las operaciones relacionadas con los usuarios del sistema.
+ * Controlador REST para gestionar las operaciones relacionadas con los usuarios.
+ * Expone endpoints para obtener, actualizar y dar de baja usuarios dentro de una residencia.
  * <p>
- * Permite registrar, consultar, actualizar, eliminar y descargar información de usuarios
- * dentro del contexto de una residencia específica.
- * </p>
- *
- * Ruta base: <b>/resi/user</b>
- *
+ * URL Base: {@code /resi/user}
  * @author Kevin Olarte
  */
 @RequestMapping("/resi/user")
@@ -42,17 +38,24 @@ public class UserController {
     private final UserService userService;
 
 
+    /**
+     * Obtiene la información del usuario actualmente autenticado.
+     *
+     * @return DTO con los datos del usuario autenticado.
+     */
     @GetMapping("/me")
     public ResponseEntity<UserResponseDto> getMe() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
         return ResponseEntity.ok(new UserResponseDto(currentUser));
     }
+
     /**
-     * Obtiene los datos de un usuario específico dentro de una residencia.
+     * Obtiene la información de un usuario específico por su ID, perteneciente a la misma residencia del usuario autenticado.
      *
      * @param idUser ID del usuario a consultar.
-     * @return {@link ResponseEntity} con los datos del usuario.
+     * @return DTO con los datos del usuario.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
      */
     @GetMapping("/{idUser}/get")
     public ResponseEntity<UserResponseDto> get(
@@ -64,6 +67,13 @@ public class UserController {
 
     }
 
+    /**
+     * Obtiene la información de un usuario específico por su email, dentro de la misma residencia del usuario autenticado.
+     *
+     * @param email Email del usuario a consultar.
+     * @return DTO con los datos del usuario.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
+     */
     @GetMapping("/get")
     public ResponseEntity<UserResponseDto> get(
                                         @RequestParam (required = true) String email){
@@ -75,11 +85,13 @@ public class UserController {
     }
 
     /**
-     * Obtiene una lista de usuarios dentro de una residencia, aplicando filtros opcionales.
+     * Obtiene todos los usuarios filtrando opcionalmente por si están habilitados y
+     * por ID de juego que han registrado partidas.
      *
-     * @param enabled Filtro por estado habilitado (opcional).
-     * @param idJuego Filtro por ID de juego asociado (opcional).
-     * @return {@link ResponseEntity} con la lista de usuarios filtrados.
+     * @param enabled Filtro opcional para usuarios habilitados.
+     * @param idJuego Filtro opcional por ID de juego.
+     * @return Lista de DTOs con los datos de los usuarios.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
@@ -92,6 +104,15 @@ public class UserController {
 
     }
 
+    /**
+     * Obtiene todos los usuarios dados de baja, filtrando opcionalmente por fechas.
+     *
+     * @param fecha     Fecha exacta de baja.
+     * @param minFecha  Fecha mínima de baja.
+     * @param maxFecha  Fecha máxima de baja.
+     * @return Lista de usuarios dados de baja en el rango indicado.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
+     */
     @GetMapping("/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
             @RequestParam(required = false) LocalDate fecha,
@@ -105,13 +126,9 @@ public class UserController {
     }
 
     /**
-     * Descarga la imagen por defecto del sistema como un archivo adjunto.
-     * <p>
-     * Aunque el endpoint podría aceptar un nombre de archivo, internamente siempre devuelve
-     * la imagen definida como {@link Conf#imageDefault}.
-     * </p>
+     * Descarga la imagen por defecto del usuario.
      *
-     * @return {@link ResponseEntity} con el recurso de imagen descargable.
+     * @return Recurso de imagen por defecto como archivo adjunto.
      */
     @GetMapping("/defualtImage")
     public ResponseEntity<Resource> downloadImage(){
@@ -124,10 +141,11 @@ public class UserController {
     }
 
     /**
-     * Actualiza los datos básicos de un usuario.
+     * Actualiza los datos personales del usuario autenticado.
      *
-     * @param userDto Datos a actualizar.
-     * @return {@link ResponseEntity} con los datos del usuario actualizado.
+     * @param userDto Objeto DTO con los nuevos datos del usuario.
+     * @return DTO actualizado con la información del usuario.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
      */
     @PatchMapping("/update")
     public ResponseEntity<UserResponseDto> update(
@@ -139,10 +157,11 @@ public class UserController {
     }
 
     /**
-     * Cambia la contraseña de un usuario validando la anterior.
+     * Cambia la contraseña del usuario autenticado.
      *
-     * @param changePasswordUserDto DTO con la contraseña actual y la nueva.
-     * @return {@link ResponseEntity} con los datos del usuario tras el cambio.
+     * @param changePasswordUserDto DTO con la contraseña antigua y la nueva.
+     * @return DTO actualizado del usuario tras el cambio de contraseña.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
      */
     @PatchMapping("/update/changePassword")
     public ResponseEntity<UserResponseDto> changePassword(
@@ -153,13 +172,12 @@ public class UserController {
         return ResponseEntity.ok(userService.updatePassword(currentUser.getResidencia().getId(), currentUser.getId(), changePasswordUserDto));
     }
 
-
     /**
-     * Desactiva un usuario sin eliminarlo físicamente.
+     * Marca lógicamente como dado de baja al usuario indicado por su ID.
      *
-     * @param idUser ID del usuario a desactivar.
-     * @return {@link ResponseEntity} con estado 204 No Content si se desactiva correctamente.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error.
+     * @param idUser ID del usuario a dar de baja.
+     * @return Respuesta sin contenido (HTTP 204) si se realiza correctamente.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
      */
     @PatchMapping("/{idUser}/baja")
     public ResponseEntity<Void> baja(

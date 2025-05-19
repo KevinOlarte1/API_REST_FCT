@@ -53,25 +53,25 @@ public class StartupDataLoader {
         user.setEnabled(true);
 
         user = userRepository.save(user);
-        Residente residente1 = new Residente("Residente", "1", LocalDate.of(1999, 1,1), "000000001");
+        Residente residente1 = new Residente("Residente", "1", LocalDate.of(1999, 1,1), "000000001", "kevinolarte.ko@gmail.com", null);
         residente1.setResidencia(residenciaDefault);
-        Residente residente2 = new Residente("Residente", "2", LocalDate.of(1999, 1,1), "000000002");
+        Residente residente2 = new Residente("Residente", "2", LocalDate.of(1999, 1,1), "000000002", "kevinolarte.ko@gmail.com", null);
         residente2.setResidencia(residenciaDefault);
-        Residente residente3 = new Residente("Residente", "3", LocalDate.of(1999, 1,1), "000000003");
+        Residente residente3 = new Residente("Residente", "3", LocalDate.of(1999, 1,1), "000000003", "kevinolarte.ko@gmail.com", null);
         residente3.setResidencia(residenciaDefault);
-        Residente residente4 = new Residente("Residente", "4", LocalDate.of(1999, 1,1), "000000004");
+        Residente residente4 = new Residente("Residente", "4", LocalDate.of(1999, 1,1), "000000004", "kevinolarte.ko@gmail.com", null);
         residente4.setResidencia(residenciaDefault);
-        Residente residente5 = new Residente("Residente", "5", LocalDate.of(1999, 1,1), "000000005");
+        Residente residente5 = new Residente("Residente", "5", LocalDate.of(1999, 1,1), "000000005", "kevinolarte.ko@gmail.com", null);
         residente5.setResidencia(residenciaDefault);
-        Residente residente6 = new Residente("Residente", "6", LocalDate.of(1999, 1,1), "000000006");
+        Residente residente6 = new Residente("Residente", "6", LocalDate.of(1999, 1,1), "000000006", "kevinolarte.ko@gmail.com", null);
         residente6.setResidencia(residenciaDefault);
-        Residente residente7 = new Residente("Residente", "7", LocalDate.of(1999, 1,1), "000000007");
+        Residente residente7 = new Residente("Residente", "7", LocalDate.of(1999, 1,1), "000000007", "kevinolarte.ko@gmail.com", null);
         residente7.setResidencia(residenciaDefault);
-        Residente residente8 = new Residente("Residente", "8", LocalDate.of(1999, 1,1), "000000008");
+        Residente residente8 = new Residente("Residente", "8", LocalDate.of(1999, 1,1), "000000008", "kevinolarte.ko@gmail.com", null);
         residente8.setResidencia(residenciaDefault);
-        Residente residente9 = new Residente("Residente", "9", LocalDate.of(1999, 1,1), "000000009");
+        Residente residente9 = new Residente("Residente", "9", LocalDate.of(1999, 1,1), "000000009", "kevinolarte.ko@gmail.com", null);
         residente9.setResidencia(residenciaDefault);
-        Residente residente10 = new Residente("Residente", "10", LocalDate.of(1999, 1,1), "000000010");
+        Residente residente10 = new Residente("Residente", "10", LocalDate.of(1999, 1,1), "000000010", "kevinolarte.ko@gmail.com", null);
         residente10.setResidencia(residenciaDefault);
 
         residente1 = residenteRepository.save(residente1);

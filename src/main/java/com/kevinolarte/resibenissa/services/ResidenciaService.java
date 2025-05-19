@@ -175,9 +175,7 @@ public class ResidenciaService {
 
         // Cambiar el estado de los residentes a inactivos
         residencia.getResidentes().forEach(residente -> {
-            residente.setBaja(true);
-            residente.setFechaBaja(LocalDateTime.now());
-            residente.setDocuemntoIdentidad(passwordEncoder.encode(residente.getDocuemntoIdentidad()));
+            ResidenteService.darBajaUser(residente, passwordEncoder);
             residenteRepository.save(residente);
         });
         // Cambiar el estado de los usuarios a inactivos

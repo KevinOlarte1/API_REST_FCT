@@ -25,6 +25,10 @@ public class ResidenteDto {
 
     private LocalDate fechaNacimiento;
     private String documentoIdentidad;
+    private String familiar1;
+    private String familiar2;
     private Integer year;
     private Integer month;
+
+
 }

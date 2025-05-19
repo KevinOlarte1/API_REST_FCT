@@ -75,19 +75,9 @@ public class RegistroJuegoService {
 
         //Comprobar si el residente existe
         Residente residente = residenteService.getResidente(idResidencia, input.getIdResidente());
-        if (residente == null)
-            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-        //Comprobar si el residente pertence a la residencia
-        if (!Objects.equals(residente.getResidencia().getId(), idResidencia))
-            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
 
         //Comprobar si el usuario existe
-        User usuario = userService.findById(input.getIdUsuario());
-        if (usuario == null)
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
-        //Comprobar si el usuario pertence a la residencia
-        if (!Objects.equals(usuario.getResidencia().getId(), idResidencia))
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        User usuario = userService.getUsuario(idResidencia, input.getIdUsuario());
 
         //No puede haber fallos negativos
         if (input.getNum() < 0){

@@ -13,12 +13,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Controlador REST para gestionar usuarios en una residencia.
- * <p>
- * Permite registrar nuevos usuarios y obtener información sobre ellos.
- * </p>
+ * Controlador REST para la administración de usuarios dentro de una residencia.
  *
- * URL Base: {@code /resi/{idResidencia}/user}
+ * Proporciona operaciones para registrar, consultar, actualizar, desactivar
+ * y eliminar usuarios. Admite filtros por estado, juego asociado y fecha de baja.
+ *
+ * URL base: {@code /admin/resi}
  *
  * @author Kevin Olarte
  */
@@ -31,15 +31,11 @@ public class UserAdminController {
 
 
     /**
-     * Registra un nuevo usuario a partir de los datos proporcionados en el DTO.
-     * <p>
-     * Se validan los campos obligatorios, el formato y unicidad del email, y la existencia de la residencia.
-     * </p>
+     * Registra un nuevo usuario en una residencia.
      *
-     * @param idResidencia ID de la residencia a la que pertenece el nuevo usuario.
-     * @param userDto DTO con los datos del nuevo usuario.
-     * @return {@link ResponseEntity} con los datos del usuario creado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en casi de multiples casos.
+     * @param idResidencia ID de la residencia.
+     * @param userDto Datos del usuario a registrar.
+     * @return Usuario creado.
      */
     @PostMapping("{idResidencia}/user/add")
     public ResponseEntity<UserResponseDto> addUser(
@@ -51,11 +47,11 @@ public class UserAdminController {
     }
 
     /**
-     * Obtiene los datos de un usuario específico dentro de una residencia.
+     * Obtiene un usuario por su ID dentro de una residencia.
      *
      * @param idResidencia ID de la residencia.
-     * @param idUser ID del usuario a consultar.
-     * @return {@link ResponseEntity} con los datos del usuario.
+     * @param idUser ID del usuario.
+     * @return Datos del usuario.
      */
     @GetMapping("{idResidencia}/user/{idUser}/get")
     public ResponseEntity<UserResponseDto> get(
@@ -66,6 +62,13 @@ public class UserAdminController {
 
     }
 
+    /**
+     * Obtiene un usuario por su email dentro de una residencia.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param email Email del usuario.
+     * @return Datos del usuario.
+     */
     @GetMapping("/{idResidencia}/user/get")
     public ResponseEntity<UserResponseDto> get(
                                         @PathVariable Long idResidencia,
@@ -77,12 +80,12 @@ public class UserAdminController {
 
 
     /**
-     * Obtiene una lista de usuarios dentro de una residencia, aplicando filtros opcionales.
+     * Obtiene una lista de usuarios filtrada por estado y/o juego dentro de una residencia.
      *
      * @param idResidencia ID de la residencia.
      * @param enabled Filtro por estado habilitado (opcional).
-     * @param idJuego Filtro por ID de juego asociado (opcional).
-     * @return {@link ResponseEntity} con la lista de usuarios filtrados.
+     * @param idJuego Filtro por ID de juego (opcional).
+     * @return Lista de usuarios.
      */
     @GetMapping("{idResidencia}/user/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
@@ -97,11 +100,11 @@ public class UserAdminController {
 
 
     /**
-     * Obtiene una lista de usuarios dentro de una residencia, aplicando filtros opcionales.
+     * Obtiene todos los usuarios, con filtros por estado y/o juego (sin filtrar por residencia).
      *
      * @param enabled Filtro por estado habilitado (opcional).
-     * @param idJuego Filtro por ID de juego asociado (opcional).
-     * @return {@link ResponseEntity} con la lista de usuarios filtrados.
+     * @param idJuego Filtro por ID de juego (opcional).
+     * @return Lista de usuarios.
      */
     @GetMapping("/user/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
@@ -113,10 +116,13 @@ public class UserAdminController {
     }
 
     /**
-     * Obtiene una lista de usuarios dados de baja dentro de una residencia, aplicando filtros opcionales.
+     * Obtiene una lista de usuarios dados de baja en una residencia, con filtros de fecha.
      *
      * @param idResidencia ID de la residencia.
-     * @return {@link ResponseEntity} con la lista de usuarios dados de baja.
+     * @param fecha Fecha exacta de baja (opcional).
+     * @param minFecha Fecha mínima de baja (opcional).
+     * @param maxFecha Fecha máxima de baja (opcional).
+     * @return Lista de usuarios dados de baja.
      */
     @GetMapping("{idResidencia}/user/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
@@ -130,9 +136,12 @@ public class UserAdminController {
     }
 
     /**
-     * Obtiene una lista de usuarios dados de baja dentro de una residencia, aplicando filtros opcionales.
+     * Obtiene todos los usuarios dados de baja (sin filtrar por residencia).
      *
-     * @return {@link ResponseEntity} con la lista de usuarios dados de baja.
+     * @param fecha Fecha exacta de baja (opcional).
+     * @param minFecha Fecha mínima de baja (opcional).
+     * @param maxFecha Fecha máxima de baja (opcional).
+     * @return Lista de usuarios dados de baja.
      */
     @GetMapping("/user/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
@@ -145,11 +154,11 @@ public class UserAdminController {
     }
 
     /**
-     * Elimina un usuario si pertenece a la residencia y no tiene registros dependientes.
+     * Elimina físicamente un usuario de una residencia.
      *
-     * @param idResidencia ID de la residencia a la que pertenece el usuario.
-     * @param idUser ID del usuario a eliminar.
-     * @return {@link ResponseEntity} con estado 204 No Content si se elimina correctamente.
+     * @param idResidencia ID de la residencia.
+     * @param idUser ID del usuario.
+     * @return HTTP 204 si se elimina correctamente.
      */
     @DeleteMapping("/{idResidencia}/user/{idUser}/delete")
     public ResponseEntity<Void> delete(
@@ -160,11 +169,11 @@ public class UserAdminController {
     }
 
     /**
-     * Elimina las referencias a registros de juego de un usuario sin eliminarlo.
+     * Elimina las referencias del usuario a registros dependientes (sin eliminar el usuario).
      *
-     * @param idResidencia ID de la residencia a la que pertenece el usuario.
+     * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario.
-     * @return {@link ResponseEntity} con estado 204 No Content si se eliminan correctamente las referencias.
+     * @return HTTP 204 si se eliminan correctamente las referencias.
      */
     @DeleteMapping("/{idResidencia}/{idUser}/delete/referencies")
     public ResponseEntity<Void> deleteReferencies(
@@ -176,12 +185,12 @@ public class UserAdminController {
     }
 
     /**
-     * Actualiza los datos básicos de un usuario.
+     * Actualiza los datos de un usuario.
      *
-     * @param idResidencia ID de la residencia a la que pertenece el usuario.
+     * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario.
-     * @param userDto Datos a actualizar.
-     * @return {@link ResponseEntity} con los datos del usuario actualizado.
+     * @param userDto Nuevos datos del usuario.
+     * @return Usuario actualizado.
      */
     @PatchMapping("/{idResidencia}/user/{idUser}/update")
     public ResponseEntity<UserResponseDto> update(
@@ -211,11 +220,11 @@ public class UserAdminController {
 
 
     /**
-     * Desactiva un usuario sin eliminarlo físicamente.
+     * Marca un usuario como dado de baja (borrado lógico).
      *
-     * @param idUser ID del usuario a desactivar.
-     * @return {@link ResponseEntity} con estado 204 No Content si se desactiva correctamente.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error.
+     * @param idResidencia ID de la residencia.
+     * @param idUser ID del usuario.
+     * @return HTTP 204 si se desactiva correctamente.
      */
     @PatchMapping("/{idResidencia}/user/{idUser}/baja")
     public ResponseEntity<Void> baja(

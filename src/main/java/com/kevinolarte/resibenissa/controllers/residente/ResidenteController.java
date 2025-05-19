@@ -18,10 +18,11 @@ import java.util.List;
 /**
  * Controlador REST que gestiona las operaciones relacionadas con los residentes de una residencia.
  * <p>
- * Permite registrar, consultar, actualizar y eliminar residentes, así como listar residentes filtrados.
+ * Permite registrar, consultar, actualizar, listar y dar de baja residentes.
+ * Todas las operaciones se contextualizan dentro de la residencia del usuario autenticado.
  * </p>
  *
- * URL base: {@code /resi/{idResidencia}/resident}
+ * URL base: {@code /resi/resident}
  *
  * Autor: Kevin Olarte
  */
@@ -33,7 +34,7 @@ public class ResidenteController {
 
 
     /**
-     * Registra un nuevo residente en una residencia.
+     * Registra un nuevo residente en la residencia del usuario autenticado.
      *
      * @param residenteDto DTO con los datos del nuevo residente.
      * @return {@link ResponseEntity} con estado {@code 201 Created} y el residente creado.
@@ -50,7 +51,7 @@ public class ResidenteController {
 
 
     /**
-     * Obtiene los detalles de un residente específico.
+     * Obtiene los detalles de un residente específico perteneciente a la misma residencia que el usuario autenticado.
      *
      * @param idResidente ID del residente.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el residente encontrado.
@@ -66,6 +67,18 @@ public class ResidenteController {
     }
 
 
+    /**
+     * Lista todos los residentes de la residencia del usuario autenticado, con múltiples filtros opcionales.
+     *
+     * @param fechaNacimiento Fecha exacta de nacimiento.
+     * @param minFNac Fecha mínima de nacimiento.
+     * @param maxFNac Fecha máxima de nacimiento.
+     * @param maxAge Edad máxima.
+     * @param minAge Edad mínima.
+     * @param idJuego ID de juego asociado (opcional).
+     * @param idEvento ID de evento asociado (opcional).
+     * @return {@link ResponseEntity} con la lista de residentes filtrados.
+     */
     @GetMapping("/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
                                                     @RequestParam(required = false) LocalDate fechaNacimiento,
@@ -81,7 +94,12 @@ public class ResidenteController {
     }
 
     /**
-     * Lista todos los residentes dados de baja en una residencia.
+     * Lista todos los residentes dados de baja en la residencia del usuario autenticado,
+     * con posibilidad de filtrar por fechas.
+     *
+     * @param fecha Fecha exacta de baja (opcional).
+     * @param minFecha Fecha mínima de baja (opcional).
+     * @param maxFecha Fecha máxima de baja (opcional).
      * @return {@link ResponseEntity} con la lista de residentes dados de baja.
      */
     @GetMapping("/getAll/bajas")
@@ -95,10 +113,10 @@ public class ResidenteController {
     }
 
     /**
-     * Elimina un residente de una residencia de forma lógica.
+     * Marca lógicamente como dado de baja a un residente (no lo elimina físicamente).
      *
-     * @param idResidente ID del residente a eliminar.
-     * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
+     * @param idResidente ID del residente a dar de baja.
+     * @return {@link ResponseEntity} con estado {@code 204 No Content} si se realizó correctamente.
      */
     @PatchMapping("/{idResidente}/baja")
     public ResponseEntity<Void> deleteLogico(
@@ -111,10 +129,10 @@ public class ResidenteController {
     }
 
     /**
-     * Actualiza parcialmente los datos de un residente.
+     * Actualiza parcialmente los datos de un residente específico.
      *
      * @param idResidente ID del residente a actualizar.
-     * @param residenteDto DTO con los datos a actualizar.
+     * @param residenteDto DTO con los nuevos datos del residente.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el residente actualizado.
      */
     @PatchMapping("/{idResidente}/update")

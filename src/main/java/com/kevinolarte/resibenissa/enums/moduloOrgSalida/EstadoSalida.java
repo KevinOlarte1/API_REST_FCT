@@ -5,5 +5,5 @@ package com.kevinolarte.resibenissa.enums.moduloOrgSalida;
  * @author Kevin Olarte
  */
 public enum EstadoSalida {
-    ABIERTO, CERRADO;
+    ABIERTO, CERRADO, EN_CURSO, FINALIZADA;
 }

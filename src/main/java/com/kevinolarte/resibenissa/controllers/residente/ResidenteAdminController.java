@@ -12,14 +12,15 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Controlador REST que gestiona las operaciones relacionadas con los residentes de una residencia.
+ * Controlador REST para la administración de residentes dentro de una residencia.
  * <p>
- * Permite registrar, consultar, actualizar y eliminar residentes, así como listar residentes filtrados.
+ * Permite registrar, consultar, actualizar, eliminar y listar residentes
+ * aplicando filtros opcionales, tanto a nivel de una residencia específica como global.
  * </p>
  *
- * URL base: {@code /resi/{idResidencia}/resident}
+ * URL base: {@code /admin/resi}
  *
- * Autor: Kevin Olarte
+ * @author Kevin Olarte
  */
 @RequestMapping("/admin/resi/")
 @RestController
@@ -29,10 +30,10 @@ public class ResidenteAdminController {
 
 
     /**
-     * Registra un nuevo residente en una residencia.
+     * Registra un nuevo residente dentro de una residencia.
      *
      * @param idResidencia ID de la residencia.
-     * @param residenteDto DTO con los datos del nuevo residente.
+     * @param residenteDto DTO con los datos del residente a crear.
      * @return {@link ResponseEntity} con estado {@code 201 Created} y el residente creado.
      */
     @PostMapping("/{idResidencia}/resident/add")
@@ -44,11 +45,11 @@ public class ResidenteAdminController {
     }
 
     /**
-     * Obtiene los detalles de un residente específico.
+     * Obtiene los detalles de un residente específico dentro de una residencia.
      *
      * @param idResidencia ID de la residencia.
      * @param idResidente ID del residente.
-     * @return {@link ResponseEntity} con estado {@code 200 OK} y el residente encontrado.
+     * @return {@link ResponseEntity} con estado {@code 200 OK} y los datos del residente.
      */
     @GetMapping("/{idResidencia}/resident/{idResidente}/get")
     public ResponseEntity<ResidenteResponseDto> get(
@@ -60,6 +61,19 @@ public class ResidenteAdminController {
     }
 
 
+    /**
+     * Lista todos los residentes de una residencia, aplicando filtros opcionales.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param fechaNacimiento Fecha exacta de nacimiento.
+     * @param minFNac Fecha mínima de nacimiento.
+     * @param maxFNac Fecha máxima de nacimiento.
+     * @param maxAge Edad máxima.
+     * @param minAge Edad mínima.
+     * @param idJuego ID de juego asociado (opcional).
+     * @param idEvento ID de evento asociado (opcional).
+     * @return {@link ResponseEntity} con la lista de residentes filtrados.
+     */
     @GetMapping("/{idResidencia}/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
                                                     @PathVariable Long idResidencia,
@@ -73,6 +87,19 @@ public class ResidenteAdminController {
 
         return ResponseEntity.ok(residenteService.getAll(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
     }
+
+    /**
+     * Lista todos los residentes en el sistema, sin filtrar por residencia.
+     *
+     * @param fechaNacimiento Fecha exacta de nacimiento.
+     * @param minFNac Fecha mínima de nacimiento.
+     * @param maxFNac Fecha máxima de nacimiento.
+     * @param maxAge Edad máxima.
+     * @param minAge Edad mínima.
+     * @param idJuego ID de juego asociado (opcional).
+     * @param idEvento ID de evento asociado (opcional).
+     * @return {@link ResponseEntity} con la lista global de residentes filtrados.
+     */
     @GetMapping("/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
                                                     @RequestParam(required = false) LocalDate fechaNacimiento,
@@ -86,9 +113,12 @@ public class ResidenteAdminController {
     }
 
     /**
-     * Lista todos los residentes dados de baja en una residencia.
+     * Lista todos los residentes dados de baja dentro de una residencia, filtrando opcionalmente por fecha.
      *
      * @param idResidencia ID de la residencia.
+     * @param fecha Fecha exacta de baja (opcional).
+     * @param minFecha Fecha mínima de baja (opcional).
+     * @param maxFecha Fecha máxima de baja (opcional).
      * @return {@link ResponseEntity} con la lista de residentes dados de baja.
      */
     @GetMapping("/{idResidencia}/resident/getAll/bajas")
@@ -102,9 +132,12 @@ public class ResidenteAdminController {
     }
 
     /**
-     * Lista todos los residentes dados de baja.
+     * Lista todos los residentes dados de baja del sistema (sin filtro de residencia).
      *
-     * @return {@link ResponseEntity} con la lista de residentes dados de baja.
+     * @param fecha Fecha exacta de baja (opcional).
+     * @param minFecha Fecha mínima de baja (opcional).
+     * @param maxFecha Fecha máxima de baja (opcional).
+     * @return {@link ResponseEntity} con la lista global de residentes dados de baja.
      */
     @GetMapping("/resident/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
@@ -115,10 +148,10 @@ public class ResidenteAdminController {
     }
 
     /**
-     * Elimina un residente de una residencia.
+     * Elimina físicamente un residente de una residencia.
      *
      * @param idResidencia ID de la residencia.
-     * @param idResidente ID del residente a eliminar.
+     * @param idResidente ID del residente.
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
      */
     @DeleteMapping("/{idResidencia}/resident/{idResidente}/delete")
@@ -131,11 +164,11 @@ public class ResidenteAdminController {
     }
 
     /**
-     * Elimina un residente de una residencia de forma lógica.
+     * Marca lógicamente como dado de baja a un residente (sin eliminarlo físicamente).
      *
      * @param idResidencia ID de la residencia.
-     * @param idResidente ID del residente a eliminar.
-     * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
+     * @param idResidente ID del residente.
+     * @return {@link ResponseEntity} con estado {@code 204 No Content} si se realizó correctamente.
      */
     @PatchMapping("{idResidencia}/resident/{idResidente}/baja")
     public ResponseEntity<Void> deleteLogico(
@@ -146,8 +179,9 @@ public class ResidenteAdminController {
     }
 
     /**
-     * Actualiza parcialmente los datos de un residente.
+     * Actualiza parcialmente los datos de un residente dentro de una residencia.
      *
+     * @param idResidencia ID de la residencia.
      * @param idResidente ID del residente a actualizar.
      * @param residenteDto DTO con los datos a actualizar.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el residente actualizado.
