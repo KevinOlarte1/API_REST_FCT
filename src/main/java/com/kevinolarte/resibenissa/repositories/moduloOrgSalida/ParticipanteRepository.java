@@ -6,6 +6,7 @@ import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
 import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,22 +15,22 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ParticipanteRepository extends JpaRepository<Participante, Long> {
+public interface ParticipanteRepository extends JpaRepository<Participante, Long>, JpaSpecificationExecutor<Participante> {
 
     @Query("""
         SELECT COUNT(p) > 0
         FROM Participante p
         WHERE p.residente.id = :idResidente
-          AND p.salida.fechaInicio = (
+          AND p.evento.fechaInicio = (
               SELECT s.fechaInicio
               FROM EventoSalida s
-              WHERE s.id = :idSalida
+              WHERE s.id = :idEvento
           )
-          AND p.salida.id <> :idSalida
+          AND p.evento.id <> :idEvento
     """)
-    boolean existsByResidenteInOtherSalidaSameDay(
+    boolean existsByResidenteInOtherEventoSameDay(
             @Param("idResidente") Long idResidente,
-            @Param("idSalida") Long idSalida
+            @Param("idEvento") Long idEvento
     );
 
     /**
@@ -41,15 +42,12 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
     @Query("DELETE FROM Participante p WHERE p.residente.residencia.id = :idResidencia")
     void deleteAllByResidenciaId(@Param("idResidencia") Long idResidencia);
 
-    Participante findBySalidaAndResidente(EventoSalida eventoSalida, Residente residente);
+    Participante findByEventoAndResidente(EventoSalida evento, Residente residente);
 
     List<Participante> id(Long id);
 
-    List<Participante> findBySalida(EventoSalida salida);
+    List<Participante> findByEvento(EventoSalida evento);
 
-    List<Participante> findByAyudaAndSalida(boolean ayuda, EventoSalida salida);
 
-    List<Participante> findByAyudaAndResidenteAndSalida(boolean ayuda, Residente residente, EventoSalida salida);
-
-    List<Participante> findByResidenteAndSalida(Residente residente, EventoSalida salida);
+    List<Participante> findByResidenteAndEvento(Residente residente, EventoSalida evento);
 }

@@ -1,4 +1,4 @@
-package com.kevinolarte.resibenissa.controllers.moduloOrgSalida;
+package com.kevinolarte.resibenissa.controllers.moduloOrgSalida.evento;
 
 import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.EventoSalidaDto;
 import com.kevinolarte.resibenissa.dto.out.moduloOrgSalida.EventoSalidaResponseDto;
@@ -41,6 +41,7 @@ public class EventoSalidaController {
     @PostMapping("/add")
     public ResponseEntity<EventoSalidaResponseDto> add(
                                                     @RequestBody EventoSalidaDto input) {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.status(HttpStatus.CREATED).body(eventoSalidaService.add(input, idResidencia));
@@ -65,15 +66,20 @@ public class EventoSalidaController {
 
     @GetMapping("/getAll")
     public ResponseEntity<List<EventoSalidaResponseDto>> getAllEventosSalida(
-                                                    @RequestParam(required = false ) LocalDate fecha,
-                                                    @RequestParam(required = false) Integer year,
-                                                    @RequestParam(required = false) Integer month,
-                                                    @RequestParam(required = false)EstadoSalida estado,
-                                                    @RequestParam(required = false) Long idResidente,
-                                                    @RequestParam(required = false) Long idParticipante) {
+                                                        @RequestParam(required = false ) LocalDate fecha,
+                                                        @RequestParam(required = false) LocalDate minFecha,
+                                                        @RequestParam(required = false) LocalDate maxFecha,
+                                                        @RequestParam(required = false) EstadoSalida estado,
+                                                        @RequestParam(required = false) Long idResidente,
+                                                        @RequestParam(required = false) Long idParticipante,
+                                                        @RequestParam(required = false) Integer minRH,
+                                                        @RequestParam(required = false) Integer maxRH,
+                                                        @RequestParam(required = false) Integer minRM,
+                                                        @RequestParam(required = false) Integer maxRM) {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(eventoSalidaService.getAll(idResidencia, fecha, year, month, estado, idResidente, idParticipante));
+        return ResponseEntity.ok(eventoSalidaService.getAll(idResidencia, fecha, minFecha, maxFecha, estado, idResidente, idParticipante, minRH, maxRH, minRM, maxRM));
     }
 
 
@@ -87,11 +93,13 @@ public class EventoSalidaController {
      * @param idEventoSalida ID del evento de salida a eliminar.
      */
     @DeleteMapping("/{idEventoSalida}/delete")
-    public void delete(
-                                                    @PathVariable Long idEventoSalida) {
+    public ResponseEntity<Void> delete(
+                                @PathVariable Long idEventoSalida) {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         eventoSalidaService.delete(idEventoSalida, idResidencia);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     /**
@@ -108,6 +116,7 @@ public class EventoSalidaController {
     public ResponseEntity<EventoSalidaResponseDto> updateEventoSalida(
                                                     @PathVariable Long idEventoSalida,
                                                     @RequestBody EventoSalidaDto input) {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(eventoSalidaService.update(input, idEventoSalida, idResidencia));

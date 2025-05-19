@@ -97,9 +97,10 @@ public class RegistroJuegoAdminController {
                                                         @RequestParam(required = false) boolean promedio,
                                                         @RequestParam(required = false) boolean masPromedio,
                                                         @RequestParam(required = false) boolean menosPromedio,
-                                                        @RequestParam(required = false) boolean ordenFecha){
+                                                        @RequestParam(required = false) boolean ordenFecha,
+                                                        @RequestParam(required = false) Boolean comentado){
 
-        return ResponseEntity.ok(registroJuegoService.getAll(idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, ordenFecha));
+        return ResponseEntity.ok(registroJuegoService.getAll(idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, ordenFecha,comentado));
     }
 
     /**
@@ -135,8 +136,9 @@ public class RegistroJuegoAdminController {
                                                         @RequestParam(required = false) boolean promedio,
                                                         @RequestParam(required = false) boolean masPromedio,
                                                         @RequestParam(required = false) boolean menosPromedio,
-                                                        @RequestParam(required = false) boolean ordenFecha){
-        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, ordenFecha));
+                                                        @RequestParam(required = false) boolean ordenFecha,
+                                                        @RequestParam(required = false) Boolean comentado){
+        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, ordenFecha, comentado));
     }
 
     /**

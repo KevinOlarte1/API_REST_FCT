@@ -100,10 +100,11 @@ public class RegistroJuegoController {
             @RequestParam(required = false) boolean masPromedio,
             @RequestParam(required = false) boolean menosPromedio,
             @RequestParam(required = false) boolean ordenFecha,
-            @RequestParam(required = false) Dificultad dificultad){
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Boolean comentado){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, ordenFecha));
+        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, ordenFecha, comentado));
     }
 
 

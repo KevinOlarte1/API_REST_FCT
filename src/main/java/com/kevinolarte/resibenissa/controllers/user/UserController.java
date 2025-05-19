@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.core.io.Resource;
@@ -41,6 +42,12 @@ public class UserController {
     private final UserService userService;
 
 
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getMe() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        return ResponseEntity.ok(new UserResponseDto(currentUser));
+    }
     /**
      * Obtiene los datos de un usuario específico dentro de una residencia.
      *
@@ -49,7 +56,7 @@ public class UserController {
      */
     @GetMapping("/{idUser}/get")
     public ResponseEntity<UserResponseDto> get(
-                                            @PathVariable Long idUser) {
+                                        @PathVariable Long idUser) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -57,35 +64,43 @@ public class UserController {
 
     }
 
+    @GetMapping("/get")
+    public ResponseEntity<UserResponseDto> get(
+                                        @RequestParam (required = true) String email){
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        return ResponseEntity.ok(userService.get(currentUser.getResidencia().getId(), email));
+
+    }
+
     /**
      * Obtiene una lista de usuarios dentro de una residencia, aplicando filtros opcionales.
      *
-     * @param email Filtro por email (opcional).
      * @param enabled Filtro por estado habilitado (opcional).
      * @param idJuego Filtro por ID de juego asociado (opcional).
      * @return {@link ResponseEntity} con la lista de usuarios filtrados.
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
-                                                @RequestParam(required = false) String email,
-                                                @RequestParam(required = false) Boolean enabled,
-                                                @RequestParam(required = false) Long idJuego,
-                                                @RequestParam(required = false) Long minRegistro,
-                                                @RequestParam(required = false) Long maxRegistro) {
+                                               @RequestParam(required = false) Boolean enabled,
+                                               @RequestParam(required = false) Long idJuego) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.getAll(currentUser.getResidencia().getId(), email, enabled, idJuego, minRegistro, maxRegistro));
+        return ResponseEntity.ok(userService.getAll(currentUser.getResidencia().getId(), enabled, idJuego));
 
     }
 
     @GetMapping("/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
-                                                @RequestParam(required = false) String email) {
+            @RequestParam(required = false) LocalDate fecha,
+            @RequestParam(required = false) LocalDate minFecha,
+            @RequestParam(required = false) LocalDate maxFecha){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.getAllBajas(currentUser.getResidencia().getId(), email));
+        return ResponseEntity.ok(userService.getAllBajas(currentUser.getResidencia().getId(), fecha, minFecha, maxFecha));
 
     }
 
@@ -111,35 +126,31 @@ public class UserController {
     /**
      * Actualiza los datos básicos de un usuario.
      *
-     * @param idUser ID del usuario.
      * @param userDto Datos a actualizar.
      * @return {@link ResponseEntity} con los datos del usuario actualizado.
      */
-    @PatchMapping("/{idUser}/update")
+    @PatchMapping("/update")
     public ResponseEntity<UserResponseDto> update(
-                                        @PathVariable Long idUser,
                                         @RequestBody UserDto userDto) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.update(currentUser.getResidencia().getId(), idUser, userDto));
+        return ResponseEntity.ok(userService.update(currentUser.getResidencia().getId(), currentUser.getId(), userDto));
     }
 
     /**
      * Cambia la contraseña de un usuario validando la anterior.
      *
-     * @param idUser ID del usuario.
      * @param changePasswordUserDto DTO con la contraseña actual y la nueva.
      * @return {@link ResponseEntity} con los datos del usuario tras el cambio.
      */
-    @PatchMapping("/{idUser}/update/changePassword")
+    @PatchMapping("/update/changePassword")
     public ResponseEntity<UserResponseDto> changePassword(
-                                        @PathVariable Long idUser,
                                         @RequestBody ChangePasswordUserDto changePasswordUserDto) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.updatePassword(currentUser.getResidencia().getId(), idUser, changePasswordUserDto));
+        return ResponseEntity.ok(userService.updatePassword(currentUser.getResidencia().getId(), currentUser.getId(), changePasswordUserDto));
     }
 
 

@@ -17,16 +17,18 @@ import lombok.Setter;
 public class ParticipanteResponseDto {
     private Long id;
     private Long idResidente;
-    private Long idEventoSalida;
-    private boolean asistente;
+    private Long idEvento;
+    private boolean recursosHumanos;
+    private boolean recursosMateriales;
     private String preOpinion;
     private String postOpinion;
 
     public ParticipanteResponseDto(Participante participante) {
         this.id = participante.getId();
         this.idResidente = participante.getResidente().getId();
-        this.idEventoSalida = participante.getSalida().getId();
-        this.asistente = participante.isAyuda();
+        this.idEvento = participante.getEvento().getId();
+        this.recursosHumanos = participante.isRecursosHumanos();
+        this.recursosMateriales = participante.isRecursosMateriales();
         this.preOpinion = participante.getPreOpinion();
         this.postOpinion = participante.getPostOpinion();
     }

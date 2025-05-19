@@ -108,7 +108,7 @@ public class StartupDataLoader {
         eventoSalidaDto.setNombre("Casa 1");
         eventoSalidaDto.setDescripcion("Salida a casa 1");
         eventoSalidaDto.setFecha(LocalDate.now().plusYears(1));
-        eventoSalidaDto.setEstado(EstadoSalida.ABIERTA);
+        eventoSalidaDto.setEstado(EstadoSalida.ABIERTO);
 
         EventoSalida eventoSalida = new EventoSalida(eventoSalidaDto);
         eventoSalida.setResidencia(residenciaDefault);
@@ -117,13 +117,15 @@ public class StartupDataLoader {
         List<Residente> residentes = residenteRepository.findAll();
         for (Residente residente : residentes) {
             ParticipanteDto par = new ParticipanteDto();
-            par.setAsistencia(false);
+            par.setRecursosHumanos(false);
+            par.setRecursosMateriales(true);
             par.setPreOpinion("No me gusta");
             par.setIdResidente(residente.getId());
             Participante participante = new Participante();
-            participante.setSalida(eventoSalida);
+            participante.setEvento(eventoSalida);
             participante.setResidente(residente);
-            participante.setAyuda(par.getAsistencia());
+            participante.setRecursosHumanos(par.getRecursosHumanos());
+            participante.setRecursosMateriales(par.getRecursosMateriales());
             participante.setPreOpinion(par.getPreOpinion());
 
             participanteRepository.save(participante);

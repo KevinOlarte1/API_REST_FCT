@@ -20,7 +20,11 @@ public class RegistroJuegoSpecification {
             LocalDate fecha,
             LocalDate minFecha,
             LocalDate maxFecha,
-            Dificultad dificultad
+            Dificultad dificultad,
+            Boolean comentado,
+            Boolean promedio,
+            Boolean masPromedio,
+            Boolean menosPromedio
     ) {
         return (root, query, cb) -> {
             Predicate predicate = cb.conjunction();
@@ -80,6 +84,45 @@ public class RegistroJuegoSpecification {
             // Filtro por dificultad
             if (dificultad != null) {
                 predicate = cb.and(predicate, cb.equal(root.get("dificultad"), dificultad));
+            }
+
+            // Filtro por observación
+            if (comentado != null) {
+                if (comentado) {
+                    predicate = cb.and(predicate, cb.isNotNull(root.get("observacion")));
+                    predicate = cb.and(predicate, cb.notEqual(cb.trim(cb.literal(' '), root.get("observacion")), ""));
+                } else {
+                    predicate = cb.and(predicate, cb.or(
+                            cb.isNull(root.get("observacion")),
+                            cb.equal(cb.trim(cb.literal(' '), root.get("observacion")), "")
+                    ));
+                }
+            }
+
+            // Filtro por media (promedio ±5%, más o menos)
+            if ((Boolean.TRUE.equals(promedio) || Boolean.TRUE.equals(masPromedio) || Boolean.TRUE.equals(menosPromedio))
+                    && idJuego != null) {
+
+                assert query != null;
+                Subquery<Double> subquery = query.subquery(Double.class);
+                Root<RegistroJuego> subRoot = subquery.from(RegistroJuego.class);
+                subquery.select(cb.avg(subRoot.get("duracion")));
+                subquery.where(cb.equal(subRoot.get("juego").get("id"), idJuego));
+
+                Expression<Double> mediaExpr = subquery.getSelection();
+                System.out.println("Media: " + mediaExpr.toString());
+
+                if (Boolean.TRUE.equals(promedio)) {
+                    Expression<Double> margen = cb.prod(mediaExpr, 0.05); // ±5%
+                    Expression<Double> minRango = cb.diff(mediaExpr, margen);
+                    Expression<Double> maxRango = cb.sum(mediaExpr, margen);
+                    predicate = cb.and(predicate,
+                            cb.between(root.get("duracion"), minRango, maxRango));
+                } else if (Boolean.TRUE.equals(masPromedio)) {
+                    predicate = cb.and(predicate, cb.greaterThan(root.get("duracion"), mediaExpr));
+                } else {
+                    predicate = cb.and(predicate, cb.lessThan(root.get("duracion"), mediaExpr));
+                }
             }
 
             return predicate;

@@ -84,16 +84,7 @@ public class ResidenteService {
 
     }
 
-    /**
-     * Busca un residente por su ID.
-     *
-     * @param id ID del residente.
-     * @return El residente encontrado o {@code null} si no existe.
-     */
-    public Residente findById(long id) {
 
-        return residenteRepository.findById(id).orElse(null);
-    }
 
     /**
      * Obtiene un residente asegurando su pertenencia a una residencia.
@@ -164,7 +155,7 @@ public class ResidenteService {
                     if (idJuego != null) match = residente.getRegistros().stream()
                             .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego));
                     if (idEventoSalida != null) match = residente.getParticipantes().stream().
-                            anyMatch(participante -> participante.getSalida().getId().equals(idEventoSalida));
+                            anyMatch(participante -> participante.getEvento().getId().equals(idEventoSalida));
 
                     if (minRegistro != null && maxRegistro != null)
                         match = residente.getRegistros().size() >= minRegistro && residente.getRegistros().size() <= maxRegistro;
@@ -197,7 +188,7 @@ public class ResidenteService {
                     if (idJuego != null) match = residente.getRegistros().stream()
                             .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego));
                     if (idEventoSalida != null) match = residente.getParticipantes().stream().
-                            anyMatch(participante -> participante.getSalida().getId().equals(idEventoSalida));
+                            anyMatch(participante -> participante.getEvento().getId().equals(idEventoSalida));
 
                     if (minRegistro != null && maxRegistro != null)
                         match = residente.getRegistros().size() >= minRegistro && residente.getRegistros().size() <= maxRegistro;
@@ -308,30 +299,7 @@ public class ResidenteService {
         return new ResidenteResponseDto(residenteUpdatable);
     }
 
-    /**
-     * Obtiene un residente y valida que pertenece a la residencia especificada.
-     *
-     * @param idResidencia ID de la residencia.
-     * @param idResidente  ID del residente.
-     * @return Residente encontrado.
-     * @throws ApiException si no existe o no pertenece a la residencia.
-     */
-    private Residente getResidente(Long idResidencia, Long idResidente) {
-        if (idResidencia == null || idResidente == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
 
-        // Validar que el residente existe
-        Residente residenteTmp = residenteRepository.findById(idResidente).orElse(null);
-        if (residenteTmp == null) {
-            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-        }
-        //Comrpobar que el residente pertenece a la residencia
-        if (!Objects.equals(residenteTmp.getResidencia().getId(), idResidencia)) {
-            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-        }
-        return residenteTmp;
-    }
 
 
     /**
@@ -372,5 +340,31 @@ public class ResidenteService {
                     .toList();
         }
         return residenteBaseList.stream().map(ResidenteResponseDto::new).toList();
+    }
+
+
+    /**
+     * Obtiene un residente y valida que pertenece a la residencia especificada.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idResidente  ID del residente.
+     * @return Residente encontrado.
+     * @throws ApiException si no existe o no pertenece a la residencia.
+     */
+    public Residente getResidente(Long idResidencia, Long idResidente) {
+        if (idResidencia == null || idResidente == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        // Validar que el residente existe
+        Residente residenteTmp = residenteRepository.findById(idResidente).orElse(null);
+        if (residenteTmp == null) {
+            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+        }
+        //Comrpobar que el residente pertenece a la residencia
+        if (!Objects.equals(residenteTmp.getResidencia().getId(), idResidencia)) {
+            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+        }
+        return residenteTmp;
     }
 }

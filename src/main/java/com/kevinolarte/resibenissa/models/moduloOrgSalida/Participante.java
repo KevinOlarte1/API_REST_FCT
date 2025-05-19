@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.models.moduloOrgSalida;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.ParticipanteDto;
 import com.kevinolarte.resibenissa.models.Residente;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,7 +25,7 @@ import java.time.LocalDateTime;
 @Setter
 @Table(
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"fk_salida", "fk_residente"})
+                @UniqueConstraint(columnNames = {"fk_evento", "fk_residente"})
         }
 )
 public class Participante {
@@ -40,9 +41,9 @@ public class Participante {
      * Esta relación es ignorada en la serialización JSON para evitar bucles.
      */
     @ManyToOne
-    @JoinColumn(name = "fk_salida", nullable = false)
+    @JoinColumn(name = "fk_evento", nullable = false)
     @JsonIgnore
-    private EventoSalida salida;
+    private EventoSalida evento;
 
     /**
      * Residente que participa en la salida.
@@ -59,7 +60,12 @@ public class Participante {
      * Indica si el residente requiere ayuda durante la salida.
      */
     @Column(nullable = false)
-    private boolean ayuda;
+    private boolean recursosHumanos;
+
+    @Column(nullable = false)
+    private boolean recursosMateriales;
+
+
 
     /**
      * Opinión del residente antes de asistir a la salida (opcional).
@@ -76,12 +82,16 @@ public class Participante {
     private boolean baja;
     private LocalDateTime fechaBaja;
 
+
     public Participante() {
-        this.ayuda = false;
+        this.recursosHumanos = false;
+        this.recursosMateriales = false;
         this.preOpinion = "";
         this.postOpinion = "";
         this.baja = false;
     }
+
+
 
 
 

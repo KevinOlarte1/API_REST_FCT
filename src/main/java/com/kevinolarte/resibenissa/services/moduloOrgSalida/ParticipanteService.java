@@ -10,6 +10,8 @@ import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
 import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
 import com.kevinolarte.resibenissa.services.ResidenteService;
+import com.kevinolarte.resibenissa.specifications.ParticipanteSpecification;
+import jakarta.mail.Part;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,31 +49,15 @@ public class ParticipanteService {
      */
     public ParticipanteResponseDto add(ParticipanteDto input,
                                                    Long idEventoSalida, Long idResidencia) {
-        if (idEventoSalida == null || input.getIdResidente() == null || input.getAsistencia() == null || idResidencia == null) {
+        if (idEventoSalida == null || input.getIdResidente() == null || input.getRecursosHumanos() == null || input.getRecursosMateriales() == null || idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         // Verificar si el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaService.findById(idEventoSalida);
-        if (eventoSalida == null) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
-
-        // Verificar si el evento de salida pertenece a la residencia
-        if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEventoSalida, idResidencia);
 
         // Verificar si el residente existe
-        Residente residente = residenteService.findById(input.getIdResidente());
-        if (residente == null) {
-            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-        }
-
-        // Verificar si el residente pertenece a la residencia
-        if (!residente.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-        }
+        Residente residente = residenteService.getResidente(idResidencia, input.getIdResidente());
 
         // Verificar si el evento de salida ya ha terminado
         if (eventoSalida.getFechaInicio().isBefore(java.time.LocalDate.now())) {
@@ -79,21 +65,22 @@ public class ParticipanteService {
         }
 
         // Verificar el estado del evento de salida
-        if (eventoSalida.getEstado() != EstadoSalida.ABIERTA) {
+        if (eventoSalida.getEstado() != EstadoSalida.ABIERTO) {
             throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
         }
 
         //Verificar si el participante participa en una salida ese mismo dia
-        if (participanteRepository.existsByResidenteInOtherSalidaSameDay(input.getIdResidente(), idEventoSalida)) {
+        if (participanteRepository.existsByResidenteInOtherEventoSameDay(input.getIdResidente(), idEventoSalida)) {
             throw new ApiException(ApiErrorCode.PARTICIPANTE_YA_REGISTRADO);
         }
 
 
         // Crear el participante
         Participante participante = new Participante();
-        participante.setSalida(eventoSalida);
+        participante.setEvento(eventoSalida);
         participante.setResidente(residente);
-        participante.setAyuda(input.getAsistencia());
+        participante.setRecursosHumanos(input.getRecursosHumanos());
+        participante.setRecursosMateriales(input.getRecursosMateriales());
         if (input.getPreOpinion() != null) {
             participante.setPreOpinion(input.getPreOpinion());
         }
@@ -114,39 +101,16 @@ public class ParticipanteService {
      */
     public ParticipanteResponseDto updateParticipante(ParticipanteDto input,
                                                       Long idResidencia, Long idEventoSalida, Long idParticipante) {
-        if (idEventoSalida == null || idResidencia == null || idParticipante == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
 
-        // Verificar si el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaService.findById(idEventoSalida);
-        if (eventoSalida == null) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
+        Participante participante = getParticipante(idResidencia, idEventoSalida, idParticipante);
 
-        // Verificar si el evento de salida pertenece a la residencia
-        if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
-
-        // Verificar si el participante existe
-        Participante participante = participanteRepository.findById(idParticipante)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.PARTICIPANTE_INVALIDO));
-
-        // Verificar si el participante pertenece al evento de salida
-        if (!participante.getSalida().getId().equals(idEventoSalida)) {
-            throw new ApiException(ApiErrorCode.PARTICIPANTE_INVALIDO);
-        }
-
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEventoSalida, idResidencia);
         // Verificar el estado del evento de salida
-        if (eventoSalida.getEstado() != EstadoSalida.ABIERTA) {
+        if (eventoSalida.getEstado() != EstadoSalida.ABIERTO) {
             throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
         }
 
-        // Si no hay nada que cambiar lo devolvemos como es.
-        if (input == null || (input.getAsistencia() == null && input.getPreOpinion() == null && input.getPostOpinion() == null)) {
-            return new ParticipanteResponseDto(participante);
-        }
+
 
         //Verificar si el evento de salida ya ha terminado
         if (eventoSalida.getFechaInicio().isBefore(java.time.LocalDate.now())) {
@@ -161,8 +125,12 @@ public class ParticipanteService {
             }
 
             // Verificar que la asistencia no sea nula
-            if (input.getAsistencia() != null){
-                participante.setAyuda(input.getAsistencia());
+            if (input.getRecursosMateriales() != null){
+                participante.setRecursosMateriales(input.getRecursosMateriales());
+
+            }
+            if (input.getRecursosHumanos() != null){
+                participante.setRecursosHumanos(input.getRecursosHumanos());
             }
         }
         return new ParticipanteResponseDto(participanteRepository.save(participante));
@@ -178,30 +146,10 @@ public class ParticipanteService {
      * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
      *                      el evento no pertenece a la residencia o ya ha finalizado.
      */
-    public ParticipanteResponseDto deleteParticipante(Long idResidencia, Long idEvento, Long idParticipante) {
-        if (idResidencia == null || idEvento == null || idParticipante == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
+    public void deleteParticipante(Long idResidencia, Long idEvento, Long idParticipante) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
 
-        // Verificar si el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaService.findById(idEvento);
-        if (eventoSalida == null) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
-
-        // Verificar si el evento de salida pertenece a la residencia
-        if (!eventoSalida.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
-
-        // Verificar si el participante existe
-        Participante participante = participanteRepository.findById(idParticipante)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.PARTICIPANTE_INVALIDO));
-
-        // Verificar si el participante pertenece al evento de salida
-        if (!participante.getSalida().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.PARTICIPANTE_INVALIDO);
-        }
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEvento, idResidencia);
 
         // Verificar si la fecha de inicio del evento de salida ya ha pasado
         if (eventoSalida.getFechaInicio().isBefore(java.time.LocalDate.now())) {
@@ -210,7 +158,6 @@ public class ParticipanteService {
 
         // Eliminar el participante
         participanteRepository.delete(participante);
-        return new ParticipanteResponseDto(participante);
     }
 
     /**
@@ -224,12 +171,40 @@ public class ParticipanteService {
      *                      o no pertenecen a la residencia o evento.
      */
     public ParticipanteResponseDto get(Long idResidencia, Long idEvento, Long idParticipante) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Devolver el participante
+        return new ParticipanteResponseDto(participante);
+
+    }
+
+
+    public List<ParticipanteResponseDto> getAll(Long idResidencia, Long idEvento, Long idResidente,  Boolean rM,Boolean rH, Integer minEdad, Integer maxEdad, Boolean preOpinion, Boolean postOpinion) {
+        if (idResidencia == null || idEvento == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        // Verificar si el evento de salida existe
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEvento, idResidencia);
+
+
+        List<Participante> list = participanteRepository.findAll(
+                ParticipanteSpecification.withFilters(idResidencia, idEvento, idResidente, rH, rM, minEdad, maxEdad, preOpinion, postOpinion)
+        );
+
+
+            return list.stream()
+                    .map(ParticipanteResponseDto::new).toList();
+
+
+    }
+
+    protected Participante getParticipante(Long idResidencia, Long idEvento, Long idParticipante){
         if (idResidencia == null || idEvento == null || idParticipante == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         // Verificar si el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaService.findById(idEvento);
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEvento, idResidencia);
         if (eventoSalida == null) {
             throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
@@ -244,64 +219,10 @@ public class ParticipanteService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.PARTICIPANTE_INVALIDO));
 
         // Verificar si el participante pertenece al evento de salida
-        if (!participante.getSalida().getId().equals(idEvento)) {
+        if (!participante.getEvento().getId().equals(idEvento)) {
             throw new ApiException(ApiErrorCode.PARTICIPANTE_INVALIDO);
         }
-
-        // Devolver el participante
-        return new ParticipanteResponseDto(participante);
-
-    }
-
-
-    public List<ParticipanteResponseDto> get(Long idResdencia, Long idEvento, Boolean asistencia, Long idResidente) {
-        if (idResdencia == null || idEvento == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-
-        // Verificar si el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaService.findById(idEvento);
-        if (eventoSalida == null) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
-
-        // Verificar si el evento de salida pertenece a la residencia
-        if (!eventoSalida.getResidencia().getId().equals(idResdencia)) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
-        }
-
-        Residente residente = null;
-        if (idResidente != null){
-            // Verificar si el residente existe
-            residente = residenteService.findById(idResidente);
-            if (residente == null) {
-                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-            }
-            // Verificar si el residente pertenece a la residencia
-            if (!residente.getResidencia().getId().equals(idResdencia)) {
-                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-            }
-        }
-        List<Participante> baseList = null;
-        if (residente == null) {
-            if (asistencia != null) {
-                baseList = participanteRepository.findByAyudaAndSalida(asistencia, eventoSalida);
-            }
-            else
-                baseList = participanteRepository.findBySalida(eventoSalida);
-        }
-        else{
-            if (asistencia != null) {
-                baseList = participanteRepository.findByAyudaAndResidenteAndSalida(asistencia, residente, eventoSalida);
-            }
-            else
-                baseList = participanteRepository.findByResidenteAndSalida(residente, eventoSalida);
-        }
-
-            return baseList.stream()
-                    .map(ParticipanteResponseDto::new).toList();
-
-
+        return participante;
     }
 
 

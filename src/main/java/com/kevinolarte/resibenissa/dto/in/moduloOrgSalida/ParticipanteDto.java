@@ -17,7 +17,8 @@ import lombok.Setter;
 @Setter
 public class ParticipanteDto {
     private Long idResidente;
-    private Boolean asistencia;
+    private Boolean recursosHumanos;
+    private Boolean recursosMateriales;
     private String preOpinion;
     private String postOpinion;
 

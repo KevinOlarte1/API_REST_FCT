@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -27,6 +28,7 @@ import java.util.List;
 public class UserAdminController {
 
     private final UserService userService;
+
 
     /**
      * Registra un nuevo usuario a partir de los datos proporcionados en el DTO.
@@ -64,11 +66,20 @@ public class UserAdminController {
 
     }
 
+    @GetMapping("/{idResidencia}/user/get")
+    public ResponseEntity<UserResponseDto> get(
+                                        @PathVariable Long idResidencia,
+                                        @RequestParam(required = true) String email) {
+
+        return ResponseEntity.ok(userService.get(idResidencia, email));
+
+    }
+
+
     /**
      * Obtiene una lista de usuarios dentro de una residencia, aplicando filtros opcionales.
      *
      * @param idResidencia ID de la residencia.
-     * @param email Filtro por email (opcional).
      * @param enabled Filtro por estado habilitado (opcional).
      * @param idJuego Filtro por ID de juego asociado (opcional).
      * @return {@link ResponseEntity} con la lista de usuarios filtrados.
@@ -76,33 +87,28 @@ public class UserAdminController {
     @GetMapping("{idResidencia}/user/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
                                                 @PathVariable Long idResidencia,
-                                                @RequestParam(required = false) String email,
                                                 @RequestParam(required = false) Boolean enabled,
-                                                @RequestParam(required = false) Long idJuego,
-                                                @RequestParam(required = false) Long minRegistro,
-                                                @RequestParam(required = false) Long maxRegistro) {
+                                                @RequestParam(required = false) Long idJuego) {
 
-        return ResponseEntity.ok(userService.getAll(idResidencia, email, enabled, idJuego, minRegistro, maxRegistro));
+        return ResponseEntity.ok(userService.getAll(idResidencia, enabled, idJuego));
 
     }
+
+
 
     /**
      * Obtiene una lista de usuarios dentro de una residencia, aplicando filtros opcionales.
      *
-     * @param email Filtro por email (opcional).
      * @param enabled Filtro por estado habilitado (opcional).
      * @param idJuego Filtro por ID de juego asociado (opcional).
      * @return {@link ResponseEntity} con la lista de usuarios filtrados.
      */
     @GetMapping("/user/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
-                                                @RequestParam(required = false) String email,
                                                 @RequestParam(required = false) Boolean enabled,
-                                                @RequestParam(required = false) Long idJuego,
-                                                @RequestParam(required = false) Long minRegistro,
-                                                @RequestParam(required = false) Long maxRegistro) {
+                                                @RequestParam(required = false) Long idJuego) {
 
-        return ResponseEntity.ok(userService.getAll(email, enabled, idJuego, minRegistro, maxRegistro));
+        return ResponseEntity.ok(userService.getAll(enabled, idJuego));
 
     }
 
@@ -110,29 +116,31 @@ public class UserAdminController {
      * Obtiene una lista de usuarios dados de baja dentro de una residencia, aplicando filtros opcionales.
      *
      * @param idResidencia ID de la residencia.
-     * @param email Filtro por email (opcional).
      * @return {@link ResponseEntity} con la lista de usuarios dados de baja.
      */
     @GetMapping("{idResidencia}/user/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
-                                                @PathVariable Long idResidencia,
-                                                @RequestParam(required = false) String email) {
+            @PathVariable Long idResidencia,
+            @RequestParam(required = false)LocalDate fecha,
+            @RequestParam(required = false) LocalDate minFecha,
+            @RequestParam(required = false) LocalDate maxFecha){
 
-        return ResponseEntity.ok(userService.getAllBajas(idResidencia, email));
+        return ResponseEntity.ok(userService.getAllBajas(idResidencia, fecha, minFecha, maxFecha));
 
     }
 
     /**
      * Obtiene una lista de usuarios dados de baja dentro de una residencia, aplicando filtros opcionales.
      *
-     * @param email Filtro por email (opcional).
      * @return {@link ResponseEntity} con la lista de usuarios dados de baja.
      */
     @GetMapping("/user/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
-                                                @RequestParam(required = false) String email) {
+                                                    @RequestParam(required = false)LocalDate fecha,
+                                                    @RequestParam(required = false) LocalDate minFecha,
+                                                    @RequestParam(required = false) LocalDate maxFecha){
 
-        return ResponseEntity.ok(userService.getAllBajas(email));
+        return ResponseEntity.ok(userService.getAllBajas(fecha, minFecha, maxFecha));
 
     }
 

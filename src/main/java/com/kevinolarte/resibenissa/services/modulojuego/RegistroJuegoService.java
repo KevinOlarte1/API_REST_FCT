@@ -74,7 +74,7 @@ public class RegistroJuegoService {
             throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
 
         //Comprobar si el residente existe
-        Residente residente = residenteService.findById(input.getIdResidente());
+        Residente residente = residenteService.getResidente(idResidencia, input.getIdResidente());
         if (residente == null)
             throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
         //Comprobar si el residente pertence a la residencia
@@ -156,7 +156,8 @@ public class RegistroJuegoService {
                                                  Integer maxEdad, Long idResidente, LocalDate fecha,
                                                  LocalDate minFecha, LocalDate maxFecha,
                                                  boolean promedio, boolean masPromedio,
-                                                 boolean menosPromedio, boolean ordenFecha) {
+                                                 boolean menosPromedio, boolean ordenFecha,
+                                                 Boolean comentado) {
         if (idResidencia == null || idJuego == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -169,10 +170,16 @@ public class RegistroJuegoService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO));
 
         Specification<RegistroJuego> spec = RegistroJuegoSpecification.withDynamicFilters(
-               idResidencia, idJuego,idResidente, edad, minEdad, maxEdad, fecha, minFecha, maxFecha, dificultad
+               idResidencia, idJuego,idResidente, edad, minEdad, maxEdad, fecha, minFecha, maxFecha, dificultad, comentado,
+                promedio, masPromedio, menosPromedio
         );
+        List<RegistroJuego> registros = registroJuegoRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "fecha"));
 
-        return getRegistroJuegoResponseDtos(promedio, masPromedio, menosPromedio, ordenFecha, spec);
+        return registros.stream()
+                .map(RegistroJuegoResponseDto::new)
+                .collect(Collectors.toList());
+
+
     }
 
     /**
@@ -198,7 +205,8 @@ public class RegistroJuegoService {
                                                  Integer maxEdad, Long idResidente, LocalDate fecha,
                                                  LocalDate minFecha, LocalDate maxFecha,
                                                  boolean promedio, boolean masPromedio,
-                                                 boolean menosPromedio, boolean ordenFecha) {
+                                                 boolean menosPromedio, boolean ordenFecha,
+                                                 Boolean comentado) {
 
         if (idJuego == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -210,140 +218,21 @@ public class RegistroJuegoService {
 
 
         Specification<RegistroJuego> spec = RegistroJuegoSpecification.withDynamicFilters(
-                null, idJuego,idResidente, edad, minEdad, maxEdad, fecha, minFecha, maxFecha, dificultad
+                null, idJuego,idResidente, edad, minEdad, maxEdad, fecha, minFecha, maxFecha, dificultad, comentado,
+                promedio, masPromedio, menosPromedio
+
         );
 
-        return getRegistroJuegoResponseDtos(promedio, masPromedio, menosPromedio, ordenFecha, spec);
-    }
 
-    private List<RegistroJuegoResponseDto> getRegistroJuegoResponseDtos(boolean promedio, boolean masPromedio, boolean menosPromedio, boolean ordenFecha, Specification<RegistroJuego> spec) {
-        Sort sort = Sort.by(ordenFecha ? Sort.Direction.DESC : Sort.Direction.ASC, "fecha");
-        List<RegistroJuego> registros = registroJuegoRepository.findAll(spec, sort);
-
-        if (promedio || masPromedio || menosPromedio) {
-            double duracionPromedio = registros.stream()
-                    .mapToDouble(RegistroJuego::getDuracion)
-                    .average()
-                    .orElse(0.0);
-
-            if (promedio) {
-                // ±5% de margen respecto al promedio
-                double margen = duracionPromedio * 0.05;
-                registros = registros.stream()
-                        .filter(r -> Math.abs(r.getDuracion() - duracionPromedio) <= margen)
-                        .toList();
-            } else if (masPromedio) {
-                registros = registros.stream()
-                        .filter(r -> r.getDuracion() > duracionPromedio)
-                        .toList();
-            } else if (menosPromedio) {
-                registros = registros.stream()
-                        .filter(r -> r.getDuracion() < duracionPromedio)
-                        .toList();
-            }
-        }
-
+        List<RegistroJuego> registros = registroJuegoRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "fecha"));
 
         return registros.stream()
                 .map(RegistroJuegoResponseDto::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
 
-    /**
-     * Obtiene todos los registros de juego filtrados por dificultad y parámetros opcionales.
-     *
-     * @param idResidencia ID de la residencia.
-     * @param idJuego ID del juego.
-     * @param dificultad Dificultad de la partida (FACIL, MEDIO, DIFICIL).
-     * @param idResidente (opcional) ID del residente.
-     * @param idUser (opcional) ID del usuario que registró la partida.
-     * @param year (opcional) Año en que se jugó.
-     * @param month (opcional) Mes en que se jugó.
-     * @return Lista de registros de juego que cumplen con los filtros.
-     * @throws ApiException si faltan campos obligatorios, o si alguna de las entidades no existe
-     *                      o no pertenece a la residencia indicada.
-     */
-    public List<RegistroJuegoResponseDto> getAll(Long idResidencia, Long idJuego, Dificultad dificultad, Long idResidente, Long idUser, Integer year, Integer month) {
-        if (idResidencia == null || idJuego == null || dificultad == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-        List<RegistroJuego> baseList;
 
-        //Comprobar si el juego existe
-        Juego juego = juegoService.findById(idJuego);
-        if (juego == null)
-            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
-
-
-        User user = null;
-        if (idUser != null){
-            //Comprobar si el usuario existe
-            user = userService.findById(idUser);
-            if (user == null)
-                throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
-            //Comprobar si el usuario pertence a la residencia
-            if (!Objects.equals(user.getResidencia().getId(), idResidencia))
-                throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
-        }
-
-
-        //Filtrar de residente y usuario
-        if (idResidente == null){
-            if (idUser == null){
-                baseList = registroJuegoRepository.findByJuegoAndDificultad(juego, dificultad);
-            }
-            else
-                baseList = registroJuegoRepository.findByJuegoAndDificultadAndUsuario(juego, dificultad, user);
-        }
-        else{
-            //Comprobar si el residente existe
-            Residente residente = residenteService.findById(idResidente);
-            if (residente == null)
-                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-            //Comprobar si el residente pertence a la residencia
-            if (!Objects.equals(residente.getResidencia().getId(), idResidencia))
-                throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
-
-            if (idUser == null){
-                baseList = registroJuegoRepository.findByJuegoAndDificultadAndResidente(juego, dificultad, residente);
-            }
-            else{
-                baseList = registroJuegoRepository.findByJuegoAndDificultadAndResidenteAndUsuario(juego, dificultad, residente, user);
-            }
-        }
-
-        //Filtra por dia, por mes, por año o combinado. //Mapping clase origen clase destino. DOZER, MapStruct
-        if (year != null || month != null) {
-            baseList = baseList.stream()
-                    .filter(r -> {
-                        boolean match = true;
-                        if (year != null) match = r.getFecha().getYear() == year;
-                        if (month != null) match = match && r.getFecha().getMonthValue() == month;
-                        return match;
-                    })
-                    .toList();
-        }
-
-        return baseList.stream().map(RegistroJuegoResponseDto::new).collect(Collectors.toList());
-    }
-
-    public List<RegistroJuegoResponseDto> getAll(Long idResidencia, Long idJuego, Dificultad dificultad){
-        if (idResidencia == null || idJuego == null || dificultad == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-        //Comprobar si el juego existe
-        Juego juego = juegoService.findById(idJuego);
-        if (juego == null)
-            throw new ApiException(ApiErrorCode.JUEGO_INVALIDO);
-
-        //Comprobar si la residencia existe
-        Residencia residencia = residenciaRepository.findById(idResidencia)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO));
-
-        return registroJuegoRepository.findByJuegoAndDificultadAndResidente_Residencia(juego, dificultad, residencia)
-                .stream().map(RegistroJuegoResponseDto::new).toList();
-    }
 
 
     /**

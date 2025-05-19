@@ -19,8 +19,9 @@ import java.util.Set;
  * También mantiene una lista de residentes que participan en ella.
  * @author Kevin Olarte
  */
+
 @Entity
-@Table(name = "salidas")
+@Table(name = "eventos")
 @Getter
 @Setter
 public class EventoSalida {
@@ -64,7 +65,7 @@ public class EventoSalida {
      * <p>
      * Se ignora en la serialización JSON para evitar bucles y sobrecarga de datos innecesarios.
      */
-    @OneToMany(mappedBy = "salida", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "evento", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Set<Participante> participantes = new LinkedHashSet<>();
 

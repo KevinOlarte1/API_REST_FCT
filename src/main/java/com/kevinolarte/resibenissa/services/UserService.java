@@ -10,6 +10,7 @@ import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
+import com.kevinolarte.resibenissa.specifications.UserSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -261,50 +263,24 @@ public class UserService {
 
     }
 
-    /**
-     * Obtiene una lista de todos los usuarios asociados a una residencia con filtros opcionales.
-     * <p>
-     * Este método permite filtrar por:
-     * <ul>
-     *   <li>Email (no sensible a mayúsculas/minúsculas).</li>
-     *   <li>Estado habilitado.</li>
-     *   <li>ID de juego al que el usuario esté asociado.</li>
-     * </ul>
-     *
-     * @param idResidencia ID de la residencia.
-     * @param email Email para filtrar (opcional).
-     * @param enabled Estado habilitado para filtrar (opcional).
-     * @param idJuego ID del juego para filtrar (opcional).
-     * @return Lista de usuarios que cumplen con los filtros aplicados.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
-     */
-    public List<UserResponseDto> getAll(Long idResidencia, String email, Boolean enabled, Long idJuego, Long minRegistros, Long maxRegistros) {
-        if (idResidencia == null) {
+    public UserResponseDto get(Long idResidencia, String email){
+        if (idResidencia == null || email == null){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
-        //Validar si existe esa residencia
-        Residencia residenciaTmp = residenciaService.findById(idResidencia);
-        if (residenciaTmp == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+
+        //Validar si existe ese usuario
+        User user = userRepository.findByEmail(email);
+        if (user == null){
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
         }
 
-        List<User> usuarios = userRepository.findByBajaFalseAndResidenciaId(idResidencia);
+        //Validar si pertenece a esa residencia
+        if (user.getResidencia() == null || !user.getResidencia().getId().equals(idResidencia)) {
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
 
-        usuarios = usuarios.stream()
-                .filter( u -> {
-                    boolean match = true;
-
-                    if (email != null && !email.isEmpty()) match = u.getEmail().equalsIgnoreCase(email.trim());
-                    if (enabled != null) match = u.isEnabled() == enabled;
-                    if (idJuego != null) match = u.getRegistroJuegos().stream()
-                            .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego));
-                    if (maxRegistros != null && minRegistros != null) match = u.getRegistroJuegos().size() >= minRegistros && u.getRegistroJuegos().size() <= maxRegistros;
-                    else if (maxRegistros != null) match = u.getRegistroJuegos().size() <= maxRegistros;
-                    else if (minRegistros != null) match = u.getRegistroJuegos().size() >= minRegistros;
-                    return match;
-                }).toList();
-
-        return usuarios.stream().map(UserResponseDto::new).toList();
+        // Si todo es correcto, devolver el usuario
+        return new UserResponseDto(user);
     }
 
     /**
@@ -324,25 +300,42 @@ public class UserService {
      * @return Lista de usuarios que cumplen con los filtros aplicados.
      * @throws ApiException si la residencia no existe o el ID es nulo.
      */
-    public List<UserResponseDto> getAll(String email, Boolean enabled, Long idJuego, Long minRegistros, Long maxRegistros) {
+    public List<UserResponseDto> getAll(Long idResidencia, Boolean enabled, Long idJuego){
+        if (idResidencia == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
 
-        List<User> usuarios = userRepository.findByBajaFalse();
+        List<User> list = userRepository.findAll(UserSpecification.withFilters(enabled,idResidencia, idJuego));
 
-        usuarios = usuarios.stream()
-                .filter( u -> {
-                    boolean match = true;
+        return list.stream().map(UserResponseDto::new).toList();
 
-                    if (email != null && !email.isEmpty()) match = u.getEmail().equalsIgnoreCase(email.trim());
-                    if (enabled != null) match = u.isEnabled() == enabled;
-                    if (idJuego != null) match = u.getRegistroJuegos().stream()
-                            .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego));
-                    if (maxRegistros != null && minRegistros != null) match = u.getRegistroJuegos().size() >= minRegistros && u.getRegistroJuegos().size() <= maxRegistros;
-                    else if (maxRegistros != null) match = u.getRegistroJuegos().size() <= maxRegistros;
-                    else if (minRegistros != null) match = u.getRegistroJuegos().size() >= minRegistros;
-                    return match;
-                }).toList();
 
-        return usuarios.stream().map(UserResponseDto::new).toList();
+
+    }
+
+    /**
+     * Obtiene una lista de todos los usuarios asociados a una residencia con filtros opcionales.
+     * <p>
+     * Este método permite filtrar por:
+     * <ul>
+     *   <li>Email (no sensible a mayúsculas/minúsculas).</li>
+     *   <li>Estado habilitado.</li>
+     *   <li>ID de juego al que el usuario esté asociado.</li>
+     * </ul>
+     *
+     * @param email Email para filtrar (opcional).
+     * @param enabled Estado habilitado para filtrar (opcional).
+     * @param idJuego ID del juego para filtrar (opcional).
+     * @return Lista de usuarios que cumplen con los filtros aplicados.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<UserResponseDto> getAll(Boolean enabled, Long idJuego) {
+
+        List<User> list = userRepository.findAll(UserSpecification.withFilters(enabled,null, idJuego));
+
+        return list.stream().map(UserResponseDto::new).toList();
+
+
     }
 
     /**
@@ -451,21 +444,13 @@ public class UserService {
      * @return Lista de usuarios dados de baja en la residencia.
      * @throws ApiException si la residencia no existe o el ID es nulo.
      */
-    public List<UserResponseDto> getAllBajas(Long idResidencia, String email) {
+    public List<UserResponseDto> getAllBajas(Long idResidencia, LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
         if (idResidencia == null) throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        //Validar si existe esa residencia
-        Residencia residenciaTmp = residenciaService.findById(idResidencia);
-        if (residenciaTmp == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
-        List<User> usuarios = userRepository.findByBajaTrueAndResidenciaId(idResidencia);
-        if (email != null && !email.isEmpty()) {
-            usuarios = usuarios.stream()
-                    .filter(u -> u.getEmail().equalsIgnoreCase(email.trim()))
-                    .toList();
-        }
 
-        return usuarios.stream().map(UserResponseDto::new).toList();
+        List<User> list = userRepository.findAll(UserSpecification.withFiltersBaja(fecha,minFecha, maxFecha, idResidencia));
+
+
+        return list.stream().map(UserResponseDto::new).toList();
 
     }
 
@@ -476,17 +461,12 @@ public class UserService {
      * @return Lista de usuarios dados de baja en la residencia.
      * @throws ApiException si la residencia no existe o el ID es nulo.
      */
-    public List<UserResponseDto> getAllBajas(String email) {
+    public List<UserResponseDto> getAllBajas(LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
 
-        List<User> usuarios = userRepository.findByBajaTrue();
+        List<User> list = userRepository.findAll(UserSpecification.withFiltersBaja(fecha,minFecha, maxFecha, null));
 
-        if (email != null && !email.isEmpty()) {
-            usuarios = usuarios.stream()
-                    .filter(u -> u.getEmail().equalsIgnoreCase(email.trim()))
-                    .toList();
-        }
 
-        return usuarios.stream().map(UserResponseDto::new).toList();
+        return list.stream().map(UserResponseDto::new).toList();
 
     }
 
