@@ -19,7 +19,7 @@ import java.util.Set;
  */
 @Entity
 @Table(
-        name = "juego"
+        name = "juegos"
 
 )
 @Getter

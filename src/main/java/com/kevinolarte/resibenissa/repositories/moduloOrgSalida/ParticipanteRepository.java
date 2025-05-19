@@ -35,6 +35,7 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
 
     /**
      * Elimina todos los participantes asociados a una residencia específica.
+     *
      * @param idResidencia ID de la residencia.
      */
     @Modifying
@@ -42,12 +43,6 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
     @Query("DELETE FROM Participante p WHERE p.residente.residencia.id = :idResidencia")
     void deleteAllByResidenciaId(@Param("idResidencia") Long idResidencia);
 
-    Participante findByEventoAndResidente(EventoSalida evento, Residente residente);
-
     List<Participante> id(Long id);
 
-    List<Participante> findByEvento(EventoSalida evento);
-
-
-    List<Participante> findByResidenteAndEvento(Residente residente, EventoSalida evento);
 }

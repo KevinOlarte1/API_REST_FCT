@@ -20,18 +20,5 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     User findByEmail(String email);
 
-    User findById(long id);
-    /**
-     * Obtiene todos los usuarios asociados a una residencia específica.
-     *
-     * @param id ID de la residencia.
-     * @return Lista de usuarios que pertenecen a la residencia.
-     */
-    List<User> findByBajaFalseAndResidenciaId(Long id);
 
-
-    List<User> findByBajaTrueAndResidenciaId(Long idResidencia);
-
-    List<User> findByBajaFalse();
-    List<User> findByBajaTrue();
 }

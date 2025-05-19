@@ -31,13 +31,5 @@ public interface EventoSalidaRepository extends JpaRepository<EventoSalida, Long
     void deleteAllByResidenciaId(@Param("idResidencia") Long idResidencia);
 
 
-    /**
-     * Consulta todos los eventos de salida de una residencia.
-     * @param idResidencia ID de la residencia a la que pertenecen los eventos de salida.
-     * @return Una lista de eventos de salida que pertenecen a la residencia especificada.
-     */
-    List<EventoSalida> findByResidenciaId(Long idResidencia);
-
-
     EventoSalida findByNombreAndResidencia_Id(String nombre, Long residenciaId);
 }

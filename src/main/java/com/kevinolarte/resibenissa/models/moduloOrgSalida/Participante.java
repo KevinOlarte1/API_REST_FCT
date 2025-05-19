@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Table(
+        name = "participantes",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"fk_evento", "fk_residente"})
         }

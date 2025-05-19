@@ -24,47 +24,12 @@ import java.util.List;
 @Repository
 public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Long>, JpaSpecificationExecutor<RegistroJuego> {
 
-    /**
-     * Obtiene todos los registros de juegos realizados por residentes de una residencia específica.
-     *
-     * @param idResidencia ID de la residencia.
-     * @return Lista de registros de juegos.
-     */
-    List<RegistroJuego> findByResidente_Residencia_Id(Long idResidencia);
 
-    /**
-     * Obtiene todos los registros de un residente específico.
-     *
-     * @param idResidencia (Nota: Este parámetro parece mal nombrado, debería ser `idResidente`)
-     * @return Lista de registros del residente.
-     */
-    List<RegistroJuego> findByResidenteId(Long idResidencia);
-
-    List<RegistroJuego> findByJuego_Id(Long juegoId);
-
-    List<RegistroJuego> findByJuego_IdAndUsuario_Id(Long juegoId, Long usuarioId);
-
-    List<RegistroJuego> findByJuego_IdAndResidente_Id(Long juegoId, Long residenteId);
-
-    List<RegistroJuego> findByJuego_IdAndResidente_IdAndUsuario_Id(Long juegoId, Long residenteId, Long usuarioId);
-
-    List<RegistroJuego> findByJuegoAndUsuario(Juego juego, User usuario);
-
-    List<RegistroJuego> findByJuegoAndResidente(Juego juego, Residente residente);
-
-    List<RegistroJuego> findByJuegoAndResidenteAndUsuario(Juego juego, Residente residente, User usuario);
 
     List<RegistroJuego> findByJuego(Juego juego);
 
     List<RegistroJuego> findByJuegoAndDificultad(Juego juego, Dificultad dificultad);
 
-    List<RegistroJuego> findByJuegoAndDificultadAndUsuario(Juego juego, Dificultad dificultad, User usuario);
-
-    List<RegistroJuego> findByJuegoAndDificultadAndResidente(Juego juego, Dificultad dificultad, Residente residente);
-
-    List<RegistroJuego> findByJuegoAndDificultadAndResidenteAndUsuario(Juego juego, Dificultad dificultad, Residente residente, User usuario);
-
-    List<RegistroJuego> findByJuegoAndDificultadAndResidente_Residencia(Juego juego, Dificultad dificultad, Residencia residenteResidencia);
 
     List<RegistroJuego> findByJuegoAndResidente_Residencia(Juego juego, Residencia residenteResidencia);
 }

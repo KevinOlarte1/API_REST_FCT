@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
  * @author Kevin Olarte
  */
 @Entity
-@Table(name = "registro_juego")
+@Table(name = "registros_juegos")
 @Getter
 @Setter
 public class RegistroJuego {

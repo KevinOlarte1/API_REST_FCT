@@ -23,7 +23,6 @@ public interface JuegoRepository extends JpaRepository<Juego, Long> {
 
     boolean existsByNombre(String nombre);
 
-    List<Juego> findByNombre(String nombre);
 
     /**
      * Busca juegos cuyo nombre contenga una cadena específica, ignorando mayúsculas y minúsculas.

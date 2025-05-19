@@ -65,31 +65,19 @@ public class ResidenteController {
 
     }
 
-    /**
-     * Lista todos los residentes de una residencia, aplicando filtros opcionales.
-     *
-     * @param documentoIdentidad Número de documento de identidad del residente (opcional).
-     * @param fechaNacimiento Fecha de nacimiento del residente (opcional).
-     * @param year Año de nacimiento del residente (opcional).
-     * @param month Mes de nacimiento del residente (opcional).
-     * @return {@link ResponseEntity} con la lista de residentes encontrados.
-     */
+
     @GetMapping("/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
-            @RequestParam(required = false) String documentoIdentidad,
-            @RequestParam(required = false) LocalDate fechaNacimiento,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(required = false) Integer month,
-            @RequestParam(required = false) Integer maxAge,
-            @RequestParam(required = false) Integer minAge,
-            @RequestParam(required = false) Long idJuego,
-            @RequestParam(required = false) Long idEventoSalida,
-            @RequestParam(required = false) Long minRegistro,
-            @RequestParam(required = false) Long maxRegistro) {
+                                                    @RequestParam(required = false) LocalDate fechaNacimiento,
+                                                    @RequestParam(required = false) LocalDate minFNac,
+                                                    @RequestParam(required = false) LocalDate maxFNac,
+                                                    @RequestParam(required = false) Integer maxAge,
+                                                    @RequestParam(required = false) Integer minAge,
+                                                    @RequestParam(required = false) Long idJuego,
+                                                    @RequestParam(required = false) Long idEvento) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-
-        return ResponseEntity.ok(residenteService.getAll(currentUser.getResidencia().getId(),fechaNacimiento, year, month, maxAge, minAge, documentoIdentidad, idJuego, idEventoSalida, minRegistro, maxRegistro));
+        return ResponseEntity.ok(residenteService.getAll(currentUser.getResidencia().getId(),fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
     }
 
     /**
@@ -98,11 +86,12 @@ public class ResidenteController {
      */
     @GetMapping("/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
-            @RequestParam(required = false) String documentoIdentidad){
+                                                    @RequestParam(required = false) LocalDate fecha,
+                                                    @RequestParam(required = false) LocalDate minFecha,
+                                                    @RequestParam(required = false) LocalDate maxFecha){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(residenteService.getAllBajas(currentUser.getResidencia().getId(), documentoIdentidad));
+        return ResponseEntity.ok(residenteService.getAllBajas(currentUser.getResidencia().getId(),fecha, minFecha, maxFecha));
     }
 
     /**

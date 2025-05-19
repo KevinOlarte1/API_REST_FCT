@@ -17,15 +17,7 @@ import java.util.List;
  * @author Kevin Olarte
  */
 @Repository
-public interface ResidenteRepository extends JpaRepository<Residente, Long>{
-
-    /**
-     * Obtiene todos los residentes asociados a una residencia específica.
-     *
-     * @param residencia La entidad {@link Residencia} de la cual se desean obtener los residentes.
-     * @return Lista de residentes que pertenecen a la residencia dada.
-     */
-    List<Residente> findByResidenciaAndBajaFalse(Residencia residencia);
+public interface ResidenteRepository extends JpaRepository<Residente, Long>, JpaSpecificationExecutor<Residente>{
 
 
     /**
@@ -35,8 +27,4 @@ public interface ResidenteRepository extends JpaRepository<Residente, Long>{
      */
     Residente findByDocuemntoIdentidad(String docuemntoIdentidad);
 
-    List<Residente> findByResidenciaAndBajaTrue(Residencia residencia);
-
-    List<Residente> findByBajaFalse();
-    List<Residente> findByBajaTrue();
 }

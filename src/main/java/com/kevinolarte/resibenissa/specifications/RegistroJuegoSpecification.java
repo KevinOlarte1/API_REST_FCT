@@ -110,7 +110,6 @@ public class RegistroJuegoSpecification {
                 subquery.where(cb.equal(subRoot.get("juego").get("id"), idJuego));
 
                 Expression<Double> mediaExpr = subquery.getSelection();
-                System.out.println("Media: " + mediaExpr.toString());
 
                 if (Boolean.TRUE.equals(promedio)) {
                     Expression<Double> margen = cb.prod(mediaExpr, 0.05); // ±5%

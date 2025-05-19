@@ -11,6 +11,7 @@ import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
+import com.kevinolarte.resibenissa.specifications.ResidenteSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -103,22 +104,17 @@ public class ResidenteService {
 
     }
 
-    /**
-     * Obtiene todos los residentes de una residencia, aplicando filtros opcionales.
-     * <p>
-     * * Permite filtrar por documento de identidad, fecha de nacimiento, año o mes de nacimiento.
-     * * Si no se aplica ningún filtro, se devuelven todos los residentes de la residencia.
-     * </p>
-     *
-     * @param idResidencia       ID de la residencia.
-     * @param fechaNacimiento    Fecha de nacimiento del residente (opcional).
-     * @param year               Año de nacimiento del residente (opcional).
-     * @param month              Mes de nacimiento del residente (opcional).
-     * @param documentoIdentidad Documento de identidad del residente (opcional).
-     * @return Lista de residentes filtrados.
-     * @throws ApiException si el ID de residencia es nulo o la residencia no existe.
-     */
-    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, Integer year, Integer month, Integer maxAge, Integer minAge, String documentoIdentidad, Long idJuego, Long idEventoSalida, Long minRegistro, Long maxRegistro) {
+
+    public List<ResidenteResponseDto> getAll(LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento) {
+
+        List<Residente> residentesBaseList = residenteRepository.findAll(ResidenteSpecification.withFilters(null, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
+
+
+        return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
+
+    }
+
+    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento) {
         if (idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -128,78 +124,12 @@ public class ResidenteService {
         if (residencia == null) {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
-        if (minAge != null && maxAge != null) {
-            if (minAge > maxAge) {
-                throw new ApiException(ApiErrorCode.RANGO_EDAD_INVALIDO);
-            }
-        }
 
         // Obtener todos los residentes de la residencia
-        List<Residente> residentesBaseList = residenteRepository.findByResidenciaAndBajaFalse(residencia);
+        List<Residente> residentesBaseList = residenteRepository.findAll(ResidenteSpecification.withFilters(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
 
-
-        residentesBaseList = residentesBaseList.stream()
-                .filter(residente -> {
-                    boolean match = true;
-                    if (documentoIdentidad != null)
-                        match = residente.getDocuemntoIdentidad().equalsIgnoreCase(documentoIdentidad);
-                    if (fechaNacimiento != null) match = residente.getFechaNacimiento().isEqual(fechaNacimiento);
-                    else {
-                        if (year != null) match = residente.getFechaNacimiento().getYear() == year;
-                        if (month != null) match = residente.getFechaNacimiento().getMonthValue() == month;
-                    }
-                    if (maxAge != null)
-                        match = residente.getFechaNacimiento().plusYears(maxAge).isAfter(LocalDate.now());
-                    if (minAge != null)
-                        match = residente.getFechaNacimiento().plusYears(minAge).isBefore(LocalDate.now());
-                    if (idJuego != null) match = residente.getRegistros().stream()
-                            .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego));
-                    if (idEventoSalida != null) match = residente.getParticipantes().stream().
-                            anyMatch(participante -> participante.getEvento().getId().equals(idEventoSalida));
-
-                    if (minRegistro != null && maxRegistro != null)
-                        match = residente.getRegistros().size() >= minRegistro && residente.getRegistros().size() <= maxRegistro;
-                    else if (minRegistro != null) match = residente.getRegistros().size() >= minRegistro;
-                    else if (maxRegistro != null) match = residente.getRegistros().size() <= maxRegistro;
-
-                    return match;
-                }).toList();
 
         return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
-    }
-
-    public List<ResidenteResponseDto> getAll(LocalDate fechaNacimiento, Integer year, Integer month, Integer maxAge, Integer minAge, String documentoIdentidad, Long idJuego, Long idEventoSalida, Long minRegistro, Long maxRegistro) {
-
-        List<Residente> residentesBaseList = residenteRepository.findByBajaFalse();
-        residentesBaseList = residentesBaseList.stream()
-                .filter(residente -> {
-                    boolean match = true;
-                    if (documentoIdentidad != null)
-                        match = residente.getDocuemntoIdentidad().equalsIgnoreCase(documentoIdentidad);
-                    if (fechaNacimiento != null) match = residente.getFechaNacimiento().isEqual(fechaNacimiento);
-                    else {
-                        if (year != null) match = residente.getFechaNacimiento().getYear() == year;
-                        if (month != null) match = residente.getFechaNacimiento().getMonthValue() == month;
-                    }
-                    if (maxAge != null)
-                        match = residente.getFechaNacimiento().plusYears(maxAge).isAfter(LocalDate.now());
-                    if (minAge != null)
-                        match = residente.getFechaNacimiento().plusYears(minAge).isBefore(LocalDate.now());
-                    if (idJuego != null) match = residente.getRegistros().stream()
-                            .anyMatch(registroJuego -> registroJuego.getJuego().getId().equals(idJuego));
-                    if (idEventoSalida != null) match = residente.getParticipantes().stream().
-                            anyMatch(participante -> participante.getEvento().getId().equals(idEventoSalida));
-
-                    if (minRegistro != null && maxRegistro != null)
-                        match = residente.getRegistros().size() >= minRegistro && residente.getRegistros().size() <= maxRegistro;
-                    else if (minRegistro != null) match = residente.getRegistros().size() >= minRegistro;
-                    else if (maxRegistro != null) match = residente.getRegistros().size() <= maxRegistro;
-
-                    return match;
-                }).toList();
-
-        return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
-
     }
 
 
@@ -302,46 +232,6 @@ public class ResidenteService {
 
 
 
-    /**
-     * Obtiene todos los residentes dados de baja de una residencia.
-     *
-     * @param idResidencia ID de la residencia.
-     * @return Lista de residentes dados de baja.
-     * @throws ApiException si el ID de residencia es nulo o la residencia no existe.
-     */
-    public List<ResidenteResponseDto> getAllBajas(Long idResidencia, String documentoIdentidad) {
-        if (idResidencia == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-        // Validar que la residencia existe
-        Residencia residencia = residenciaService.findById(idResidencia);
-        if (residencia == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
-        // Obtener todos los residentes de la residencia
-        List<Residente> residentesBaseList = residenteRepository.findByResidenciaAndBajaTrue(residencia);
-
-        if (documentoIdentidad != null && !documentoIdentidad.trim().isEmpty()) {
-            // Filtrar por documento de identidad
-            residentesBaseList = residentesBaseList.stream()
-                    .filter(residente -> residente.getDocuemntoIdentidad().equalsIgnoreCase(documentoIdentidad))
-                    .toList();
-        }
-        return residentesBaseList.stream().map(ResidenteResponseDto::new).toList();
-    }
-
-    public List<ResidenteResponseDto> getAllBajas(String documentoIdentidad) {
-        List<Residente> residenteBaseList = residenteRepository.findByBajaTrue();
-
-        if (documentoIdentidad != null && !documentoIdentidad.trim().isEmpty()) {
-            // Filtrar por documento de identidad
-            residenteBaseList = residenteBaseList.stream()
-                    .filter(residente -> residente.getDocuemntoIdentidad().equalsIgnoreCase(documentoIdentidad))
-                    .toList();
-        }
-        return residenteBaseList.stream().map(ResidenteResponseDto::new).toList();
-    }
-
 
     /**
      * Obtiene un residente y valida que pertenece a la residencia especificada.
@@ -366,5 +256,21 @@ public class ResidenteService {
             throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
         }
         return residenteTmp;
+    }
+
+    public List<ResidenteResponseDto> getAllBajas(Long idResidencia, LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
+        if (idResidencia == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        List<Residente> lista =  residenteRepository.findAll(ResidenteSpecification.withFiltersBaja(fecha, minFecha, maxFecha, idResidencia));
+
+        return lista.stream().map(ResidenteResponseDto::new).toList();
+    }
+
+    public List<ResidenteResponseDto> getAllBajas( LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
+        List<Residente> lista =  residenteRepository.findAll(ResidenteSpecification.withFiltersBaja(fecha, minFecha, maxFecha, null));
+
+        return lista.stream().map(ResidenteResponseDto::new).toList();
     }
 }
