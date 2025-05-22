@@ -17,7 +17,8 @@ public class ParticipanteSpecification {
             Integer minEdad,
             Integer maxEdad,
             Boolean preOpinion,
-            Boolean postOpinion
+            Boolean postOpinion,
+            Boolean asistenciaPermitida
     ) {
         return (Root<Participante> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             Predicate predicate = cb.conjunction();
@@ -93,6 +94,10 @@ public class ParticipanteSpecification {
                             cb.equal(cb.trim(cb.literal(' '), root.get("postOpinion")), "")
                     ));
                 }
+            }
+            if (asistenciaPermitida != null) {
+                predicate = cb.and(predicate,
+                        cb.equal(root.get("asistenciaPermitida"), asistenciaPermitida));
             }
 
 

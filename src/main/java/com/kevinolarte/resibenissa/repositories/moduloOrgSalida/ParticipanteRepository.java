@@ -33,6 +33,15 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
             @Param("idEvento") Long idEvento
     );
 
+    @Query("""
+    SELECT COUNT(p) > 0
+    FROM Participante p
+    WHERE p.residente.id = :idResidente
+      AND p.evento.id = :idEvento
+      AND p.baja = false
+""")
+    boolean isResidenteInscritoEnEvento(Long idResidente, Long idEvento);
+
     /**
      * Elimina todos los participantes asociados a una residencia específica.
      *

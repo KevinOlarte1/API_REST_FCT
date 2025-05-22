@@ -20,6 +20,7 @@ public class Conf {
     public static final String PATH_PUBLIC_AUTH= "/auth/";
     public static final String PATH_PUBLIC_SWAGGER = "/swagger-ui/";
     public static final String PATH_PUBLIC_RESI_GET = "/resi/getAll";
+    public static final String PATH_PUBLIC_RESI_CONTROLLER = "/public/";
 
     @Value("${upload.dir}")
     public static String imageResource;

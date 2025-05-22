@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -86,6 +87,15 @@ public class JwtService {
             extraClaims.put("email", user.getEmail());
         }
         return buildToken(extraClaims, userDetails, jwtExpiration);
+    }
+
+    public String generateTokenConExpiracionCustomClaims(Map<String, Object> extraClaims, Duration duration) {
+        return Jwts.builder()
+                .setClaims(extraClaims)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + duration.toMillis()))
+                .signWith(getSingKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     /**

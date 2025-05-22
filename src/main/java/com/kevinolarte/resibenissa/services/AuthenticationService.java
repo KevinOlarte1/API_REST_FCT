@@ -72,15 +72,13 @@ public class AuthenticationService {
 
         //Miramos si ese usuario y residencia existen
         User userTest =  userRepository.findByEmail(input.getEmail());
-        Residencia residenciaTest = residenciaService.findById(input.getIdResidencia());
+        Residencia residenciaTest = residenciaService.getResidencia(input.getIdResidencia());
         if(userTest != null){
             if (userTest.isBaja())
                 throw new ApiException(ApiErrorCode.USUARIO_BAJA);
             throw new ApiException(ApiErrorCode.USER_EXIST);
         }
-        if (residenciaTest == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
+
         if (residenciaTest.isBaja())
             throw new ApiException(ApiErrorCode.RESIDENCIA_BAJA);
 
@@ -250,7 +248,7 @@ public class AuthenticationService {
                 + "</body>"
                 + "</html>";
         try{
-            emailService.sendVerificationEmail(user.getEmail(), subject, htmlMessage);
+            emailService.sendEmail(user.getEmail(), subject, htmlMessage);
         }catch (MessagingException e){
             throw new ApiException(ApiErrorCode.ERROR_MAIL_SENDER);
 

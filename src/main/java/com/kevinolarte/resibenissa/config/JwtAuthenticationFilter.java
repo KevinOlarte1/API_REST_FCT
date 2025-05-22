@@ -59,6 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
+        boolean exceptionLanzada = false;
         System.out.println("Ejecutando el filtro de JWT");
         final String authHeader = request.getHeader("Authorization");
         System.out.println("Bienvenida al filtro de JWT");
@@ -82,7 +83,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 //Obtenemos ese userDetail para ver si exsite, busca por correo, configurado en la AplicationConfiguration
                 UserDetails userDetails =this.userDetailsService.loadUserByUsername(userEmail);
-                System.out.println("asdasd");
                 //Comprobamos si el usuario es admin.
                 System.out.println(request.getRequestURI());
                 if(request.getRequestURI().matches("^/admin/resi/.*")){
@@ -91,9 +91,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     User user = (User) userDetails;
                     if (!user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))){
 
+                        exceptionLanzada = true;
                         handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
                         filterChain.doFilter(request, response);
                         return;
+
 
                     }
                 }
@@ -116,11 +118,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-        }catch(ApiException e){
+        } catch(Exception e){
             System.out.println(e.getMessage());
-            handlerExceptionResolver.resolveException(request, response, null, e);
-        }catch(Exception e){
-            System.out.println(e.getMessage());
+            if (!exceptionLanzada)
+                handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
+
         }
 
 
@@ -130,8 +132,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
+        System.out.println("URI: " + path);
         return path.startsWith(Conf.PATH_PUBLIC_SWAGGER)
                 || path.startsWith(Conf.PATH_PUBLIC_AUTH)
-                || path.startsWith(Conf.PATH_PUBLIC_RESI_GET);
+                || path.startsWith(Conf.PATH_PUBLIC_RESI_GET)
+                || path.startsWith(Conf.PATH_PUBLIC_RESI_CONTROLLER);
     }
 }

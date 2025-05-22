@@ -3,6 +3,7 @@ package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
+import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
@@ -79,10 +80,7 @@ public class ResidenteService {
         }
 
         // Validar que la residencia existe
-        Residencia residencia = residenciaService.findById(idResidencia);
-        if (residencia == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
+        Residencia residencia = residenciaService.getResidencia(idResidencia);
 
         // Validar que no existe otro residente con el mismo documento de identidad en cualquier residencia
         Residente residenteDup = residenteRepository.findByDocuemntoIdentidad(input.getDocumentoIdentidad());
@@ -97,6 +95,7 @@ public class ResidenteService {
         return new ResidenteResponseDto(residenteSaved);
 
     }
+
 
 
 
@@ -117,7 +116,18 @@ public class ResidenteService {
 
     }
 
-
+    /**
+     * Obtiene todos los residentes de todas residencias con filtros opcionales.
+     * @param fechaNacimiento   Fecha exacta de nacimiento (opcional).
+     * @param minFNac           Fecha mínima de nacimiento (opcional).
+     * @param maxFNac           Fecha máxima de nacimiento (opcional).
+     * @param maxAge            Edad máxima (opcional).
+     * @param minAge            Edad mínima (opcional).
+     * @param idJuego           ID de juego asociado (opcional).
+     * @param idEvento          ID de evento asociado (opcional).
+     * @return Lista de residentes filtrados.
+     * @throws ApiException si la residencia no existe.
+     */
     public List<ResidenteResponseDto> getAll(LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento) {
 
         List<Residente> residentesBaseList = residenteRepository.findAll(ResidenteSpecification.withFilters(null, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
@@ -127,16 +137,26 @@ public class ResidenteService {
 
     }
 
+    /**
+     * Obtiene todos los residentes de una residencia con filtros opcionales.
+     *
+     * @param idResidencia      ID de la residencia.
+     * @param fechaNacimiento   Fecha exacta de nacimiento (opcional).
+     * @param minFNac           Fecha mínima de nacimiento (opcional).
+     * @param maxFNac           Fecha máxima de nacimiento (opcional).
+     * @param maxAge            Edad máxima (opcional).
+     * @param minAge            Edad mínima (opcional).
+     * @param idJuego           ID de juego asociado (opcional).
+     * @param idEvento          ID de evento asociado (opcional).
+     * @return Lista de residentes filtrados.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
     public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento) {
         if (idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         // Validar que la residencia existe
-        Residencia residencia = residenciaService.findById(idResidencia);
-        // Comprobar que la residencia existe
-        if (residencia == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
+        Residencia residencia = residenciaService.getResidencia(idResidencia);
 
         // Obtener todos los residentes de la residencia
         List<Residente> residentesBaseList = residenteRepository.findAll(ResidenteSpecification.withFilters(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
@@ -144,6 +164,41 @@ public class ResidenteService {
 
         return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
     }
+
+    /**
+     * Obtiene todos los residentes dados de baja en una residencia, con filtros de fecha.
+     * @param idResidencia ID de la residencia.
+     * @param fecha Fecha exacta de baja (opcional).
+     * @param minFecha Fecha mínima de baja (opcional).
+     * @param maxFecha Fecha máxima de baja (opcional).
+     * @return Lista de residentes dados de baja.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<ResidenteResponseDto> getAllBajas(Long idResidencia, LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
+        if (idResidencia == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        List<Residente> lista =  residenteRepository.findAll(ResidenteSpecification.withFiltersBaja(fecha, minFecha, maxFecha, idResidencia));
+
+        return lista.stream().map(ResidenteResponseDto::new).toList();
+    }
+
+    /**
+     * Obtiene todos los residentes dados de baja en el sistema, sin filtrar por residencia.
+     * @param fecha Fecha exacta de baja (opcional).
+     * @param minFecha Fecha mínima de baja (opcional).
+     * @param maxFecha Fecha máxima de baja (opcional).
+     * @return Lista de residentes dados de baja.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<ResidenteResponseDto> getAllBajas( LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
+        List<Residente> lista =  residenteRepository.findAll(ResidenteSpecification.withFiltersBaja(fecha, minFecha, maxFecha, null));
+
+        return lista.stream().map(ResidenteResponseDto::new).toList();
+    }
+
+
 
 
     /**
@@ -165,6 +220,7 @@ public class ResidenteService {
      *
      * @param idResidencia ID de la residencia.
      * @param idResidente  ID del residente.
+     * @throws ApiException si el residente no existe o ya está dado de baja.
      */
     public void deleteLogico(Long idResidencia, Long idResidente) {
         // Validar que el residente existe
@@ -180,6 +236,8 @@ public class ResidenteService {
 
 
     }
+
+
 
 
     /**
@@ -235,12 +293,77 @@ public class ResidenteService {
             if (input.getApellido() != null && !input.getApellido().trim().isEmpty()) {
                 residenteUpdatable.setApellido(input.getApellido());
             }
+            if (input.getFamiliar1() != null && !input.getFamiliar1().trim().isEmpty()) {
+                //Validar correo familiar 1
+                if (!EmailService.isEmailValid(input.getFamiliar1().toLowerCase().trim())) {
+                    throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+                }
+                residenteUpdatable.setFamiliar1(input.getFamiliar1());
+            }
+            if (input.getFamiliar2() != null && !input.getFamiliar2().trim().isEmpty()) {
+                //Validar correo familiar 2
+                if (!EmailService.isEmailValid(input.getFamiliar2().toLowerCase().trim())) {
+                    throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+                }
+                residenteUpdatable.setFamiliar2(input.getFamiliar2());
+            }
             // Guardar los cambios
             residenteUpdatable = residenteRepository.save(residenteUpdatable);
         }
         return new ResidenteResponseDto(residenteUpdatable);
     }
 
+
+
+
+
+
+
+
+    /**
+     * Envía un correo electrónico a los familiares de un residente.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idResidente  ID del residente.
+     * @param input        DTO con el asunto y cuerpo del correo.
+     * @throws ApiException si el residente no existe o no tiene familiares asociados.
+     */
+    public void sendEmailFamiliar(Long idResidencia, Long idResidente, EmailRequestDto input) {
+
+        // Validar que el residente existe
+        Residente residenteTmp = getResidente(idResidencia, idResidente);
+
+        if (input == null || input.getSubject() == null || input.getBody() == null ||
+                input.getSubject().trim().isEmpty() || input.getBody().trim().isEmpty()) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        //Enviar correo al familiar
+        try{
+            emailService.sendEmail(residenteTmp.getFamiliar1(), input.getSubject(), input.getBody());
+            if(residenteTmp.getFamiliar2() != null)
+                emailService.sendEmail(residenteTmp.getFamiliar2(), input.getSubject(), input.getBody());
+        }catch (Exception e){
+            throw new ApiException(ApiErrorCode.ERROR_MAIL_SENDER);
+        }
+    }
+
+
+
+
+    /**
+     * Marca un residente como dado de baja.
+     * @param residenteUpdatable Residente a actualizar.
+     * @param passwordEncoder Codificador de contraseñas.
+     *
+     */
+    public static void darBajaUser(Residente residenteUpdatable, PasswordEncoder passwordEncoder) {
+        residenteUpdatable.setBaja(true);
+        residenteUpdatable.setFechaBaja(LocalDateTime.now());
+        residenteUpdatable.setDocuemntoIdentidad(passwordEncoder.encode(residenteUpdatable.getDocuemntoIdentidad()));
+        residenteUpdatable.setFamiliar1(passwordEncoder.encode(residenteUpdatable.getFamiliar1()));
+        if (residenteUpdatable.getFamiliar2() != null && !residenteUpdatable.getFamiliar2().trim().isEmpty())
+            residenteUpdatable.setFamiliar2(passwordEncoder.encode(residenteUpdatable.getFamiliar2()));
+    }
 
 
 
@@ -268,31 +391,6 @@ public class ResidenteService {
             throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
         }
         return residenteTmp;
-    }
-
-    public List<ResidenteResponseDto> getAllBajas(Long idResidencia, LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
-        if (idResidencia == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-
-        List<Residente> lista =  residenteRepository.findAll(ResidenteSpecification.withFiltersBaja(fecha, minFecha, maxFecha, idResidencia));
-
-        return lista.stream().map(ResidenteResponseDto::new).toList();
-    }
-
-    public List<ResidenteResponseDto> getAllBajas( LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
-        List<Residente> lista =  residenteRepository.findAll(ResidenteSpecification.withFiltersBaja(fecha, minFecha, maxFecha, null));
-
-        return lista.stream().map(ResidenteResponseDto::new).toList();
-    }
-
-    static void darBajaUser(Residente residenteUpdatable, PasswordEncoder passwordEncoder) {
-        residenteUpdatable.setBaja(true);
-        residenteUpdatable.setFechaBaja(LocalDateTime.now());
-        residenteUpdatable.setDocuemntoIdentidad(passwordEncoder.encode(residenteUpdatable.getDocuemntoIdentidad()));
-        residenteUpdatable.setFamiliar1(passwordEncoder.encode(residenteUpdatable.getFamiliar1()));
-        if (residenteUpdatable.getFamiliar2() != null && !residenteUpdatable.getFamiliar2().trim().isEmpty())
-            residenteUpdatable.setFamiliar2(passwordEncoder.encode(residenteUpdatable.getFamiliar2()));
     }
 
 }

@@ -28,10 +28,10 @@ import java.util.List;
  * Servicio que gestiona la lógica relacionada con los usuarios del sistema.
  * <p>
  * Permite registrar, consultar, actualizar, eliminar y dar de baja usuarios,
- * así como aplicar filtros en búsquedas.
+ * así como aplicar filtros personalizados en las búsquedas.
  * </p>
  *
- * @author Kevin Olarte
+ * @author  Kevin Olarte
  */
 @Service
 @AllArgsConstructor
@@ -41,32 +41,193 @@ public class UserService {
     private final ResidenciaService residenciaService;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    /**
+     * Guarda un nuevo usuario en la base de datos.
+     * @param idResidencia ID de la residencia a la que pertenece el usuario.
+     * @param input Datos del usuario a guardar.
+     * @return DTO con los datos del usuario guardado.
+     * @throws ApiException si los datos son inválidos o el usuario ya existe.
+     */
+    public UserResponseDto add(Long idResidencia, UserDto input) {
+        if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getPassword() == null || input.getPassword().trim().isEmpty()
+                || input.getIdResidencia() == null || input.getNombre() == null || input.getNombre().trim().isEmpty() || input.getApellido() == null || input.getApellido().trim().isEmpty()){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        input.setEmail(input.getEmail().trim().toLowerCase());
+        if (!EmailService.isEmailValid(input.getEmail())){
+            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+        }
+
+        //Miramos si ese usuario y residencia existen
+        User userTest =  userRepository.findByEmail(input.getEmail());
+        Residencia residenciaTest = residenciaService.getResidencia(input.getIdResidencia());
+        if(userTest != null){
+            if (userTest.isBaja())
+                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+            throw new ApiException(ApiErrorCode.USER_EXIST);
+        }
+
+        if (residenciaTest.isBaja())
+            throw new ApiException(ApiErrorCode.RESIDENCIA_BAJA);
+
+        User user = new User(input.getNombre(), input.getApellido(),input.getEmail(), passwordEncoder.encode(input.getPassword()));
+        user.setResidencia(residenciaTest);
+        //TODO: VERIFICACION CON CODIGO PERO FASE DESAROLLOO, AUN NO.
+        user.setEnabled(true);
+        user.setFotoPerfil("/uploads/" + Conf.imageDefault);
+        User savedUser = userRepository.save(user);
+        return new UserResponseDto(savedUser);
+
+    }
+
+
+
 
     /**
-     * Busca un usuario por su ID.
-     *
-     * @param idUsuario ID del usuario a buscar.
-     * @return Objeto {@link User} si existe, o {@code null} si no se encuentra.
+     * Obtiene un usuario por su ID dentro de una residencia específica.
+     * @param idResidencia ID de la residencia.
+     * @param idUser ID del usuario.
+     * @return DTO con los datos del usuario.
+     * @throws ApiException si el ID de residencia o usuario es nulo, o si el usuario no pertenece a la residencia.
      */
-    public User findById(Long idUsuario) {
-        return userRepository.findById(idUsuario).orElse(null);
+    public UserResponseDto get(Long idResidencia, Long idUser) {
+        User userTmp = getUsuario(idResidencia, idUser);
+        // Si todo es correcto, devolver el usuario
+        return new UserResponseDto(userTmp);
+
     }
 
     /**
-     * Elimina un usuario del sistema si pertenece a una residencia específica y no tiene registros de juegos asociados.
-     * <p>
-     * Este método valida:
-     * <ul>
-     *   <li>Que los IDs de residencia y usuario no sean nulos.</li>
-     *   <li>Que el usuario exista en la base de datos.</li>
-     *   <li>Que el usuario pertenezca a la residencia indicada.</li>
-     *   <li>Que el usuario no tenga registros de juegos asociados.</li>
-     * </ul>
-     * Si alguna de estas validaciones falla, lanza una excepción {@link ApiException}.
+     * Obtiene un usuario por su email dentro de una residencia específica.
+     * @param idResidencia ID de la residencia.
+     * @param email Email del usuario.
+     * @return DTO con los datos del usuario.
+     * @throws ApiException si el ID de residencia o email es nulo, o si el usuario no pertenece a la residencia.
+     */
+    public UserResponseDto get(Long idResidencia, String email){
+        if (idResidencia == null || email == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        //Validar si existe ese usuario
+        User user = userRepository.findByEmail(email);
+        if (user == null){
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+
+        //Validar si pertenece a esa residencia
+        if (user.getResidencia() == null || !user.getResidencia().getId().equals(idResidencia)) {
+            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+        }
+
+        // Si todo es correcto, devolver el usuario
+        return new UserResponseDto(user);
+    }
+
+    /**
+     * Obtiene una imagen como recurso desde el sistema de archivos.
+     * @param filename Nombre del archivo solicitado (actualmente no se utiliza, se carga siempre la imagen por defecto).
+     * @return {@link Resource} que representa la imagen cargada desde el sistema de archivos.
+     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el archivo no existe o no puede accederse.
+     */
+    public Resource getImage(String filename) {
+
+        Path filePath = Paths.get("src/main/resources/static/uploads").resolve(Conf.imageDefault).normalize();
+        Resource resource;
+        try{
+            resource = new UrlResource(filePath.toUri());
+            if (!resource.exists()) {
+                throw new ApiException(ApiErrorCode.PROBLEMAS_CON_FILE);
+            }
+        }catch (Exception e){
+            throw new ApiException(ApiErrorCode.PROBLEMAS_CON_FILE);
+        }
+        return resource;
+    }
+
+    /**
+     * Obtiene una lista de todos los usuarios asociados a una residencia con filtros opcionales.
      *
-     * @param idResidencia ID de la residencia del usuario.
-     * @param idUser ID del usuario a eliminar.
-     * @throws ApiException si los datos son inválidos o si hay referencias dependientes.
+     * @param idResidencia ID de la residencia.
+     * @param enabled Estado habilitado para filtrar (opcional).
+     * @param idJuego ID del juego para filtrar (opcional).
+     * @return Lista de usuarios que cumplen con los filtros aplicados.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<UserResponseDto> getAll(Long idResidencia, Boolean enabled, Long idJuego){
+        if (idResidencia == null){
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+
+        List<User> list = userRepository.findAll(UserSpecification.withFilters(enabled,idResidencia, idJuego));
+
+        return list.stream().map(UserResponseDto::new).toList();
+
+
+
+    }
+
+    /**
+     * Obtiene una lista de todos los usuarios con filtros opcionales.
+     *
+     * @param enabled Estado habilitado para filtrar (opcional).
+     * @param idJuego ID del juego para filtrar (opcional).
+     * @return Lista de usuarios que cumplen con los filtros aplicados.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<UserResponseDto> getAll(Boolean enabled, Long idJuego) {
+
+        List<User> list = userRepository.findAll(UserSpecification.withFilters(enabled,null, idJuego));
+
+        return list.stream().map(UserResponseDto::new).toList();
+
+
+    }
+
+    /**
+     * Obtiene una lista de usuarios dados de baja en una residencia específica.
+     *
+     * @param idResidencia ID de la residencia.
+     * @return Lista de usuarios dados de baja en la residencia.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<UserResponseDto> getAllBajas(Long idResidencia, LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
+        if (idResidencia == null) throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+
+        List<User> list = userRepository.findAll(UserSpecification.withFiltersBaja(fecha,minFecha, maxFecha, idResidencia));
+
+
+        return list.stream().map(UserResponseDto::new).toList();
+
+    }
+
+    /**
+     * Obtiene una lista de usuarios dados de baja.
+     *
+     * @param fecha Fecha exacta de baja (opcional).
+     * @param minFecha Fecha mínima de baja (opcional).
+     * @param maxFecha Fecha máxima de baja (opcional).
+     * @return Lista de usuarios dados de baja en la residencia.
+     * @throws ApiException si la residencia no existe o el ID es nulo.
+     */
+    public List<UserResponseDto> getAllBajas(LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
+
+        List<User> list = userRepository.findAll(UserSpecification.withFiltersBaja(fecha,minFecha, maxFecha, null));
+
+        return list.stream().map(UserResponseDto::new).toList();
+
+    }
+
+
+
+
+    /**
+     * Elimina físicamente un usuario si no tiene registros dependientes.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idUser ID del usuario.
+     * @throws ApiException si el usuario tiene registros de juego asociados.
      */
     public void deleteFisico(Long idResidencia, Long idUser) {
         User userTmp = getUsuario(idResidencia, idUser);
@@ -81,10 +242,11 @@ public class UserService {
     }
 
     /**
-     * Marca un usuario como "baja" (inactivo) en el sistema.
-     * @param idResidencia ID de la residencia del usuario.
-     * @param idUser ID del usuario a dar de baja.
-     * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
+     * Marca lógicamente como dado de baja a un usuario.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idUser ID del usuario.
+     * @throws ApiException si el usuario no existe, no pertenece a la residencia o ya está dado de baja.
      */
     public void deleteLogico(Long idResidencia, Long idUser) {
         if (idResidencia == null || idUser == null){
@@ -114,18 +276,12 @@ public class UserService {
     }
 
     /**
-     * Elimina las referencias de registros de juego asociadas a un usuario sin eliminar al usuario en sí.
-     * <p>
-     * Este método:
-     * <ul>
-     *   <li>Valida que los IDs no sean nulos.</li>
-     *   <li>Valida que el usuario pertenezca a la residencia indicada.</li>
-     *   <li>Desvincula todos los registros de juego del usuario (eliminando la relación, no los registros).</li>
-     * </ul>
+     * Desvincula registros de juego del usuario sin eliminar al usuario.
      *
      * @param idResidencia ID de la residencia del usuario.
      * @param idUser ID del usuario al que se le eliminarán las referencias.
-     * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
+     * @throws ApiException en caso de error
+     *
      */
     public void deleteReferencies(Long idResidencia, Long idUser) {
         if (idResidencia == null || idUser == null) {
@@ -145,126 +301,8 @@ public class UserService {
         userRepository.save(userTmp);
     }
 
-    /**
-     * Obtiene una imagen como recurso desde el sistema de archivos.
-     * <p>
-     * Este método busca un archivo de imagen en el directorio <code>src/main/resources/static/uploads</code>,
-     * utilizando el nombre por defecto definido en {@link Conf#imageDefault}.
-     * Si el archivo no existe o hay problemas al acceder a él, lanza una excepción controlada.
-     * </p>
-     *
-     * @param filename Nombre del archivo solicitado (actualmente no se utiliza, se carga siempre la imagen por defecto).
-     * @return {@link Resource} que representa la imagen cargada desde el sistema de archivos.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el archivo no existe o no puede accederse.
-     */
-    public Resource getImage(String filename) {
-
-        Path filePath = Paths.get("src/main/resources/static/uploads").resolve(Conf.imageDefault).normalize();
-        Resource resource;
-        try{
-           resource = new UrlResource(filePath.toUri());
-            if (!resource.exists()) {
-                throw new ApiException(ApiErrorCode.PROBLEMAS_CON_FILE);
-            }
-        }catch (Exception e){
-            throw new ApiException(ApiErrorCode.PROBLEMAS_CON_FILE);
-        }
-        return resource;
-    }
-
-    /**
-     * Elimina las referencias de registros de juego asociadas a un usuario sin eliminar al usuario en sí.
-     * <p>
-     * Este método:
-     * <ul>
-     *   <li>Valida que los IDs no sean nulos.</li>
-     *   <li>Valida que el usuario pertenezca a la residencia indicada.</li>
-     *   <li>Desvincula todos los registros de juego del usuario (eliminando la relación, no los registros).</li>
-     * </ul>
-     *
-     * @param idResidencia ID de la residencia del usuario.
-     * @param idUser ID del usuario al que se le eliminarán las referencias.
-     * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
-     */
-    public UserResponseDto get(Long idResidencia, Long idUser) {
-        User userTmp = getUsuario(idResidencia, idUser);
-        // Si todo es correcto, devolver el usuario
-        return new UserResponseDto(userTmp);
-
-    }
-
-    public UserResponseDto get(Long idResidencia, String email){
-        if (idResidencia == null || email == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-
-        //Validar si existe ese usuario
-        User user = userRepository.findByEmail(email);
-        if (user == null){
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
-        }
-
-        //Validar si pertenece a esa residencia
-        if (user.getResidencia() == null || !user.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
-        }
-
-        // Si todo es correcto, devolver el usuario
-        return new UserResponseDto(user);
-    }
-
-    /**
-     * Obtiene una lista de todos los usuarios asociados a una residencia con filtros opcionales.
-     * <p>
-     * Este método permite filtrar por:
-     * <ul>
-     *   <li>Email (no sensible a mayúsculas/minúsculas).</li>
-     *   <li>Estado habilitado.</li>
-     *   <li>ID de juego al que el usuario esté asociado.</li>
-     * </ul>
-     *
-     * @param idResidencia ID de la residencia.
-     * @param enabled Estado habilitado para filtrar (opcional).
-     * @param idJuego ID del juego para filtrar (opcional).
-     * @return Lista de usuarios que cumplen con los filtros aplicados.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
-     */
-    public List<UserResponseDto> getAll(Long idResidencia, Boolean enabled, Long idJuego){
-        if (idResidencia == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-
-        List<User> list = userRepository.findAll(UserSpecification.withFilters(enabled,idResidencia, idJuego));
-
-        return list.stream().map(UserResponseDto::new).toList();
 
 
-
-    }
-
-    /**
-     * Obtiene una lista de todos los usuarios asociados a una residencia con filtros opcionales.
-     * <p>
-     * Este método permite filtrar por:
-     * <ul>
-     *   <li>Email (no sensible a mayúsculas/minúsculas).</li>
-     *   <li>Estado habilitado.</li>
-     *   <li>ID de juego al que el usuario esté asociado.</li>
-     * </ul>
-     *
-     * @param enabled Estado habilitado para filtrar (opcional).
-     * @param idJuego ID del juego para filtrar (opcional).
-     * @return Lista de usuarios que cumplen con los filtros aplicados.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
-     */
-    public List<UserResponseDto> getAll(Boolean enabled, Long idJuego) {
-
-        List<User> list = userRepository.findAll(UserSpecification.withFilters(enabled,null, idJuego));
-
-        return list.stream().map(UserResponseDto::new).toList();
-
-
-    }
 
     /**
      * Actualiza los datos de un usuario existente.
@@ -313,13 +351,6 @@ public class UserService {
 
     /**
      * Cambia la contraseña de un usuario, validando su contraseña actual.
-     * <p>
-     * Este método:
-     * <ul>
-     *   <li>Valida la residencia y existencia del usuario.</li>
-     *   <li>Verifica que la contraseña actual coincida.</li>
-     *   <li>Establece la nueva contraseña de forma segura.</li>
-     * </ul>
      *
      * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario.
@@ -355,74 +386,19 @@ public class UserService {
     }
 
 
+
+
+
+
+
+
     /**
-     * Obtiene una lista de usuarios dados de baja en una residencia específica.
-     * <p>
-     *     Este método valida que la residencia exista y que el ID no sea nulo.
+     * Obtiene un usuario por su ID y valida que pertenezca a la residencia indicada.
      * @param idResidencia ID de la residencia.
-     * @return Lista de usuarios dados de baja en la residencia.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
+     * @param idUsuario ID del usuario.
+     * @return DTO del usuario solicitado.
+     * @throws ApiException si el ID es nulo, el usuario no existe o no pertenece a la residencia.
      */
-    public List<UserResponseDto> getAllBajas(Long idResidencia, LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
-        if (idResidencia == null) throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-
-        List<User> list = userRepository.findAll(UserSpecification.withFiltersBaja(fecha,minFecha, maxFecha, idResidencia));
-
-
-        return list.stream().map(UserResponseDto::new).toList();
-
-    }
-
-    /**
-     * Obtiene una lista de usuarios dados de baja en una residencia específica.
-     * <p>
-     *     Este método valida que la residencia exista y que el ID no sea nulo.
-     * @return Lista de usuarios dados de baja en la residencia.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
-     */
-    public List<UserResponseDto> getAllBajas(LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
-
-        List<User> list = userRepository.findAll(UserSpecification.withFiltersBaja(fecha,minFecha, maxFecha, null));
-
-
-        return list.stream().map(UserResponseDto::new).toList();
-
-    }
-
-    public UserResponseDto save(Long idResidencia, UserDto input) {
-        if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getPassword() == null || input.getPassword().trim().isEmpty()
-                || input.getIdResidencia() == null || input.getNombre() == null || input.getNombre().trim().isEmpty() || input.getApellido() == null || input.getApellido().trim().isEmpty()){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-
-        input.setEmail(input.getEmail().trim().toLowerCase());
-        if (!EmailService.isEmailValid(input.getEmail())){
-            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
-        }
-
-        //Miramos si ese usuario y residencia existen
-        User userTest =  userRepository.findByEmail(input.getEmail());
-        Residencia residenciaTest = residenciaService.findById(input.getIdResidencia());
-        if(userTest != null){
-            if (userTest.isBaja())
-                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
-            throw new ApiException(ApiErrorCode.USER_EXIST);
-        }
-        if (residenciaTest == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
-        if (residenciaTest.isBaja())
-            throw new ApiException(ApiErrorCode.RESIDENCIA_BAJA);
-
-        User user = new User(input.getNombre(), input.getApellido(),input.getEmail(), passwordEncoder.encode(input.getPassword()));
-        user.setResidencia(residenciaTest);
-        user.setEnabled(true);
-        user.setFotoPerfil("/uploads/" + Conf.imageDefault);
-        User savedUser = userRepository.save(user);
-        return new UserResponseDto(savedUser);
-
-    }
-
     public User getUsuario(Long idResidencia, Long idUsuario) {
         if (idResidencia == null || idUsuario == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);

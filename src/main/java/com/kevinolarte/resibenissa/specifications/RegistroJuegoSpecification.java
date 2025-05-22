@@ -107,7 +107,8 @@ public class RegistroJuegoSpecification {
                 Subquery<Double> subquery = query.subquery(Double.class);
                 Root<RegistroJuego> subRoot = subquery.from(RegistroJuego.class);
                 subquery.select(cb.avg(subRoot.get("duracion")));
-                subquery.where(cb.equal(subRoot.get("juego").get("id"), idJuego));
+
+
 
                 Expression<Double> mediaExpr = subquery.getSelection();
 

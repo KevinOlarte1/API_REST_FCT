@@ -11,10 +11,10 @@ import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import com.kevinolarte.resibenissa.specifications.ParticipanteSpecification;
-import jakarta.mail.Part;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -59,20 +59,20 @@ public class ParticipanteService {
         // Verificar si el residente existe
         Residente residente = residenteService.getResidente(idResidencia, input.getIdResidente());
 
-        // Verificar si el evento de salida ya ha terminado
-        if (eventoSalida.getFechaInicio().isBefore(java.time.LocalDate.now())) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
-        }
 
         // Verificar el estado del evento de salida
         if (eventoSalida.getEstado() != EstadoSalida.ABIERTO) {
             throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
         }
 
-        //Verificar si el participante participa en una salida ese mismo dia
-        if (participanteRepository.existsByResidenteInOtherEventoSameDay(input.getIdResidente(), idEventoSalida)) {
+        //Verificamos si ya esta inscrito
+        if (participanteRepository.isResidenteInscritoEnEvento(residente.getId(), idEventoSalida))
             throw new ApiException(ApiErrorCode.PARTICIPANTE_YA_REGISTRADO);
-        }
+
+        //Verificar si el participante participa en una salida ese mismo dia
+        if (participanteRepository.existsByResidenteInOtherEventoSameDay(input.getIdResidente(), idEventoSalida))
+            throw new ApiException(ApiErrorCode.PARTICIPANTE_YA_REGISTRADO);
+
 
 
         // Crear el participante
@@ -113,7 +113,7 @@ public class ParticipanteService {
 
 
         //Verificar si el evento de salida ya ha terminado
-        if (eventoSalida.getFechaInicio().isBefore(java.time.LocalDate.now())) {
+        if (eventoSalida.getFechaInicio().isBefore(LocalDateTime.now())) {
             if (input.getPostOpinion() != null && !input.getPostOpinion().trim().isEmpty()) {
                 participante.setPostOpinion(input.getPostOpinion());
             }
@@ -152,7 +152,7 @@ public class ParticipanteService {
         EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEvento, idResidencia);
 
         // Verificar si la fecha de inicio del evento de salida ya ha pasado
-        if (eventoSalida.getFechaInicio().isBefore(java.time.LocalDate.now())) {
+        if (eventoSalida.getFechaInicio().isBefore(LocalDateTime.now())) {
             throw new ApiException(ApiErrorCode.PARTICIPANTE_INMUTABLE);
         }
 
@@ -179,7 +179,7 @@ public class ParticipanteService {
     }
 
 
-    public List<ParticipanteResponseDto> getAll(Long idResidencia, Long idEvento, Long idResidente,  Boolean rM,Boolean rH, Integer minEdad, Integer maxEdad, Boolean preOpinion, Boolean postOpinion) {
+    public List<ParticipanteResponseDto> getAll(Long idResidencia, Long idEvento, Long idResidente,  Boolean rM,Boolean rH, Integer minEdad, Integer maxEdad, Boolean preOpinion, Boolean postOpinion, Boolean asistenciPermitida) {
         if (idResidencia == null || idEvento == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -188,7 +188,7 @@ public class ParticipanteService {
 
 
         List<Participante> list = participanteRepository.findAll(
-                ParticipanteSpecification.withFilters(idResidencia, idEvento, idResidente, rH, rM, minEdad, maxEdad, preOpinion, postOpinion)
+                ParticipanteSpecification.withFilters(idResidencia, idEvento, idResidente, rH, rM, minEdad, maxEdad, preOpinion, postOpinion, asistenciPermitida)
         );
 
 
@@ -226,5 +226,25 @@ public class ParticipanteService {
     }
 
 
+    public ParticipanteResponseDto allow(Long idResidencia, Long idEvento, Long idParticipante) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
 
+        // Verificar el estado del evento de salida
+        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        participante.setAsistenciaPermitida(true);
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
+
+    public ParticipanteResponseDto deny(Long idResidencia, Long idEvento, Long idParticipante) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Verificar el estado del evento de salida
+        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        participante.setAsistenciaPermitida(false);
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
 }

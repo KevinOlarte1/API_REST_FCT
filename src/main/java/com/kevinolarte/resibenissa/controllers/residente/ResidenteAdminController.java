@@ -1,11 +1,15 @@
 package com.kevinolarte.resibenissa.controllers.residente;
 
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
+import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
+import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -38,8 +42,8 @@ public class ResidenteAdminController {
      */
     @PostMapping("/{idResidencia}/resident/add")
     public ResponseEntity<ResidenteResponseDto> add(
-                                                @PathVariable Long idResidencia,
-                                                @RequestBody ResidenteDto residenteDto){
+                                    @PathVariable Long idResidencia,
+                                    @RequestBody ResidenteDto residenteDto){
         return ResponseEntity.status(HttpStatus.CREATED).body(residenteService.add(idResidencia, residenteDto));
 
     }
@@ -53,13 +57,12 @@ public class ResidenteAdminController {
      */
     @GetMapping("/{idResidencia}/resident/{idResidente}/get")
     public ResponseEntity<ResidenteResponseDto> get(
-                                                @PathVariable Long idResidencia,
-                                                @PathVariable Long idResidente) {
+                                    @PathVariable Long idResidencia,
+                                    @PathVariable Long idResidente) {
 
         return ResponseEntity.ok(residenteService.get(idResidencia, idResidente));
 
     }
-
 
     /**
      * Lista todos los residentes de una residencia, aplicando filtros opcionales.
@@ -76,14 +79,14 @@ public class ResidenteAdminController {
      */
     @GetMapping("/{idResidencia}/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
-                                                    @PathVariable Long idResidencia,
-                                                    @RequestParam(required = false) LocalDate fechaNacimiento,
-                                                    @RequestParam(required = false) LocalDate minFNac,
-                                                    @RequestParam(required = false) LocalDate maxFNac,
-                                                    @RequestParam(required = false) Integer maxAge,
-                                                    @RequestParam(required = false) Integer minAge,
-                                                    @RequestParam(required = false) Long idJuego,
-                                                    @RequestParam(required = false) Long idEvento) {
+                                    @PathVariable Long idResidencia,
+                                    @RequestParam(required = false) LocalDate fechaNacimiento,
+                                    @RequestParam(required = false) LocalDate minFNac,
+                                    @RequestParam(required = false) LocalDate maxFNac,
+                                    @RequestParam(required = false) Integer maxAge,
+                                    @RequestParam(required = false) Integer minAge,
+                                    @RequestParam(required = false) Long idJuego,
+                                    @RequestParam(required = false) Long idEvento) {
 
         return ResponseEntity.ok(residenteService.getAll(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
     }
@@ -102,13 +105,13 @@ public class ResidenteAdminController {
      */
     @GetMapping("/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
-                                                    @RequestParam(required = false) LocalDate fechaNacimiento,
-                                                    @RequestParam(required = false) LocalDate minFNac,
-                                                    @RequestParam(required = false) LocalDate maxFNac,
-                                                    @RequestParam(required = false) Integer maxAge,
-                                                    @RequestParam(required = false) Integer minAge,
-                                                    @RequestParam(required = false) Long idJuego,
-                                                    @RequestParam(required = false) Long idEvento){
+                                    @RequestParam(required = false) LocalDate fechaNacimiento,
+                                    @RequestParam(required = false) LocalDate minFNac,
+                                    @RequestParam(required = false) LocalDate maxFNac,
+                                    @RequestParam(required = false) Integer maxAge,
+                                    @RequestParam(required = false) Integer minAge,
+                                    @RequestParam(required = false) Long idJuego,
+                                    @RequestParam(required = false) Long idEvento){
         return ResponseEntity.ok(residenteService.getAll(fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
     }
 
@@ -123,10 +126,10 @@ public class ResidenteAdminController {
      */
     @GetMapping("/{idResidencia}/resident/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
-                                                    @PathVariable Long idResidencia,
-                                                    @RequestParam(required = false) LocalDate fecha,
-                                                    @RequestParam(required = false) LocalDate minFecha,
-                                                    @RequestParam(required = false) LocalDate maxFecha){
+                                    @PathVariable Long idResidencia,
+                                    @RequestParam(required = false) LocalDate fecha,
+                                    @RequestParam(required = false) LocalDate minFecha,
+                                    @RequestParam(required = false) LocalDate maxFecha){
 
         return ResponseEntity.ok(residenteService.getAllBajas(idResidencia, fecha, minFecha, maxFecha));
     }
@@ -141,9 +144,9 @@ public class ResidenteAdminController {
      */
     @GetMapping("/resident/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
-                                                    @RequestParam(required = false) LocalDate fecha,
-                                                    @RequestParam(required = false) LocalDate minFecha,
-                                                    @RequestParam(required = false) LocalDate maxFecha){
+                                    @RequestParam(required = false) LocalDate fecha,
+                                    @RequestParam(required = false) LocalDate minFecha,
+                                    @RequestParam(required = false) LocalDate maxFecha){
         return ResponseEntity.ok(residenteService.getAllBajas(fecha, minFecha, maxFecha));
     }
 
@@ -156,8 +159,8 @@ public class ResidenteAdminController {
      */
     @DeleteMapping("/{idResidencia}/resident/{idResidente}/delete")
     public ResponseEntity<Void> delete(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idResidente) {
+                                    @PathVariable Long idResidencia,
+                                    @PathVariable Long idResidente) {
 
         residenteService.deleteFisico(idResidencia,idResidente);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -172,8 +175,8 @@ public class ResidenteAdminController {
      */
     @PatchMapping("{idResidencia}/resident/{idResidente}/baja")
     public ResponseEntity<Void> deleteLogico(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idResidente) {
+                                    @PathVariable Long idResidencia,
+                                    @PathVariable Long idResidente) {
         residenteService.deleteLogico(idResidencia,idResidente);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -188,9 +191,27 @@ public class ResidenteAdminController {
      */
     @PatchMapping("{idResidencia}/resident/{idResidente}/update")
     public ResponseEntity<ResidenteResponseDto> update(
-                                                @PathVariable Long idResidencia,
-                                                @PathVariable Long idResidente,
-                                                @RequestBody ResidenteDto residenteDto) {
+                                    @PathVariable Long idResidencia,
+                                    @PathVariable Long idResidente,
+                                    @RequestBody ResidenteDto residenteDto) {
         return ResponseEntity.ok(residenteService.update(idResidencia, idResidente, residenteDto));
+    }
+
+    /**
+     * Envía un correo electrónico a un familiar de un residente.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idResidente ID del residente.
+     * @param emailRequestDto DTO con los datos del correo a enviar.
+     * @return {@link ResponseEntity} con estado {@code 204 No Content} si el envío fue exitoso.
+     */
+    @PostMapping("/{idResidencia}/resident/{idResidente}/sendEmailFamily")
+    public ResponseEntity<Void> sendEmailFamily(
+                                    @PathVariable Long idResidencia,
+                                    @PathVariable Long idResidente,
+                                    @RequestBody EmailRequestDto emailRequestDto) {
+
+        residenteService.sendEmailFamiliar(idResidencia, idResidente, emailRequestDto);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

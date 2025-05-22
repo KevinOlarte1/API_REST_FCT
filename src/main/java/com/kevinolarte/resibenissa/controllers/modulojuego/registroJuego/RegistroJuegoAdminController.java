@@ -3,12 +3,9 @@ package com.kevinolarte.resibenissa.controllers.modulojuego.registroJuego;
 import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
-import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.modulojuego.RegistroJuegoService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -21,7 +18,7 @@ import java.util.List;
  * actualizar observaciones y eliminar registros específicos.
  * </p>
  * <p>
- * Todas las rutas expuestas están bajo el prefijo <code>/resi/{idResidencia}/juego/{idJuego}</code>.
+ * Todas las rutas expuestas están bajo el prefijo <code>admin/resi</code>.
  * </p>
  *
  * @author Kevin Olarte
@@ -32,6 +29,7 @@ import java.util.List;
 public class RegistroJuegoAdminController {
 
     private final RegistroJuegoService registroJuegoService;
+
     /**
      * Crea un nuevo registro de juego para un residente en una residencia y juego específicos.
      *
@@ -39,10 +37,10 @@ public class RegistroJuegoAdminController {
      * @param registroJuegoDto Datos del registro a guardar.
      * @return El registro de juego creado.
      */
-    @PostMapping("/{idResidencia}/juego/{idJuego}/registro/add")
+    @PostMapping("{idResidencia}/registro/add")
     public ResponseEntity<RegistroJuegoResponseDto> add(
                                                     @PathVariable Long idResidencia,
-                                                    @PathVariable Long idJuego,
+                                                    @RequestParam Long idJuego,
                                                     @RequestBody RegistroJuegoDto registroJuegoDto) {
 
         RegistroJuegoResponseDto registroJuego = registroJuegoService.add(idResidencia, idJuego, registroJuegoDto);
@@ -53,17 +51,15 @@ public class RegistroJuegoAdminController {
     /**
      * Obtiene un registro de juego específico mediante su ID.
      *
-     * @param idJuego ID del juego.
      * @param idRegistroJuego ID del registro de juego.
      * @return El registro de juego solicitado.
      */
-    @GetMapping("/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/get")
+    @GetMapping("/{idResidencia}/registro/{idRegistroJuego}/get")
     public ResponseEntity<RegistroJuegoResponseDto> get(
                                                     @PathVariable Long idResidencia,
-                                                    @PathVariable Long idJuego,
                                                     @PathVariable Long idRegistroJuego) {
 
-        return ResponseEntity.ok(registroJuegoService.get(idResidencia, idJuego, idRegistroJuego));
+        return ResponseEntity.ok(registroJuegoService.get(idResidencia, idRegistroJuego));
     }
 
     /**
@@ -83,9 +79,9 @@ public class RegistroJuegoAdminController {
      * @param ordenFecha true si se desea ordenar por fecha, false en caso contrario.
      * @return Lista de registros de juego filtrados.
      */
-    @GetMapping("/juego/{idJuego}/registro/getAll")
+    @GetMapping("/registro/getAll")
     public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
-                                                        @PathVariable Long idJuego,
+                                                        @RequestParam(required = false) Long idJuego,
                                                         @RequestParam(required = false) Dificultad dificultad,
                                                         @RequestParam(required = false) Integer edad,
                                                         @RequestParam(required = false) Integer minEdad,
@@ -121,10 +117,10 @@ public class RegistroJuegoAdminController {
      * @param ordenFecha true si se desea ordenar por fecha, false en caso contrario.
      * @return Lista de registros de juego filtrados.
      */
-    @GetMapping("/{idResidencia}/juego/{idJuego}/registro/getAll")
+    @GetMapping("/{idResidencia}/registro/getAll")
     public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
                                                         @PathVariable Long idResidencia,
-                                                        @PathVariable Long idJuego,
+                                                        @RequestParam(required = false) Long idJuego,
                                                         @RequestParam(required = false) Dificultad dificultad,
                                                         @RequestParam(required = false) Integer edad,
                                                         @RequestParam(required = false) Integer minEdad,
@@ -144,33 +140,29 @@ public class RegistroJuegoAdminController {
     /**
      * Actualiza un registro de juego existente añadiendo o modificando una observación.
      *
-     * @param idJuego ID del juego.
      * @param idRegistroJuego ID del registro a actualizar.
      * @param registroJuegoDto DTO con los nuevos datos (principalmente observación).
      * @return Registro de juego actualizado.
      */
-    @PatchMapping("/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/addComment")
+    @PatchMapping("/{idResidencia}/registro/{idRegistroJuego}/addComment")
     public ResponseEntity<RegistroJuegoResponseDto> update(
                                                         @PathVariable Long idResidencia,
-                                                        @PathVariable Long idJuego,
                                                         @PathVariable Long idRegistroJuego,
                                                         @RequestBody RegistroJuegoDto registroJuegoDto){
-        return ResponseEntity.ok(registroJuegoService.update(idResidencia, idJuego, idRegistroJuego, registroJuegoDto));
+        return ResponseEntity.ok(registroJuegoService.update(idResidencia, idRegistroJuego, registroJuegoDto));
     }
 
     /**
      * Elimina un registro de juego específico.
      *
-     * @param idJuego ID del juego.
      * @param idRegistroJuego ID del registro a eliminar.
      * @return Respuesta sin contenido si la eliminación fue exitosa.
      */
-    @DeleteMapping("/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/delete")
+    @DeleteMapping("/{idResidencia}/registro/{idRegistroJuego}/delete")
     public ResponseEntity<Void> delete(
                                 @PathVariable Long idResidencia,
-                                @PathVariable Long idJuego,
                                 @PathVariable Long idRegistroJuego){
-        registroJuegoService.delete(idResidencia, idJuego, idRegistroJuego);
+        registroJuegoService.delete(idResidencia, idRegistroJuego);
         return ResponseEntity.noContent().build();
     }
 

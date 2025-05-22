@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitud de permiso para excursión</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f8fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            color: #0062ff;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .content {
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #777777;
+        }
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #0062ff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #324f5e;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">Solicitud de autorización para excursión</div>
+
+    <div class="content">
+        Estimado/a <span class="highlight">{{nombreFamiliar}}</span>,<br><br>
+
+        Le informamos que el residente <span class="highlight">{{nombreResidente}}</span> está inscrito para participar en la excursión titulada
+        <span class="highlight">"{{nombreExcursion}}"</span>, que se llevará a cabo el día <span class="highlight">{{fecha}}</span>.
+
+        <br><br>
+        Para que <strong>{{nombreResidente}}</strong> pueda asistir, necesitamos su autorización.
+
+        <br><br>
+        Puede confirmar o rechazar su asistencia haciendo clic en los botones a continuación:
+
+        <br><br>
+        <a href="{{urlPermitir}}" class="button">Dar Permiso</a>
+        &nbsp;&nbsp;
+        <a href="{{urlRechazar}}" class="button" style="background-color:#ff4b4b;">Rechazar</a>
+    </div>
+
+    <div class="footer">
+        Si tiene alguna pregunta, no dude en ponerse en contacto con nosotros.<br>
+        Atentamente,<br>
+        Equipo de coordinación de actividades
+    </div>
+</div>
+</body>
+</html>

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -27,7 +28,7 @@ public class EventoSalidaResponseDto {
     private Long id;
     private String nombre;
     private String descripcion;
-    private LocalDate fechaInicio;
+    private LocalDateTime fechaInicio;
     private EstadoSalida estado;
     private List<Long> participantes;
     private Long idResidencia;

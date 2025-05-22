@@ -27,6 +27,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 
@@ -49,10 +50,15 @@ public class StartupDataLoader {
         Residencia residenciaDefault = residenciaRepository.save(new Residencia("Residencia Benissa", "resibenissa@gmail.com"));
         Residencia residenciaAdmin = residenciaRepository.save(new Residencia("Residencia Admin", "resiAdmin@gmail.com"));
         User user = new User("Kevin", "olarte", "dafult@gmail.com", passwordEncoder.encode("default"), Role.ADMIN);
+        User sender = new User("Kevin", "olarte", "sender@gmail.com", passwordEncoder.encode("sender"), Role.SENDER);
         user.setResidencia(residenciaAdmin);
         user.setEnabled(true);
 
+        sender.setResidencia(residenciaAdmin);
+        sender.setEnabled(true);
         user = userRepository.save(user);
+        sender = userRepository.save(sender);
+
         Residente residente1 = new Residente("Residente", "1", LocalDate.of(1999, 1,1), "000000001", "kevinolarte.ko@gmail.com", null);
         residente1.setResidencia(residenciaDefault);
         Residente residente2 = new Residente("Residente", "2", LocalDate.of(1999, 1,1), "000000002", "kevinolarte.ko@gmail.com", null);
@@ -107,7 +113,7 @@ public class StartupDataLoader {
         EventoSalidaDto eventoSalidaDto = new EventoSalidaDto();
         eventoSalidaDto.setNombre("Casa 1");
         eventoSalidaDto.setDescripcion("Salida a casa 1");
-        eventoSalidaDto.setFecha(LocalDate.now().plusYears(1));
+        eventoSalidaDto.setFecha(LocalDateTime.now().plusYears(1));
         eventoSalidaDto.setEstado(EstadoSalida.ABIERTO);
 
         EventoSalida eventoSalida = new EventoSalida(eventoSalidaDto);

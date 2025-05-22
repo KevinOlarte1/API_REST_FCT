@@ -66,6 +66,8 @@ public class Participante {
     @Column(nullable = false)
     private boolean recursosMateriales;
 
+    private boolean asistenciaPermitida;
+
 
 
     /**
@@ -90,6 +92,7 @@ public class Participante {
         this.preOpinion = "";
         this.postOpinion = "";
         this.baja = false;
+        this.asistenciaPermitida = false;
     }
 
 

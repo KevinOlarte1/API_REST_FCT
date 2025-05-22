@@ -39,9 +39,10 @@ public class UserAdminController {
      */
     @PostMapping("{idResidencia}/user/add")
     public ResponseEntity<UserResponseDto> addUser(
-                                        @PathVariable Long idResidencia,
-                                        @RequestBody UserDto userDto) {
-        UserResponseDto user = userService.save(idResidencia, userDto);
+                                @PathVariable Long idResidencia,
+                                @RequestBody UserDto userDto) {
+
+        UserResponseDto user = userService.add(idResidencia, userDto);
         return ResponseEntity.ok(user);
 
     }
@@ -55,8 +56,8 @@ public class UserAdminController {
      */
     @GetMapping("{idResidencia}/user/{idUser}/get")
     public ResponseEntity<UserResponseDto> get(
-                                        @PathVariable Long idResidencia,
-                                        @PathVariable Long idUser) {
+                                @PathVariable Long idResidencia,
+                                @PathVariable Long idUser) {
 
         return ResponseEntity.ok(userService.get(idResidencia, idUser));
 
@@ -71,8 +72,8 @@ public class UserAdminController {
      */
     @GetMapping("/{idResidencia}/user/get")
     public ResponseEntity<UserResponseDto> get(
-                                        @PathVariable Long idResidencia,
-                                        @RequestParam(required = true) String email) {
+                                @PathVariable Long idResidencia,
+                                @RequestParam(required = true) String email) {
 
         return ResponseEntity.ok(userService.get(idResidencia, email));
 
@@ -89,15 +90,13 @@ public class UserAdminController {
      */
     @GetMapping("{idResidencia}/user/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
-                                                @PathVariable Long idResidencia,
-                                                @RequestParam(required = false) Boolean enabled,
-                                                @RequestParam(required = false) Long idJuego) {
+                                @PathVariable Long idResidencia,
+                                @RequestParam(required = false) Boolean enabled,
+                                @RequestParam(required = false) Long idJuego) {
 
         return ResponseEntity.ok(userService.getAll(idResidencia, enabled, idJuego));
 
     }
-
-
 
     /**
      * Obtiene todos los usuarios, con filtros por estado y/o juego (sin filtrar por residencia).
@@ -108,8 +107,8 @@ public class UserAdminController {
      */
     @GetMapping("/user/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
-                                                @RequestParam(required = false) Boolean enabled,
-                                                @RequestParam(required = false) Long idJuego) {
+                                @RequestParam(required = false) Boolean enabled,
+                                @RequestParam(required = false) Long idJuego) {
 
         return ResponseEntity.ok(userService.getAll(enabled, idJuego));
 
@@ -126,10 +125,10 @@ public class UserAdminController {
      */
     @GetMapping("{idResidencia}/user/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
-            @PathVariable Long idResidencia,
-            @RequestParam(required = false)LocalDate fecha,
-            @RequestParam(required = false) LocalDate minFecha,
-            @RequestParam(required = false) LocalDate maxFecha){
+                                @PathVariable Long idResidencia,
+                                @RequestParam(required = false)LocalDate fecha,
+                                @RequestParam(required = false) LocalDate minFecha,
+                                @RequestParam(required = false) LocalDate maxFecha){
 
         return ResponseEntity.ok(userService.getAllBajas(idResidencia, fecha, minFecha, maxFecha));
 
@@ -145,9 +144,9 @@ public class UserAdminController {
      */
     @GetMapping("/user/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
-                                                    @RequestParam(required = false)LocalDate fecha,
-                                                    @RequestParam(required = false) LocalDate minFecha,
-                                                    @RequestParam(required = false) LocalDate maxFecha){
+                                @RequestParam(required = false)LocalDate fecha,
+                                @RequestParam(required = false) LocalDate minFecha,
+                                @RequestParam(required = false) LocalDate maxFecha){
 
         return ResponseEntity.ok(userService.getAllBajas(fecha, minFecha, maxFecha));
 
@@ -194,9 +193,9 @@ public class UserAdminController {
      */
     @PatchMapping("/{idResidencia}/user/{idUser}/update")
     public ResponseEntity<UserResponseDto> update(
-                                        @PathVariable Long idResidencia,
-                                        @PathVariable Long idUser,
-                                        @RequestBody UserDto userDto) {
+                                @PathVariable Long idResidencia,
+                                @PathVariable Long idUser,
+                                @RequestBody UserDto userDto) {
 
         return ResponseEntity.ok(userService.update(idResidencia, idUser, userDto));
     }
@@ -211,9 +210,9 @@ public class UserAdminController {
      */
     @PatchMapping("/{idResidencia}/user/{idUser}/update/changePassword")
     public ResponseEntity<UserResponseDto> changePassword(
-                                            @PathVariable Long idResidencia,
-                                            @PathVariable Long idUser,
-                                            @RequestBody ChangePasswordUserDto changePasswordUserDto) {
+                                @PathVariable Long idResidencia,
+                                @PathVariable Long idUser,
+                                @RequestBody ChangePasswordUserDto changePasswordUserDto) {
 
         return ResponseEntity.ok(userService.updatePassword(idResidencia, idUser, changePasswordUserDto));
     }

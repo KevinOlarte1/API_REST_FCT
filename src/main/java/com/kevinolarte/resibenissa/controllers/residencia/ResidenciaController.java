@@ -65,7 +65,7 @@ public class ResidenciaController {
     public ResponseEntity<Void> baja() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        residenciaService.baja(currentUser.getResidencia().getId());
+        residenciaService.deleteLogico(currentUser.getResidencia().getId());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

@@ -59,7 +59,9 @@ public class SecurityConfiguration {
 
                         .requestMatchers(Conf.PATH_PUBLIC_AUTH + "**").permitAll()
                         .requestMatchers(Conf.PATH_PUBLIC_SWAGGER + "**").permitAll()
+                        .requestMatchers(Conf.PATH_PUBLIC_RESI_CONTROLLER + "**").permitAll()
                         .requestMatchers(Conf.PATH_PUBLIC_RESI_GET).permitAll()
+
 
 
 

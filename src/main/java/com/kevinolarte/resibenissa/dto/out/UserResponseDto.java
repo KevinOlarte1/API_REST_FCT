@@ -24,7 +24,9 @@ public class UserResponseDto {
     private String nombre;
     private String apellido;
     private String email;
+    private String verificationCode;
     private boolean enabled;
+
     private Long idResidencia;
     private String fotoPerfil;
     private boolean baja;
@@ -38,6 +40,7 @@ public class UserResponseDto {
         this.enabled = user.isEnabled();
         this.idResidencia = user.getResidencia().getId();
         this.fotoPerfil = user.getFotoPerfil();
+        this.verificationCode = user.getVerificationCode();
         this.baja = user.isBaja();
     }
 

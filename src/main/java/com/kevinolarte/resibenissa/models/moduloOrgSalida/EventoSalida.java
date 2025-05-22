@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -47,7 +48,7 @@ public class EventoSalida {
      * Fecha en la que se realizará el evento de salida.
      */
     @Column(nullable = false)
-    private LocalDate fechaInicio;
+    private LocalDateTime fechaInicio;
 
     /**
      * Estado actual del evento de salida.

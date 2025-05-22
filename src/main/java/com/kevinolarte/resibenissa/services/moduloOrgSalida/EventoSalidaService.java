@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,13 +57,10 @@ public class EventoSalidaService {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
-        Residencia res = residenciaService.findById(idResidencia);
-        if (res == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
+        Residencia res = residenciaService.getResidencia(idResidencia);
 
         // Validar que la fecha no sea anterior a la fecha actual
-        if (input.getFecha().isBefore(java.time.LocalDate.now())) {
+        if (input.getFecha().isBefore(LocalDateTime.now())) {
             throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
         }
 
@@ -101,7 +99,7 @@ public class EventoSalidaService {
         EventoSalida eventoSalida = getEventoSalida(idResidencia, idEventoSalida);
 
         // Validar que la fecha no sea anterior a la fecha actual
-        if (input.getFecha() != null && input.getFecha().isBefore(java.time.LocalDate.now())) {
+        if (input.getFecha() != null && input.getFecha().isBefore(LocalDateTime.now())) {
             throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
         }
 

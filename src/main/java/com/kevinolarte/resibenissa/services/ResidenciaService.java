@@ -6,8 +6,6 @@ import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
-import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
-import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
 import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.EventoSalidaRepository;
@@ -17,7 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -52,7 +49,7 @@ public class ResidenciaService {
      * @return {@link ResidenciaResponseDto} de la residencia creada.
      * @throws ApiException en caso de errores de validación o duplicados.
      */
-    public ResidenciaResponseDto save(ResidenciaDto input) throws RuntimeException{
+    public ResidenciaResponseDto add(ResidenciaDto input) throws RuntimeException{
         if (input.getNombre() == null || input.getEmail() == null
                 || input.getNombre().trim().isEmpty() || input.getEmail().trim().isEmpty()){
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -78,16 +75,8 @@ public class ResidenciaService {
         return new ResidenciaResponseDto(residenciaRepository.save(residencia));
     }
 
-    /**
-     * Busca una residencia por su ID.
-     *
-     * @param id ID de la residencia.
-     * @return {@link Residencia} encontrada, o {@code null} si no existe.
-     */
-    public Residencia findById(Long id){
-        Optional<Residencia> residenciaTmp = residenciaRepository.findById(id);
-        return residenciaTmp.orElse(null);
-    }
+
+
 
     /**
      * Obtiene una residencia a partir de su ID validando su existencia.
@@ -110,26 +99,6 @@ public class ResidenciaService {
         return new ResidenciaResponseDto(resi);
     }
 
-
-    /**
-     * Elimina una residencia a partir de su ID.
-     * <p>
-     * Si no se encuentra la residencia, lanza una excepción.
-     * </p>
-     *
-     * @param idResidencia ID de la residencia a eliminar.
-     * @throws ApiException si no se encuentra la residencia especificada.
-     */
-    public void remove(Long idResidencia) {
-        Residencia residenciaTmp = residenciaRepository.findById(idResidencia).orElse(null);
-
-        if(residenciaTmp == null){
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
-        }
-
-        residenciaRepository.delete(residenciaTmp);
-    }
-
     /**
      * Obtiene una lista de todas las residencias en el sistema. con solo el nombre , correo e id.
      * @return Lista de residencias públicas.
@@ -140,34 +109,46 @@ public class ResidenciaService {
                 .collect(Collectors.toList());
     }
 
-    public void baja(Long id) {
+    /**
+     * Obtiene una lista de todas las residencias que están marcadas como inactivas (baja).
+     * @return Lista de residencias inactivas.
+     */
+    public List<ResidenciaPublicResponseDto> getAllBaja() {
+        return residenciaRepository.findByBajaTrue().stream().map(ResidenciaPublicResponseDto::new).toList();
+    }
+
+
+
+
+    /**
+     * Elimina una residencia a partir de su ID.
+     * <p>
+     * Si no se encuentra la residencia, lanza una excepción.
+     * </p>
+     *
+     * @param idResidencia ID de la residencia a eliminar.
+     * @throws ApiException si no se encuentra la residencia especificada.
+     */
+    public void deleteFisico(Long idResidencia) {
+        Residencia residenciaTmp = residenciaRepository.findById(idResidencia).orElse(null);
+
+        if(residenciaTmp == null){
+            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+        }
+
+        residenciaRepository.delete(residenciaTmp);
+    }
+
+    /**
+     * Elimina una residencia de forma lógica, marcando su estado como inactivo.
+     * @param id ID de la residencia a eliminar.
+     * @throws ApiException si no se encuentra la residencia.
+     */
+    public void deleteLogico(Long id) {
         Residencia residencia = residenciaRepository.findById(id).orElse(null);
         if (residencia == null) {
             throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
-        /*
-        // Cambiar el estado de la residencia a inactiva
-
-
-        //Eliminar todos los eventosSalida de la residencia
-        eventoSalidaRepository.deleteAll(residencia.getEventos());
-
-        // Cambiar el estado de los residentes y usuarios a inactivos
-        residencia.getEventos().forEach(event -> {
-            participanteRepository.deleteAll(event.getParticipantes());
-            event.setParticipantes(new LinkedHashSet<>());
-        });
-
-        eventoSalidaRepository.deleteAll();
-
-        /*
-        residencia.getUsuarios().forEach(usuario -> {
-            usuario.setBaja(true);
-            usuario.setFechaBaja(LocalDateTime.now());
-            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-        }); */
-
-        //Borrar todos los eventos y participantes.
 
         residencia.setBaja(true);
         residencia.setFechaBaja(LocalDateTime.now());
@@ -193,7 +174,23 @@ public class ResidenciaService {
         residenciaRepository.save(residencia);
     }
 
-    public List<ResidenciaPublicResponseDto> getAllBaja() {
-        return residenciaRepository.findByBajaTrue().stream().map(ResidenciaPublicResponseDto::new).toList();
+
+
+
+
+
+
+
+    /**
+     * Busca una residencia por su ID.
+     *
+     * @param id ID de la residencia.
+     * @return {@link Residencia} encontrada.
+     * @throws ApiException si no se encuentra la residencia.
+     */
+    public Residencia getResidencia(Long id){
+        return residenciaRepository.findById(id).orElseThrow(() -> new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO));
     }
+
 }
+

@@ -59,7 +59,7 @@ public class UserController {
      */
     @GetMapping("/{idUser}/get")
     public ResponseEntity<UserResponseDto> get(
-                                        @PathVariable Long idUser) {
+                                @PathVariable Long idUser) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -76,7 +76,7 @@ public class UserController {
      */
     @GetMapping("/get")
     public ResponseEntity<UserResponseDto> get(
-                                        @RequestParam (required = true) String email){
+                                @RequestParam (required = true) String email){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -95,8 +95,8 @@ public class UserController {
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
-                                               @RequestParam(required = false) Boolean enabled,
-                                               @RequestParam(required = false) Long idJuego) {
+                               @RequestParam(required = false) Boolean enabled,
+                               @RequestParam(required = false) Long idJuego) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -115,9 +115,9 @@ public class UserController {
      */
     @GetMapping("/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
-            @RequestParam(required = false) LocalDate fecha,
-            @RequestParam(required = false) LocalDate minFecha,
-            @RequestParam(required = false) LocalDate maxFecha){
+                                @RequestParam(required = false) LocalDate fecha,
+                                @RequestParam(required = false) LocalDate minFecha,
+                                @RequestParam(required = false) LocalDate maxFecha){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -149,7 +149,7 @@ public class UserController {
      */
     @PatchMapping("/update")
     public ResponseEntity<UserResponseDto> update(
-                                        @RequestBody UserDto userDto) {
+                                @RequestBody UserDto userDto) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
@@ -165,7 +165,7 @@ public class UserController {
      */
     @PatchMapping("/update/changePassword")
     public ResponseEntity<UserResponseDto> changePassword(
-                                        @RequestBody ChangePasswordUserDto changePasswordUserDto) {
+                                @RequestBody ChangePasswordUserDto changePasswordUserDto) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();

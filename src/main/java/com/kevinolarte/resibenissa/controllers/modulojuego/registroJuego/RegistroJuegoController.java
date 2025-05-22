@@ -21,12 +21,12 @@ import java.util.List;
  * actualizar observaciones y eliminar registros específicos.
  * </p>
  * <p>
- * Todas las rutas expuestas están bajo el prefijo <code>/resi/{idResidencia}/juego/{idJuego}</code>.
+ * Todas las rutas expuestas están bajo el prefijo <code>/resi/registro</code>.
  * </p>
  *
  * @author Kevin Olarte
  */
-@RequestMapping("/resi/juego/{idJuego}/registro")
+@RequestMapping("/resi/registro")
 @RestController
 @AllArgsConstructor
 public class RegistroJuegoController {
@@ -41,7 +41,7 @@ public class RegistroJuegoController {
      * @param registroJuegoDto Datos del registro a guardar.
      * @return El registro de juego creado.
      */
-    @PostMapping("/add")
+    @PostMapping("/juego/{idJuego}/add")
     public ResponseEntity<RegistroJuegoResponseDto> add(
             @PathVariable Long idJuego,
             @RequestBody RegistroJuegoDto registroJuegoDto) {
@@ -55,18 +55,16 @@ public class RegistroJuegoController {
     /**
      * Obtiene un registro de juego específico mediante su ID.
      *
-     * @param idJuego ID del juego.
-     * @param idRegistroJuego ID del registro de juego.
+     *@param idRegistroJuego ID del registro de juego.
      * @return El registro de juego solicitado.
      */
     @GetMapping("/{idRegistroJuego}/get")
     public ResponseEntity<RegistroJuegoResponseDto> get(
-            @PathVariable Long idJuego,
             @PathVariable Long idRegistroJuego) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(registroJuegoService.get(idResidencia, idJuego, idRegistroJuego));
+        return ResponseEntity.ok(registroJuegoService.get(idResidencia, idRegistroJuego));
     }
 
     /**
@@ -88,11 +86,11 @@ public class RegistroJuegoController {
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
-            @PathVariable Long idJuego,
+            @RequestParam(required = false) Long idJuego,
+            @RequestParam(required = false) Long idResidente,
             @RequestParam(required = false) Integer edad,
             @RequestParam(required = false) Integer minEdad,
             @RequestParam(required = false) Integer maxEdad,
-            @RequestParam(required = false) Long idResidente,
             @RequestParam(required = false) LocalDate fecha,
             @RequestParam(required = false) LocalDate minFecha,
             @RequestParam(required = false) LocalDate maxFecha,
@@ -112,36 +110,32 @@ public class RegistroJuegoController {
     /**
      * Actualiza un registro de juego existente añadiendo o modificando una observación.
      *
-     * @param idJuego ID del juego.
      * @param idRegistroJuego ID del registro a actualizar.
      * @param registroJuegoDto DTO con los nuevos datos (principalmente observación).
      * @return Registro de juego actualizado.
      */
-    @PatchMapping("/registro/{idRegistroJuego}/addComment")
+    @PatchMapping("/{idRegistroJuego}/addComment")
     public ResponseEntity<RegistroJuegoResponseDto> update(
-            @PathVariable Long idJuego,
             @PathVariable Long idRegistroJuego,
             @RequestBody RegistroJuegoDto registroJuegoDto){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(registroJuegoService.update(idResidencia, idJuego, idRegistroJuego, registroJuegoDto));
+        return ResponseEntity.ok(registroJuegoService.update(idResidencia, idRegistroJuego, registroJuegoDto));
     }
 
 
     /**
      * Elimina un registro de juego específico.
      *
-     * @param idJuego ID del juego.
      * @param idRegistroJuego ID del registro a eliminar.
      * @return Respuesta sin contenido si la eliminación fue exitosa.
      */
-    @DeleteMapping("/registro/{idRegistroJuego}/delete")
+    @DeleteMapping("/{idRegistroJuego}/delete")
     public ResponseEntity<Void> delete(
-            @PathVariable Long idJuego,
             @PathVariable Long idRegistroJuego){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        registroJuegoService.delete(idResidencia, idJuego, idRegistroJuego);
+        registroJuegoService.delete(idResidencia, idRegistroJuego);
         return ResponseEntity.noContent().build();
     }
 

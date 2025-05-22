@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * DTO para representar un evento de salida.
@@ -19,6 +20,6 @@ import java.time.LocalDate;
 public class EventoSalidaDto {
     private String nombre;
     private String descripcion;
-    private LocalDate fecha;
+    private LocalDateTime fecha;
     private EstadoSalida estado;
 }

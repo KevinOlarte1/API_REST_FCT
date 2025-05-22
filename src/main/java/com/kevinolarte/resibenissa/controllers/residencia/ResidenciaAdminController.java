@@ -40,8 +40,8 @@ public class ResidenciaAdminController {
      */
     @PostMapping("/add")
     public ResponseEntity<ResidenciaResponseDto> add(
-                                                @RequestBody ResidenciaDto residenciaDto) {
-        ResidenciaResponseDto residencia = residenciaService.save(residenciaDto);
+                                @RequestBody ResidenciaDto residenciaDto) {
+        ResidenciaResponseDto residencia = residenciaService.add(residenciaDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(residencia);
 
     }
@@ -54,7 +54,7 @@ public class ResidenciaAdminController {
      */
     @GetMapping("/{idResidencia}/get")
     public ResponseEntity<ResidenciaResponseDto> get(
-                                                @PathVariable Long idResidencia) {
+                                @PathVariable Long idResidencia) {
         return ResponseEntity.ok(residenciaService.get(idResidencia));
     }
 
@@ -70,7 +70,7 @@ public class ResidenciaAdminController {
 
     /**
      * Obtiene todos los que estan de baja
-     *
+     * @return {@link ResponseEntity} con estado {@code 200 OK} y una lista de DTOs de residencias.
      */
     @GetMapping("/getAll/baja")
     public ResponseEntity<List<ResidenciaPublicResponseDto>> getAllBaja() {
@@ -85,7 +85,7 @@ public class ResidenciaAdminController {
     @DeleteMapping("/{idResidencia}/delete")
     public ResponseEntity<Void> remove(
                                 @PathVariable Long idResidencia) {
-        residenciaService.remove(idResidencia);
+        residenciaService.deleteFisico(idResidencia);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -97,7 +97,7 @@ public class ResidenciaAdminController {
     @PatchMapping("/{idResidencia}/baja")
     public ResponseEntity<Void> baja(
                                 @PathVariable Long idResidencia) {
-        residenciaService.baja(idResidencia);
+        residenciaService.deleteLogico(idResidencia);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

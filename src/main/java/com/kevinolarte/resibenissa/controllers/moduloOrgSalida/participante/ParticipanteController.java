@@ -4,6 +4,7 @@ package com.kevinolarte.resibenissa.controllers.moduloOrgSalida.participante;
 import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.ParticipanteDto;
 import com.kevinolarte.resibenissa.dto.out.moduloOrgSalida.ParticipanteResponseDto;
 import com.kevinolarte.resibenissa.models.User;
+import com.kevinolarte.resibenissa.services.EmailService;
 import com.kevinolarte.resibenissa.services.moduloOrgSalida.ParticipanteService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import java.util.List;
 public class ParticipanteController {
 
     private final ParticipanteService participanteService;
+    private final EmailService emailService;
 
     /**
      * Registra un nuevo participante en un evento de salida.
@@ -42,7 +44,9 @@ public class ParticipanteController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(participanteService.add(participanteDto, idEvento, idResidencia));
+        ParticipanteResponseDto participanteDto1 =  participanteService.add(participanteDto, idEvento, idResidencia);
+        emailService.sendNotificationParticipante(participanteDto1);
+        return ResponseEntity.ok(participanteDto1);
     }
 
     /**
@@ -71,11 +75,12 @@ public class ParticipanteController {
             @RequestParam(required = false) Integer minEdad,
             @RequestParam(required = false) Integer maxEdad,
             @RequestParam(required = false) Boolean preOpinion,
-            @RequestParam(required = false) Boolean postOpinion){
+            @RequestParam(required = false) Boolean postOpinion,
+            @RequestParam(required = false) Boolean asistenciPermitida){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(participanteService.getAll(idResidencia, idEvento, idResidente, rM, rH, minEdad, maxEdad, preOpinion, postOpinion));
+        return ResponseEntity.ok(participanteService.getAll(idResidencia, idEvento, idResidente, rM, rH, minEdad, maxEdad, preOpinion, postOpinion, asistenciPermitida));
 
     }
 
@@ -113,6 +118,18 @@ public class ParticipanteController {
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(participanteService.updateParticipante(participanteDto, idResidencia, idEvento, idParticipante));
     }
+
+    @PostMapping("/{idParticipante}/allow")
+    public ResponseEntity<ParticipanteResponseDto> allow(
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
+        return ResponseEntity.ok(participanteService.allow(idResidencia, idEvento, idParticipante));
+    }
+
+
 
 
 }
