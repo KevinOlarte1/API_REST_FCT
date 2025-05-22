@@ -74,9 +74,10 @@ public class ParticipanteAdminController {
                                                         @RequestParam(required = false)Integer minEdad,
                                                         @RequestParam(required = false)Integer maxEdad,
                                                         @RequestParam(required = false)Boolean preOpinion,
-                                                        @RequestParam(required = false)Boolean postOpinion) {
+                                                        @RequestParam(required = false)Boolean postOpinion,
+                                                        @RequestParam(required = false)Boolean asistenciPermitida) {
 
-        List<ParticipanteResponseDto> e =participanteService.getAll(idResidencia, idEvento, idResidente, rM, rH, minEdad, maxEdad, preOpinion, postOpinion);
+        List<ParticipanteResponseDto> e =participanteService.getAll(idResidencia, idEvento, idResidente, rM, rH, minEdad, maxEdad, preOpinion, postOpinion, asistenciPermitida);
         return ResponseEntity.ok(e);
 
     }
