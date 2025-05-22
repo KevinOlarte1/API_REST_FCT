@@ -3,6 +3,7 @@ package com.kevinolarte.resibenissa.controllers.modulojuego.registroJuego;
 import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
+import com.kevinolarte.resibenissa.enums.Filtrado.RegistroJuegoFiltrado;
 import com.kevinolarte.resibenissa.services.modulojuego.RegistroJuegoService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -76,7 +77,6 @@ public class RegistroJuegoAdminController {
      * @param promedio true si se desea obtener el promedio de los registros, false en caso contrario.
      * @param masPromedio true si se desea obtener los registros con puntajes superiores al promedio, false en caso contrario.
      * @param menosPromedio true si se desea obtener los registros con puntajes inferiores al promedio, false en caso contrario.
-     * @param ordenFecha true si se desea ordenar por fecha, false en caso contrario.
      * @return Lista de registros de juego filtrados.
      */
     @GetMapping("/registro/getAll")
@@ -93,10 +93,10 @@ public class RegistroJuegoAdminController {
                                                         @RequestParam(required = false) boolean promedio,
                                                         @RequestParam(required = false) boolean masPromedio,
                                                         @RequestParam(required = false) boolean menosPromedio,
-                                                        @RequestParam(required = false) boolean ordenFecha,
+                                                        @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
                                                         @RequestParam(required = false) Boolean comentado){
 
-        return ResponseEntity.ok(registroJuegoService.getAll(idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, ordenFecha,comentado));
+        return ResponseEntity.ok(registroJuegoService.getAll(idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, filtrado,comentado));
     }
 
     /**
@@ -114,7 +114,6 @@ public class RegistroJuegoAdminController {
      * @param promedio true si se desea obtener el promedio de los registros, false en caso contrario.
      * @param masPromedio true si se desea obtener los registros con puntajes superiores al promedio, false en caso contrario.
      * @param menosPromedio true si se desea obtener los registros con puntajes inferiores al promedio, false en caso contrario.
-     * @param ordenFecha true si se desea ordenar por fecha, false en caso contrario.
      * @return Lista de registros de juego filtrados.
      */
     @GetMapping("/{idResidencia}/registro/getAll")
@@ -132,9 +131,9 @@ public class RegistroJuegoAdminController {
                                                         @RequestParam(required = false) boolean promedio,
                                                         @RequestParam(required = false) boolean masPromedio,
                                                         @RequestParam(required = false) boolean menosPromedio,
-                                                        @RequestParam(required = false) boolean ordenFecha,
+                                                        @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
                                                         @RequestParam(required = false) Boolean comentado){
-        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, ordenFecha, comentado));
+        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, filtrado, comentado));
     }
 
     /**

@@ -3,6 +3,7 @@ package com.kevinolarte.resibenissa.controllers.residente;
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
+import com.kevinolarte.resibenissa.enums.Filtrado.ResidenteFiltrado;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
@@ -81,16 +82,19 @@ public class ResidenteController {
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
-                                @RequestParam(required = false) LocalDate fechaNacimiento,
-                                @RequestParam(required = false) LocalDate minFNac,
-                                @RequestParam(required = false) LocalDate maxFNac,
-                                @RequestParam(required = false) Integer maxAge,
-                                @RequestParam(required = false) Integer minAge,
-                                @RequestParam(required = false) Long idJuego,
-                                @RequestParam(required = false) Long idEvento) {
+            @RequestParam(required = false) LocalDate fechaNacimiento,
+            @RequestParam(required = false) LocalDate minFNac,
+            @RequestParam(required = false) LocalDate maxFNac,
+            @RequestParam(required = false) Integer maxAge,
+            @RequestParam(required = false) Integer minAge,
+            @RequestParam(required = false) Long idJuego,
+            @RequestParam(required = false) Long idEvento,
+            @RequestParam(required = false)ResidenteFiltrado filtrado) {
+
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(residenteService.getAll(currentUser.getResidencia().getId(),fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
+        return ResponseEntity.ok(residenteService.getAll(currentUser.getResidencia().getId(),fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento, filtrado));
     }
 
     /**

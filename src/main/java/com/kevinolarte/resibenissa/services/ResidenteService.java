@@ -6,6 +6,7 @@ import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
+import com.kevinolarte.resibenissa.enums.Filtrado.ResidenteFiltrado;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
@@ -14,6 +15,8 @@ import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
 import com.kevinolarte.resibenissa.specifications.ResidenteSpecification;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -128,12 +131,17 @@ public class ResidenteService {
      * @return Lista de residentes filtrados.
      * @throws ApiException si la residencia no existe.
      */
-    public List<ResidenteResponseDto> getAll(LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento) {
-
-        List<Residente> residentesBaseList = residenteRepository.findAll(ResidenteSpecification.withFilters(null, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
+    public List<ResidenteResponseDto> getAll(LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento, ResidenteFiltrado filtrado) {
 
 
-        return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
+
+        Specification<Residente> spec = ResidenteSpecification.withFilters(null, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento);
+
+        Sort sort = (filtrado != null) ? filtrado.toSort() : Sort.by(Sort.Direction.ASC, "apellido");
+        List<Residente> residentes = residenteRepository.findAll(spec, sort);
+
+
+        return residentes.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
 
     }
 
@@ -151,18 +159,20 @@ public class ResidenteService {
      * @return Lista de residentes filtrados.
      * @throws ApiException si la residencia no existe o el ID es nulo.
      */
-    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento) {
+    public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento,  ResidenteFiltrado filtrado) {
         if (idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         // Validar que la residencia existe
         Residencia residencia = residenciaService.getResidencia(idResidencia);
 
-        // Obtener todos los residentes de la residencia
-        List<Residente> residentesBaseList = residenteRepository.findAll(ResidenteSpecification.withFilters(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
+        Specification<Residente> spec = ResidenteSpecification.withFilters(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento);
+
+        Sort sort = (filtrado != null) ? filtrado.toSort() : Sort.by(Sort.Direction.ASC, "apellido");
+        List<Residente> residentes = residenteRepository.findAll(spec, sort);
 
 
-        return residentesBaseList.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
+        return residentes.stream().map(ResidenteResponseDto::new).collect(Collectors.toList());
     }
 
     /**

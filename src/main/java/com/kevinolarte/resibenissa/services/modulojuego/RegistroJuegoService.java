@@ -3,6 +3,7 @@ package com.kevinolarte.resibenissa.services.modulojuego;
 import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
+import com.kevinolarte.resibenissa.enums.Filtrado.RegistroJuegoFiltrado;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.models.Residencia;
@@ -124,7 +125,7 @@ public class RegistroJuegoService {
      * @param promedio (opcional) Si se debe filtrar por duración promedio.
      * @param masPromedio (opcional) Si se debe filtrar por duración mayor al promedio.
      * @param menosPromedio (opcional) Si se debe filtrar por duración menor al promedio.
-     * @param ordenFecha (opcional) Si se debe ordenar por fecha descendente o ascendente.
+     * @param filtrado (opcional) Si se debe ordenar por fecha descendente o ascendente.
      * @return Lista de registros de juego que cumplen con los filtros.
      */
     public List<RegistroJuegoResponseDto> getAll(Long idResidencia, Long idJuego,
@@ -132,7 +133,7 @@ public class RegistroJuegoService {
                                                  Integer maxEdad, Long idResidente, LocalDate fecha,
                                                  LocalDate minFecha, LocalDate maxFecha,
                                                  boolean promedio, boolean masPromedio,
-                                                 boolean menosPromedio, boolean ordenFecha,
+                                                 boolean menosPromedio, RegistroJuegoFiltrado filtrado,
                                                  Boolean comentado) {
         if (idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -145,7 +146,11 @@ public class RegistroJuegoService {
                idResidencia, idJuego,idResidente, edad, minEdad, maxEdad, fecha, minFecha, maxFecha, dificultad, comentado,
                 promedio, masPromedio, menosPromedio
         );
-        List<RegistroJuego> registros = registroJuegoRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "fecha"));
+
+
+        Sort sort = (filtrado != null) ? filtrado.toSort() : Sort.by(Sort.Direction.DESC, "fecha");
+        List<RegistroJuego> registros = registroJuegoRepository.findAll(spec, sort);
+
 
         return registros.stream()
                 .map(RegistroJuegoResponseDto::new)
@@ -177,7 +182,7 @@ public class RegistroJuegoService {
                                                  Integer maxEdad, Long idResidente, LocalDate fecha,
                                                  LocalDate minFecha, LocalDate maxFecha,
                                                  boolean promedio, boolean masPromedio,
-                                                 boolean menosPromedio, boolean ordenFecha,
+                                                 boolean menosPromedio, RegistroJuegoFiltrado filtrado,
                                                  Boolean comentado) {
 
         Specification<RegistroJuego> spec = RegistroJuegoSpecification.withDynamicFilters(
@@ -187,7 +192,9 @@ public class RegistroJuegoService {
         );
 
 
-        List<RegistroJuego> registros = registroJuegoRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "fecha"));
+
+        Sort sort = (filtrado != null) ? filtrado.toSort() : Sort.by(Sort.Direction.DESC, "fecha");
+        List<RegistroJuego> registros = registroJuegoRepository.findAll(spec, sort);
 
         return registros.stream()
                 .map(RegistroJuegoResponseDto::new)

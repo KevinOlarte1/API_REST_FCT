@@ -3,6 +3,7 @@ package com.kevinolarte.resibenissa.controllers.residente;
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
+import com.kevinolarte.resibenissa.enums.Filtrado.ResidenteFiltrado;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
@@ -79,16 +80,17 @@ public class ResidenteAdminController {
      */
     @GetMapping("/{idResidencia}/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
-                                    @PathVariable Long idResidencia,
-                                    @RequestParam(required = false) LocalDate fechaNacimiento,
-                                    @RequestParam(required = false) LocalDate minFNac,
-                                    @RequestParam(required = false) LocalDate maxFNac,
-                                    @RequestParam(required = false) Integer maxAge,
-                                    @RequestParam(required = false) Integer minAge,
-                                    @RequestParam(required = false) Long idJuego,
-                                    @RequestParam(required = false) Long idEvento) {
+            @PathVariable Long idResidencia,
+            @RequestParam(required = false) LocalDate fechaNacimiento,
+            @RequestParam(required = false) LocalDate minFNac,
+            @RequestParam(required = false) LocalDate maxFNac,
+            @RequestParam(required = false) Integer maxAge,
+            @RequestParam(required = false) Integer minAge,
+            @RequestParam(required = false) Long idJuego,
+            @RequestParam(required = false) Long idEvento,
+            @RequestParam(required = false)ResidenteFiltrado filtrado) {
 
-        return ResponseEntity.ok(residenteService.getAll(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
+        return ResponseEntity.ok(residenteService.getAll(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento, filtrado));
     }
 
     /**
@@ -111,8 +113,9 @@ public class ResidenteAdminController {
                                     @RequestParam(required = false) Integer maxAge,
                                     @RequestParam(required = false) Integer minAge,
                                     @RequestParam(required = false) Long idJuego,
-                                    @RequestParam(required = false) Long idEvento){
-        return ResponseEntity.ok(residenteService.getAll(fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento));
+                                    @RequestParam(required = false) Long idEvento,
+                                    @RequestParam(required = false) ResidenteFiltrado filtrado) {
+        return ResponseEntity.ok(residenteService.getAll(fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento,filtrado));
     }
 
     /**
