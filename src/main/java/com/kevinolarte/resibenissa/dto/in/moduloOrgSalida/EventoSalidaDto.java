@@ -21,5 +21,4 @@ public class EventoSalidaDto {
     private String nombre;
     private String descripcion;
     private LocalDateTime fecha;
-    private EstadoSalida estado;
 }

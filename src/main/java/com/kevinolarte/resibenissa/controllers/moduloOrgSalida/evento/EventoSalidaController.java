@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -102,24 +103,69 @@ public class EventoSalidaController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+
     /**
-     * Actualiza los datos de un evento de salida existente.
-     * <p>
-     * Solo es posible actualizar la fecha y el estado del evento.
-     * </p>
+     * Cambia el nombre de un evento de salida.
      *
      * @param idEventoSalida ID del evento de salida a actualizar.
-     * @param input DTO que contiene los nuevos datos del evento.
+     * @param nombre Nuevo nombre del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
      */
-    @PatchMapping("/{idEventoSalida}/update")
-    public ResponseEntity<EventoSalidaResponseDto> updateEventoSalida(
-                                                    @PathVariable Long idEventoSalida,
-                                                    @RequestBody EventoSalidaDto input) {
-
+    @PatchMapping("/{idEventoSalida}/changeNombre")
+    public ResponseEntity<EventoSalidaResponseDto> changeNombre(
+            @PathVariable Long idEventoSalida,
+            @RequestParam String nombre) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(eventoSalidaService.update(input, idEventoSalida, idResidencia));
+        return ResponseEntity.ok(eventoSalidaService.changeNombre(idEventoSalida, nombre, idResidencia));
+    }
+
+    /**
+     * Cambia la descripción de un evento de salida.
+     *
+     * @param idEventoSalida ID del evento de salida a actualizar.
+     * @param descripcion Nueva descripción del evento de salida.
+     * @return {@link ResponseEntity} con el evento de salida actualizado.
+     */
+    @PatchMapping("/{idEventoSalida}/changeDescripcion")
+    public ResponseEntity<EventoSalidaResponseDto> changeDescripcion(
+            @PathVariable Long idEventoSalida,
+            @RequestParam String descripcion) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
+        return ResponseEntity.ok(eventoSalidaService.changeDescripcion(idEventoSalida, descripcion, idResidencia));
+    }
+
+    /**
+     * Cambia la fecha de un evento de salida.
+     *
+     * @param idEventoSalida ID del evento de salida a actualizar.
+     * @param fecha Nueva fecha del evento de salida.
+     * @return {@link ResponseEntity} con el evento de salida actualizado.
+     */
+    @PatchMapping("/{idEventoSalida}/ChangeFecha")
+    public ResponseEntity<EventoSalidaResponseDto> changeFecha(
+            @PathVariable Long idEventoSalida,
+            @RequestParam LocalDateTime fecha) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
+        return ResponseEntity.ok(eventoSalidaService.changeFecha(idEventoSalida, fecha, idResidencia));
+    }
+
+    /**
+     * Cambia el estado de un evento de salida.
+     *
+     * @param idEventoSalida ID del evento de salida a actualizar.
+     * @param estado Nuevo estado del evento de salida.
+     * @return {@link ResponseEntity} con el evento de salida actualizado.
+     */
+    @PatchMapping("/{idEventoSalida}/changeEstado")
+    public ResponseEntity<EventoSalidaResponseDto> changeEstado(
+            @PathVariable Long idEventoSalida,
+            @RequestParam EstadoSalida estado) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
+        return ResponseEntity.ok(eventoSalidaService.changeEstado(idEventoSalida, estado, idResidencia));
     }
 
 

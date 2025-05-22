@@ -25,5 +25,10 @@ public class Conf {
     @Value("${upload.dir}")
     public static String imageResource;
     public static final String imageDefault = "defaultPerfil.png";
+
+    public static final int POS_ESTADO_ABIERTO = 0;
+    public static final int POS_ESTADO_CERRADO = 1;
+    public static final int POS_ESTADO_EN_CURSO = 2;
+    public static final int POS_ESTADO_FINALIZADA = 3;
 }
 

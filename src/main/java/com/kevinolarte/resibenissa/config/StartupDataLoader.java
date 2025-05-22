@@ -114,7 +114,6 @@ public class StartupDataLoader {
         eventoSalidaDto.setNombre("Casa 1");
         eventoSalidaDto.setDescripcion("Salida a casa 1");
         eventoSalidaDto.setFecha(LocalDateTime.now().plusYears(1));
-        eventoSalidaDto.setEstado(EstadoSalida.ABIERTO);
 
         EventoSalida eventoSalida = new EventoSalida(eventoSalidaDto);
         eventoSalida.setResidencia(residenciaDefault);

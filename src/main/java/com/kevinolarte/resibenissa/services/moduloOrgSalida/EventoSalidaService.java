@@ -40,6 +40,8 @@ public class EventoSalidaService {
     private final ResidenciaService residenciaService;
     private final ResidenteService residenteService;
     private final ParticipanteRepository participanteRepository;
+    private final static EstadoSalida[] secuenciaEstados =
+            {EstadoSalida.CERRADO, EstadoSalida.EN_CURSO,EstadoSalida.FINALIZADA, EstadoSalida.ABIERTO};
 
 
     /**
@@ -53,7 +55,7 @@ public class EventoSalidaService {
      */
     public EventoSalidaResponseDto add(EventoSalidaDto input, Long idResidencia) {
         if (input.getNombre() == null || input.getNombre().trim().isEmpty() || input.getDescripcion() == null || input.getDescripcion().trim().isEmpty()
-            || input.getFecha() == null || input.getEstado() == null || idResidencia == null) {
+            || input.getFecha() == null || idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
@@ -98,19 +100,7 @@ public class EventoSalidaService {
 
         EventoSalida eventoSalida = getEventoSalida(idResidencia, idEventoSalida);
 
-        // Validar que la fecha no sea anterior a la fecha actual
-        if (input.getFecha() != null && input.getFecha().isBefore(LocalDateTime.now())) {
-            throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
-        }
 
-        //Comprobar si la fecha no es anterior a la actual
-        if (input.getFecha() != null) {
-            eventoSalida.setFechaInicio(input.getFecha());
-        }
-
-        if (input.getEstado() != null) {
-            eventoSalida.setEstado(input.getEstado());
-        }
         if (input.getNombre() != null) {
             // Comprobar si ya existe un evento de salida con ese nombre en esa residencia
             EventoSalida eventoSalida1 = eventoSalidaRepository.findByNombreAndResidencia_Id(input.getNombre(), idResidencia);
@@ -183,6 +173,32 @@ public class EventoSalidaService {
 
     }
 
+    public List<EventoSalidaResponseDto> getAll( LocalDate fecha,
+                                                LocalDate minFecha, LocalDate maxFecha,
+                                                EstadoSalida estado, Long idResidente,
+                                                Long idParticipante,  Integer minRH,
+                                                Integer maxRH, Integer minRM,
+                                                Integer maxRM) {
+
+
+        List<EventoSalida> eventos = eventoSalidaRepository.findAll(
+                EventoSalidaSpecification.withDynamicFilters(
+                        null, fecha, minFecha, maxFecha, estado,
+                        idResidente, idParticipante,
+                        minRH, maxRH,
+                        minRM, maxRM
+                )
+        );
+
+
+
+
+        return eventos.stream()
+                .map(EventoSalidaResponseDto::new)
+                .toList();
+
+    }
+
     /**
      * Valida que un evento de salida pertenezca a una residencia específica.
      *
@@ -209,4 +225,60 @@ public class EventoSalidaService {
         return eventoSalida;
     }
 
+    public EventoSalidaResponseDto changeEstado(Long idEventoSalida, EstadoSalida estado, Long idResidencia) {
+        if (estado == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
+
+        if(!secuenciaEstados[evento.getEstado().getEstado()].equals(estado)){
+            throw new ApiException(ApiErrorCode.ESTADO_INVALIDO);
+        }
+        evento.setEstado(estado);
+        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
+    }
+
+    public EventoSalidaResponseDto changeFecha(Long idEventoSalida, LocalDateTime fecha, Long idResidencia) {
+        if (fecha == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
+
+        // Validar que la fecha no sea anterior a la fecha actual
+        if (fecha.isBefore(LocalDateTime.now())) {
+            throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
+        }
+
+        evento.setFechaInicio(fecha);
+        if(evento.getEstado().equals(EstadoSalida.EN_CURSO) || evento.getEstado().equals(EstadoSalida.FINALIZADA)){
+            evento.setEstado(EstadoSalida.ABIERTO);
+        }
+
+        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
+    }
+
+    public EventoSalidaResponseDto changeNombre(Long idEventoSalida, String nombre, Long idResidencia) {
+        if (nombre == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
+
+        //El nombre de la salida tiene que ser unico en esa misma residencia
+        if (eventoSalidaRepository.existsByNombreAndResidenciaId(nombre, idResidencia)) {
+            throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
+        }
+        evento.setNombre(nombre);
+        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
+
+    }
+
+    public EventoSalidaResponseDto changeDescripcion(Long idEventoSalida, String descripcion, Long idResidencia) {
+        if (descripcion == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
+
+        evento.setDescripcion(descripcion);
+        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
+    }
 }

@@ -82,7 +82,7 @@ public class EventoSalida {
         this.nombre = e.getNombre();
         this.descripcion = e.getDescripcion();
         this.fechaInicio = e.getFecha();
-        this.estado = e.getEstado();
+        this.estado = EstadoSalida.ABIERTO;
     }
     public EventoSalida() {}
 }

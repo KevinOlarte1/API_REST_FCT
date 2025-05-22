@@ -173,18 +173,16 @@ public class UserController {
     }
 
     /**
-     * Marca lógicamente como dado de baja al usuario indicado por su ID.
+     * Marca lógicamente como dado de baja al usuario.
      *
-     * @param idUser ID del usuario a dar de baja.
      * @return Respuesta sin contenido (HTTP 204) si se realiza correctamente.
      * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
      */
-    @PatchMapping("/{idUser}/baja")
-    public ResponseEntity<Void> baja(
-                                @PathVariable Long idUser) {
+    @PatchMapping("/baja")
+    public ResponseEntity<Void> baja() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        userService.deleteLogico(currentUser.getResidencia().getId(), idUser);
+        userService.deleteLogico(currentUser.getResidencia().getId(), currentUser.getId());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

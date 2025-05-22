@@ -54,7 +54,8 @@ public enum ApiErrorCode {
     RESIDENTE_BAJA(1028, "Este residente ya esta dado de baja", HttpStatus.NOT_ACCEPTABLE ),
     RANGO_EDAD_INVALIDO(1029, "Rango de edad inadecuado" , HttpStatus.NOT_ACCEPTABLE ),
     USUARIO_BAJA(1030, "Usuario dado de baja", HttpStatus.NOT_ACCEPTABLE),
-    RESIDENCIA_BAJA(1031, "Residencia dado de baja", HttpStatus.NOT_ACCEPTABLE);
+    RESIDENCIA_BAJA(1031, "Residencia dado de baja", HttpStatus.NOT_ACCEPTABLE),
+    ESTADO_INVALIDO(1032, "Este estado no se puede cambiar por el otro, sigue la secuencia.",HttpStatus.NOT_ACCEPTABLE);
 
 
     private final int code;

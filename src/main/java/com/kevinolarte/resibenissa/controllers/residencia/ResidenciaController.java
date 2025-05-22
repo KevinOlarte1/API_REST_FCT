@@ -55,19 +55,6 @@ public class ResidenciaController {
         return ResponseEntity.ok(residenciaService.getAll());
     }
 
-    /**
-     * Elimina una residencia de forma lógica. Dandolo de baja.
-     *
-     *
-     * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
-     */
-    @PatchMapping("/baja")
-    public ResponseEntity<Void> baja() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-        residenciaService.deleteLogico(currentUser.getResidencia().getId());
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
 
 
 
