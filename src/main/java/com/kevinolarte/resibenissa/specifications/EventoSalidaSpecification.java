@@ -6,6 +6,8 @@ import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class EventoSalidaSpecification {
 
@@ -28,15 +30,23 @@ public class EventoSalidaSpecification {
                 predicate = cb.and(predicate, cb.equal(root.get("residencia").get("id"), idResidencia));
             }
 
-            // Filtro por fecha exacta o por rango
+            //Por fecha
             if (fecha != null) {
-                predicate = cb.and(predicate, cb.equal(root.get("fechaInicio"), fecha));
+                predicate = cb.and(predicate,
+                        cb.between(root.get("fechaInicio"),
+                                fecha.atStartOfDay(),
+                                fecha.atTime(LocalTime.MAX))
+                );
             } else {
                 if (minFecha != null) {
-                    predicate = cb.and(predicate, cb.greaterThanOrEqualTo(root.get("fechaInicio"), minFecha));
+                    predicate = cb.and(predicate,
+                            cb.greaterThanOrEqualTo(root.get("fechaInicio"),
+                                    minFecha.atStartOfDay()));
                 }
                 if (maxFecha != null) {
-                    predicate = cb.and(predicate, cb.lessThanOrEqualTo(root.get("fechaInicio"), maxFecha));
+                    predicate = cb.and(predicate,
+                            cb.lessThanOrEqualTo(root.get("fechaInicio"),
+                                    maxFecha.atTime(LocalTime.MAX)));
                 }
             }
 
@@ -95,5 +105,9 @@ public class EventoSalidaSpecification {
 
             return predicate;
         };
-    }
+
+    };
+
 }
+
+
