@@ -100,24 +100,41 @@ public class ParticipanteController {
         return ResponseEntity.noContent().build();
     }
 
-
-    /**
-     * Actualiza los datos de un participante existente en un evento de salida.
-     *
-     * @param idParticipante ID del participante a actualizar.
-     * @param participanteDto DTO con los nuevos datos del participante.
-     * @return {@link ResponseEntity} con el participante actualizado.
-     */
-    @PatchMapping("/{idParticipante}/update")
-    public ResponseEntity<ParticipanteResponseDto> update(
-                                                    @PathVariable Long idEvento,
-                                                    @PathVariable Long idParticipante,
-                                                    @RequestBody ParticipanteDto participanteDto) {
+    @PatchMapping("/{idParticipante}/addPreOpinion")
+    public ResponseEntity<ParticipanteResponseDto> addPreOpinion(
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante,
+            @RequestParam String preOpinion) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(participanteService.updateParticipante(participanteDto, idResidencia, idEvento, idParticipante));
+        return ResponseEntity.ok(participanteService.addPreOpinion(idResidencia, idEvento, idParticipante, preOpinion));
     }
+
+    @PatchMapping("/{idParticipante}/addPostOpinion")
+    public ResponseEntity<ParticipanteResponseDto> addPostOpinion(
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante,
+            @RequestParam String postOpinion) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
+        return ResponseEntity.ok(participanteService.addPostOpinion(idResidencia, idEvento, idParticipante, postOpinion));
+    }
+
+    @PatchMapping("/{idParticipante}/changeRecursos")
+    public ResponseEntity<ParticipanteResponseDto> changeRecursos(
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante,
+            @RequestParam (required = false) Boolean rH,
+            @RequestParam (required = false) Boolean rM){
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
+        return ResponseEntity.ok(participanteService.changeRecursos(idResidencia, idEvento, idParticipante, rH, rM));
+    }
+
+
 
     @PostMapping("/{idParticipante}/allow")
     public ResponseEntity<ParticipanteResponseDto> allow(
@@ -127,6 +144,15 @@ public class ParticipanteController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(participanteService.allow(idResidencia, idEvento, idParticipante));
+    }
+    @PostMapping("/{idParticipante}/deny")
+    public ResponseEntity<ParticipanteResponseDto> deny(
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
+        return ResponseEntity.ok(participanteService.deny(idResidencia, idEvento, idParticipante));
     }
 
 

@@ -247,4 +247,50 @@ public class ParticipanteService {
         participante.setAsistenciaPermitida(false);
         return new ParticipanteResponseDto(participanteRepository.save(participante));
     }
+
+    public ParticipanteResponseDto addPreOpinion(Long idResidencia, Long idEvento, Long idParticipante, String preOpinion) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Verificar el estado del evento de salida
+        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        // Verificar que la preOpinion no sea nula o vacía
+        if (preOpinion != null && !preOpinion.trim().isEmpty()) {
+            participante.setPreOpinion(preOpinion);
+        }
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
+
+    public ParticipanteResponseDto addPostOpinion(Long idResidencia, Long idEvento, Long idParticipante, String postOpinion) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Verificamos que la el estado no sea finalozado.
+        if (participante.getEvento().getEstado() != EstadoSalida.FINALIZADA) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        // Verificar que la postOpinion no sea nula o vacía
+        if (postOpinion != null && !postOpinion.trim().isEmpty()) {
+            participante.setPostOpinion(postOpinion);
+        }
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
+
+    public ParticipanteResponseDto changeRecursos(Long idResidencia, Long idEvento, Long idParticipante, Boolean rH, Boolean rM) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Verificar el estado del evento de salida (si no es abierto o cerrado)
+        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO &&
+            participante.getEvento().getEstado() != EstadoSalida.CERRADO) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        // Verificar que la preOpinion no sea nula o vacía
+        if (rH != null) {
+            participante.setRecursosHumanos(rH);
+        }
+        if (rM != null) {
+            participante.setRecursosMateriales(rM);
+        }
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
 }
