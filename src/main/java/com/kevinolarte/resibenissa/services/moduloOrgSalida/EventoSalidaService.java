@@ -96,7 +96,7 @@ public class EventoSalidaService {
      * @throws ApiException si el evento no existe o no pertenece a la residencia.
      */
     public EventoSalidaResponseDto get(Long idEventoSalida, Long idResidencia) {
-        EventoSalida eventoSalida = getEventoSalida(idEventoSalida, idResidencia);
+        EventoSalida eventoSalida = getEventoSalida(idResidencia, idEventoSalida);
         return new EventoSalidaResponseDto(eventoSalida);
     }
 
@@ -167,7 +167,7 @@ public class EventoSalidaService {
      * @throws ApiException si el evento no existe o no pertenece a la residencia.
      */
     public void delete(Long idEventoSalida, Long idResidencia) {
-        EventoSalida eventoSalida = getEventoSalida(idEventoSalida, idResidencia);
+        EventoSalida eventoSalida = getEventoSalida(idResidencia, idEventoSalida);
 
         eventoSalidaRepository.delete(eventoSalida);
     }
@@ -328,7 +328,7 @@ public class EventoSalidaService {
      * @return EventoSalida validado.
      * @throws ApiException si el evento no existe o no pertenece a la residencia.
      */
-    protected EventoSalida getEventoSalida(Long idEventoSalida, Long idResidencia) {
+    protected EventoSalida getEventoSalida(Long idResidencia, Long idEventoSalida) {
         if (idEventoSalida == null || idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
