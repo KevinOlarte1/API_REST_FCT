@@ -82,6 +82,17 @@ public class EmailService {
         mailSender.send(message);
     }
 
+
+    /**
+     * Envía una notificación por correo electrónico a los familiares de un participante
+     * para solicitar permiso para una excursión.
+     * <p>
+     * Genera un token JWT con información del participante y construye URLs para permitir o rechazar la solicitud.
+     * Reemplaza los placeholders en una plantilla HTML y envía el correo a los familiares.
+     * </p>
+     *
+     * @param participanteDto DTO que contiene la información del participante.
+     */
     public void sendNotificationParticipante(ParticipanteResponseDto participanteDto) {
         try {
 

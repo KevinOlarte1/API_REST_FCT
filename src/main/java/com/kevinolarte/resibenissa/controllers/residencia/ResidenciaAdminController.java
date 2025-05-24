@@ -19,7 +19,7 @@ import java.util.List;
  * Permite crear nuevas residencias, obtenerlas por ID y eliminarlas.
  * </p>
  *
- * URL Base: {@code /resi}
+ * URL Base: {@code /admin/resi}
  *
  * Autor: Kevin Olarte
  */

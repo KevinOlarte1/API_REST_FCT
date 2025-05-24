@@ -83,52 +83,8 @@ public class EventoSalidaService {
         return new EventoSalidaResponseDto(newEventoSalida);
     }
 
-    /**
-     * Actualiza los datos de un evento de salida existente.
-     * <p>
-     * Permite modificar únicamente la fecha y el estado del evento.
-     * </p>
-     *
-     * @param input DTO con los datos actualizados.
-     * @param idResidencia ID de la residencia del evento.
-     * @param idEventoSalida ID del evento a actualizar.
-     * @return DTO con los datos del evento actualizado.
-     * @throws ApiException si los IDs son inválidos, el evento no existe o no pertenece a la residencia.
-     */
-    public EventoSalidaResponseDto update(EventoSalidaDto input,
-                                                      Long idResidencia, Long idEventoSalida) {
-
-        EventoSalida eventoSalida = getEventoSalida(idResidencia, idEventoSalida);
 
 
-        if (input.getNombre() != null) {
-            // Comprobar si ya existe un evento de salida con ese nombre en esa residencia
-            EventoSalida eventoSalida1 = eventoSalidaRepository.findByNombreAndResidencia_Id(input.getNombre(), idResidencia);
-            if (eventoSalida1 !=null && !eventoSalida1.getId().equals(idEventoSalida)) {
-                throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
-            }
-            eventoSalida.setNombre(input.getNombre());
-        }
-        if (input.getDescripcion() != null) {
-            eventoSalida.setDescripcion(input.getDescripcion());
-        }
-
-        return new EventoSalidaResponseDto(eventoSalidaRepository.save(eventoSalida));
-    }
-
-
-    /**
-     * Elimina un evento de salida de la residencia.
-     *
-     * @param idEventoSalida ID del evento de salida a eliminar.
-     * @param idResidencia ID de la residencia asociada.
-     * @throws ApiException si el evento no existe o no pertenece a la residencia.
-     */
-    public void delete(Long idEventoSalida, Long idResidencia) {
-        EventoSalida eventoSalida = getEventoSalida(idEventoSalida, idResidencia);
-
-        eventoSalidaRepository.delete(eventoSalida);
-    }
 
 
     /**
@@ -140,7 +96,7 @@ public class EventoSalidaService {
      * @throws ApiException si el evento no existe o no pertenece a la residencia.
      */
     public EventoSalidaResponseDto get(Long idEventoSalida, Long idResidencia) {
-       EventoSalida eventoSalida = getEventoSalida(idEventoSalida, idResidencia);
+        EventoSalida eventoSalida = getEventoSalida(idEventoSalida, idResidencia);
         return new EventoSalidaResponseDto(eventoSalida);
     }
 
@@ -174,11 +130,11 @@ public class EventoSalidaService {
     }
 
     public List<EventoSalidaResponseDto> getAll( LocalDate fecha,
-                                                LocalDate minFecha, LocalDate maxFecha,
-                                                EstadoSalida estado, Long idResidente,
-                                                Long idParticipante,  Integer minRH,
-                                                Integer maxRH, Integer minRM,
-                                                Integer maxRM) {
+                                                 LocalDate minFecha, LocalDate maxFecha,
+                                                 EstadoSalida estado, Long idResidente,
+                                                 Long idParticipante,  Integer minRH,
+                                                 Integer maxRH, Integer minRM,
+                                                 Integer maxRM) {
 
 
         List<EventoSalida> eventos = eventoSalidaRepository.findAll(
@@ -198,6 +154,171 @@ public class EventoSalidaService {
                 .toList();
 
     }
+
+
+
+
+
+    /**
+     * Elimina un evento de salida de la residencia.
+     *
+     * @param idEventoSalida ID del evento de salida a eliminar.
+     * @param idResidencia ID de la residencia asociada.
+     * @throws ApiException si el evento no existe o no pertenece a la residencia.
+     */
+    public void delete(Long idEventoSalida, Long idResidencia) {
+        EventoSalida eventoSalida = getEventoSalida(idEventoSalida, idResidencia);
+
+        eventoSalidaRepository.delete(eventoSalida);
+    }
+
+
+
+
+    /**
+     * Actualiza los datos de un evento de salida existente.
+     * <p>
+     * Permite modificar únicamente la fecha y el estado del evento.
+     * </p>
+     *
+     * @param input DTO con los datos actualizados.
+     * @param idResidencia ID de la residencia del evento.
+     * @param idEventoSalida ID del evento a actualizar.
+     * @return DTO con los datos del evento actualizado.
+     * @throws ApiException si los IDs son inválidos, el evento no existe o no pertenece a la residencia.
+     */
+    public EventoSalidaResponseDto update(EventoSalidaDto input, Long idResidencia, Long idEventoSalida) {
+
+        EventoSalida eventoSalida = getEventoSalida(idResidencia, idEventoSalida);
+
+
+        if (input.getNombre() != null) {
+            // Comprobar si ya existe un evento de salida con ese nombre en esa residencia
+            EventoSalida eventoSalida1 = eventoSalidaRepository.findByNombreAndResidencia_Id(input.getNombre(), idResidencia);
+            if (eventoSalida1 !=null && !eventoSalida1.getId().equals(idEventoSalida)) {
+                throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
+            }
+            eventoSalida.setNombre(input.getNombre());
+        }
+        if (input.getDescripcion() != null) {
+            eventoSalida.setDescripcion(input.getDescripcion());
+        }
+        if (input.getFecha() != null) {
+            // Validar que la fecha no sea anterior a la fecha actual
+            if (input.getFecha().isBefore(LocalDateTime.now())) {
+                throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
+            }
+            eventoSalida.setFechaInicio(input.getFecha());
+        }
+
+        if (input.getEstado() != null){
+            if(!secuenciaEstados[eventoSalida.getEstado().getEstado()].equals(input.getEstado()))
+                throw new ApiException(ApiErrorCode.ESTADO_INVALIDO);
+            eventoSalida.setEstado(input.getEstado());
+        }
+
+
+
+
+        return new EventoSalidaResponseDto(eventoSalidaRepository.save(eventoSalida));
+    }
+
+    /**
+     * Cambia el estado de un evento de salida.
+     *
+     * @param idEventoSalida ID del evento de salida a modificar.
+     * @param estado Nuevo estado a asignar al evento.
+     * @param idResidencia ID de la residencia asociada al evento.
+     * @return DTO con los datos del evento actualizado.
+     * @throws ApiException si el estado es nulo, el evento no existe o el estado no es válido para la transición actual.
+     */
+    public EventoSalidaResponseDto changeEstado(Long idEventoSalida, EstadoSalida estado, Long idResidencia) {
+        if (estado == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
+
+        if(!secuenciaEstados[evento.getEstado().getEstado()].equals(estado)){
+            throw new ApiException(ApiErrorCode.ESTADO_INVALIDO);
+        }
+        evento.setEstado(estado);
+        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
+    }
+
+    /**
+     * Cambia la fecha de inicio de un evento de salida.
+     *
+     * @param idEventoSalida ID del evento de salida a modificar.
+     * @param fecha Nueva fecha de inicio del evento.
+     * @param idResidencia ID de la residencia asociada al evento.
+     * @return DTO con los datos del evento actualizado.
+     * @throws ApiException si la fecha es nula, el evento no existe o la fecha es inválida (anterior a la actual).
+     */
+    public EventoSalidaResponseDto changeFecha(Long idEventoSalida, LocalDateTime fecha, Long idResidencia) {
+        if (fecha == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
+
+        // Validar que la fecha no sea anterior a la fecha actual
+        if (fecha.isBefore(LocalDateTime.now())) {
+            throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
+        }
+
+        evento.setFechaInicio(fecha);
+        if(evento.getEstado().equals(EstadoSalida.EN_CURSO) || evento.getEstado().equals(EstadoSalida.FINALIZADA)){
+            evento.setEstado(EstadoSalida.ABIERTO);
+        }
+
+        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
+    }
+
+    /**
+     * Cambia el nombre de un evento de salida.
+     * @param idEventoSalida ID del evento de salida a modificar.
+     * @param nombre Nuevo nombre a asignar al evento.
+     * @param idResidencia ID de la residencia asociada al evento.
+     * @return DTO con los datos del evento actualizado.
+     * @throws ApiException si el nombre es nulo, el evento no existe o el nombre ya está en uso en esa residencia.
+     */
+    public EventoSalidaResponseDto changeNombre(Long idEventoSalida, String nombre, Long idResidencia) {
+        if (nombre == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
+
+        //El nombre de la salida tiene que ser unico en esa misma residencia
+        if (eventoSalidaRepository.existsByNombreAndResidenciaId(nombre, idResidencia)) {
+            throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
+        }
+        evento.setNombre(nombre);
+        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
+
+    }
+
+    /**
+     * Cambia la descripción de un evento de salida.
+     * @param idEventoSalida ID del evento de salida a modificar.
+     * @param descripcion Nueva descripción a asignar al evento.
+     * @param idResidencia ID de la residencia asociada al evento.
+     * @return DTO con los datos del evento actualizado.
+     * @throws ApiException si la descripción es nula, el evento no existe o no pertenece a la residencia.
+     */
+    public EventoSalidaResponseDto changeDescripcion(Long idEventoSalida, String descripcion, Long idResidencia) {
+        if (descripcion == null) {
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        }
+        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
+
+        evento.setDescripcion(descripcion);
+        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
+    }
+
+
+
+
+
+
 
     /**
      * Valida que un evento de salida pertenezca a una residencia específica.
@@ -225,60 +346,4 @@ public class EventoSalidaService {
         return eventoSalida;
     }
 
-    public EventoSalidaResponseDto changeEstado(Long idEventoSalida, EstadoSalida estado, Long idResidencia) {
-        if (estado == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
-
-        if(!secuenciaEstados[evento.getEstado().getEstado()].equals(estado)){
-            throw new ApiException(ApiErrorCode.ESTADO_INVALIDO);
-        }
-        evento.setEstado(estado);
-        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
-    }
-
-    public EventoSalidaResponseDto changeFecha(Long idEventoSalida, LocalDateTime fecha, Long idResidencia) {
-        if (fecha == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
-
-        // Validar que la fecha no sea anterior a la fecha actual
-        if (fecha.isBefore(LocalDateTime.now())) {
-            throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
-        }
-
-        evento.setFechaInicio(fecha);
-        if(evento.getEstado().equals(EstadoSalida.EN_CURSO) || evento.getEstado().equals(EstadoSalida.FINALIZADA)){
-            evento.setEstado(EstadoSalida.ABIERTO);
-        }
-
-        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
-    }
-
-    public EventoSalidaResponseDto changeNombre(Long idEventoSalida, String nombre, Long idResidencia) {
-        if (nombre == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
-
-        //El nombre de la salida tiene que ser unico en esa misma residencia
-        if (eventoSalidaRepository.existsByNombreAndResidenciaId(nombre, idResidencia)) {
-            throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
-        }
-        evento.setNombre(nombre);
-        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
-
-    }
-
-    public EventoSalidaResponseDto changeDescripcion(Long idEventoSalida, String descripcion, Long idResidencia) {
-        if (descripcion == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
-        }
-        EventoSalida evento = getEventoSalida(idResidencia,idEventoSalida);
-
-        evento.setDescripcion(descripcion);
-        return new EventoSalidaResponseDto(eventoSalidaRepository.save(evento));
-    }
 }

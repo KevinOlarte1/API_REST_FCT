@@ -89,6 +89,13 @@ public class JwtService {
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
+    /**
+     * Genera un token JWT con claims personalizados y una duración específica.
+     *
+     * @param extraClaims Claims adicionales a incluir en el token.
+     * @param duration Duración del token.
+     * @return Token JWT generado.
+     */
     public String generateTokenConExpiracionCustomClaims(Map<String, Object> extraClaims, Duration duration) {
         return Jwts.builder()
                 .setClaims(extraClaims)

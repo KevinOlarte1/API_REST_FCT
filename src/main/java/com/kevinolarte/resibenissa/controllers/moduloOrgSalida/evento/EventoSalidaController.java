@@ -23,6 +23,7 @@ import java.util.List;
  * asociados a una residencia específica.
  * </p>
  *
+ * URL base: /resi/evento
  * @author Kevin Olarte
  */
 @RequestMapping("/resi/evento")
@@ -41,7 +42,7 @@ public class EventoSalidaController {
      */
     @PostMapping("/add")
     public ResponseEntity<EventoSalidaResponseDto> add(
-                                                    @RequestBody EventoSalidaDto input) {
+                                @RequestBody EventoSalidaDto input) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
@@ -57,7 +58,7 @@ public class EventoSalidaController {
      */
     @GetMapping("/{idEventoSalida}/get")
     public ResponseEntity<EventoSalidaResponseDto> getEventoSalida(
-                                                    @PathVariable Long idEventoSalida) {
+                                @PathVariable Long idEventoSalida) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
@@ -65,18 +66,33 @@ public class EventoSalidaController {
     }
 
 
+    /**
+     * Obtiene una lista de eventos de salida filtrados por varios parámetros.
+     *
+     * @param fecha Fecha específica del evento de salida.
+     * @param minFecha Fecha mínima del evento de salida.
+     * @param maxFecha Fecha máxima del evento de salida.
+     * @param estado Estado del evento de salida.
+     * @param idResidente ID del residente asociado al evento de salida.
+     * @param idParticipante ID del participante asociado al evento de salida.
+     * @param minRH Mínimo rango horario del evento de salida.
+     * @param maxRH Máximo rango horario del evento de salida.
+     * @param minRM Mínimo rango de minutos del evento de salida.
+     * @param maxRM Máximo rango de minutos del evento de salida.
+     * @return {@link ResponseEntity} con la lista de eventos de salida encontrados.
+     */
     @GetMapping("/getAll")
     public ResponseEntity<List<EventoSalidaResponseDto>> getAllEventosSalida(
-                                                        @RequestParam(required = false ) LocalDate fecha,
-                                                        @RequestParam(required = false) LocalDate minFecha,
-                                                        @RequestParam(required = false) LocalDate maxFecha,
-                                                        @RequestParam(required = false) EstadoSalida estado,
-                                                        @RequestParam(required = false) Long idResidente,
-                                                        @RequestParam(required = false) Long idParticipante,
-                                                        @RequestParam(required = false) Integer minRH,
-                                                        @RequestParam(required = false) Integer maxRH,
-                                                        @RequestParam(required = false) Integer minRM,
-                                                        @RequestParam(required = false) Integer maxRM) {
+                                @RequestParam(required = false ) LocalDate fecha,
+                                @RequestParam(required = false) LocalDate minFecha,
+                                @RequestParam(required = false) LocalDate maxFecha,
+                                @RequestParam(required = false) EstadoSalida estado,
+                                @RequestParam(required = false) Long idResidente,
+                                @RequestParam(required = false) Long idParticipante,
+                                @RequestParam(required = false) Integer minRH,
+                                @RequestParam(required = false) Integer maxRH,
+                                @RequestParam(required = false) Integer minRM,
+                                @RequestParam(required = false) Integer maxRM) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
@@ -113,8 +129,8 @@ public class EventoSalidaController {
      */
     @PatchMapping("/{idEventoSalida}/changeNombre")
     public ResponseEntity<EventoSalidaResponseDto> changeNombre(
-            @PathVariable Long idEventoSalida,
-            @RequestParam String nombre) {
+                                @PathVariable Long idEventoSalida,
+                                @RequestParam String nombre) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(eventoSalidaService.changeNombre(idEventoSalida, nombre, idResidencia));
@@ -129,8 +145,8 @@ public class EventoSalidaController {
      */
     @PatchMapping("/{idEventoSalida}/changeDescripcion")
     public ResponseEntity<EventoSalidaResponseDto> changeDescripcion(
-            @PathVariable Long idEventoSalida,
-            @RequestParam String descripcion) {
+                                @PathVariable Long idEventoSalida,
+                                @RequestParam String descripcion) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(eventoSalidaService.changeDescripcion(idEventoSalida, descripcion, idResidencia));
@@ -145,8 +161,8 @@ public class EventoSalidaController {
      */
     @PatchMapping("/{idEventoSalida}/ChangeFecha")
     public ResponseEntity<EventoSalidaResponseDto> changeFecha(
-            @PathVariable Long idEventoSalida,
-            @RequestParam LocalDateTime fecha) {
+                                @PathVariable Long idEventoSalida,
+                                @RequestParam LocalDateTime fecha) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(eventoSalidaService.changeFecha(idEventoSalida, fecha, idResidencia));
@@ -161,11 +177,27 @@ public class EventoSalidaController {
      */
     @PatchMapping("/{idEventoSalida}/changeEstado")
     public ResponseEntity<EventoSalidaResponseDto> changeEstado(
-            @PathVariable Long idEventoSalida,
-            @RequestParam EstadoSalida estado) {
+                                @PathVariable Long idEventoSalida,
+                                @RequestParam EstadoSalida estado) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(eventoSalidaService.changeEstado(idEventoSalida, estado, idResidencia));
+    }
+
+    /**
+     * Actualiza los datos de un evento de salida.
+     *
+     * @param idEventoSalida ID del evento de salida a actualizar.
+     * @param input DTO con los nuevos datos del evento de salida.
+     * @return {@link ResponseEntity} con el evento de salida actualizado.
+     */
+    @PatchMapping("/{idEventoSalida}/update")
+    public ResponseEntity<EventoSalidaResponseDto> update(
+                                @PathVariable Long idEventoSalida,
+                                @RequestBody EventoSalidaDto input) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
+        return ResponseEntity.ok(eventoSalidaService.update(input, idResidencia, idEventoSalida));
     }
 
 

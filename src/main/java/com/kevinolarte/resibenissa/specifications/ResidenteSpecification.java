@@ -9,6 +9,19 @@ import java.time.LocalDate;
 
 public class ResidenteSpecification {
 
+    /**
+     * Crea una especificación para filtrar residentes según varios criterios.
+     *
+     * @param idResidencia ID de la residencia del residente.
+     * @param fechaNacimiento Fecha de nacimiento exacta del residente.
+     * @param minFechaNacimiento Fecha mínima de nacimiento del residente.
+     * @param maxFechaNacimiento Fecha máxima de nacimiento del residente.
+     * @param minAge Edad mínima del residente (se calcula como fecha).
+     * @param maxAge Edad máxima del residente (se calcula como fecha).
+     * @param idJuego ID del juego en el que el residente tiene registros.
+     * @param idEvento ID del evento en el que el residente ha participado.
+     * @return Especificación para filtrar residentes.
+     */
     public static Specification<Residente> withFilters(
             Long idResidencia,
             LocalDate fechaNacimiento,
@@ -78,6 +91,15 @@ public class ResidenteSpecification {
         };
     }
 
+    /**
+     * Crea una especificación para filtrar residentes dados de baja.
+     *
+     * @param fechaBaja Fecha de baja exacta del residente.
+     * @param minFechaBaja Fecha mínima de baja del residente.
+     * @param maxFechaBaja Fecha máxima de baja del residente.
+     * @param idResidencia ID de la residencia del residente.
+     * @return Especificación para filtrar residentes dados de baja.
+     */
     public static Specification<Residente> withFiltersBaja(
             LocalDate fechaBaja,
             LocalDate minFechaBaja,

@@ -17,6 +17,12 @@ import java.util.List;
 @Repository
 public interface ParticipanteRepository extends JpaRepository<Participante, Long>, JpaSpecificationExecutor<Participante> {
 
+    /**
+     * Verifica si un residente esta inscrito el otro evento a partir del idEvento
+     * @param idResidente ID del residente
+     * @param idEvento ID del evento actual
+     * @return true si el residente está inscrito en otro evento el mismo día, false en caso contrario
+     */
     @Query("""
         SELECT COUNT(p) > 0
         FROM Participante p
@@ -33,6 +39,14 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
             @Param("idEvento") Long idEvento
     );
 
+
+    /**
+     * Verifica si un residente está inscrito en un evento específico.
+     *
+     * @param idResidente ID del residente.
+     * @param idEvento ID del evento.
+     * @return true si el residente está inscrito en el evento, false en caso contrario.
+     */
     @Query("""
     SELECT COUNT(p) > 0
     FROM Participante p
@@ -52,6 +66,5 @@ public interface ParticipanteRepository extends JpaRepository<Participante, Long
     @Query("DELETE FROM Participante p WHERE p.residente.residencia.id = :idResidencia")
     void deleteAllByResidenciaId(@Param("idResidencia") Long idResidencia);
 
-    List<Participante> id(Long id);
 
 }

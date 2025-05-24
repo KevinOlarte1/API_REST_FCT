@@ -18,6 +18,12 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
+    /**
+     * Busca un usuario por su correo electrónico.
+     *
+     * @param email Correo electrónico del usuario a buscar.
+     * @return Usuario encontrado o {@code null} si no existe.
+     */
     User findByEmail(String email);
 
 

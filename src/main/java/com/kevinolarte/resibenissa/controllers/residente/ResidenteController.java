@@ -52,6 +52,7 @@ public class ResidenteController {
 
     }
 
+
     /**
      * Obtiene los detalles de un residente específico perteneciente a la misma residencia que el usuario autenticado.
      *
@@ -68,6 +69,7 @@ public class ResidenteController {
 
     }
 
+
     /**
      * Lista todos los residentes de la residencia del usuario autenticado, con múltiples filtros opcionales.
      *
@@ -82,20 +84,21 @@ public class ResidenteController {
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
-            @RequestParam(required = false) LocalDate fechaNacimiento,
-            @RequestParam(required = false) LocalDate minFNac,
-            @RequestParam(required = false) LocalDate maxFNac,
-            @RequestParam(required = false) Integer maxAge,
-            @RequestParam(required = false) Integer minAge,
-            @RequestParam(required = false) Long idJuego,
-            @RequestParam(required = false) Long idEvento,
-            @RequestParam(required = false)ResidenteFiltrado filtrado) {
+                                @RequestParam(required = false) LocalDate fechaNacimiento,
+                                @RequestParam(required = false) LocalDate minFNac,
+                                @RequestParam(required = false) LocalDate maxFNac,
+                                @RequestParam(required = false) Integer maxAge,
+                                @RequestParam(required = false) Integer minAge,
+                                @RequestParam(required = false) Long idJuego,
+                                @RequestParam(required = false) Long idEvento,
+                                @RequestParam(required = false)ResidenteFiltrado filtrado) {
 
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
         return ResponseEntity.ok(residenteService.getAll(currentUser.getResidencia().getId(),fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento, filtrado));
     }
+
 
     /**
      * Lista todos los residentes dados de baja en la residencia del usuario autenticado,
@@ -132,6 +135,7 @@ public class ResidenteController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+
     /**
      * Actualiza parcialmente los datos de un residente específico.
      *
@@ -148,6 +152,7 @@ public class ResidenteController {
         User currentUser = (User) auth.getPrincipal();
         return ResponseEntity.ok(residenteService.update(currentUser.getResidencia().getId(), idResidente, residenteDto));
     }
+
 
     /**
      * Envía un correo electrónico a un familiar de un residente específico.

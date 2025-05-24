@@ -6,8 +6,27 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 
+/**
+ * Especificación para filtrar participantes en eventos de salida.
+ *
+ */
 public class ParticipanteSpecification {
 
+    /**
+     * Crea una especificación para filtrar participantes según varios criterios.
+     *
+     * @param idResidencia ID de la residencia del residente.
+     * @param idEvento ID del evento de salida.
+     * @param idResidente ID del residente.
+     * @param recursosHumanos Indica si se requieren recursos humanos.
+     * @param recursosMateriales Indica si se requieren recursos materiales.
+     * @param minEdad Edad mínima del residente.
+     * @param maxEdad Edad máxima del residente.
+     * @param preOpinion Indica si se requiere opinión previa.
+     * @param postOpinion Indica si se requiere opinión posterior.
+     * @param asistenciaPermitida Indica si la asistencia está permitida.
+     * @return Especificación para filtrar participantes.
+     */
     public static Specification<Participante> withFilters(
             Long idResidencia,
             Long idEvento,

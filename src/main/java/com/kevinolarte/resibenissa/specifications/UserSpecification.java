@@ -6,8 +6,20 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 
+/**
+ * Especificaciones para filtrar usuarios en base a diferentes criterios.
+ */
 public class UserSpecification {
 
+
+    /**
+     * Crea una especificación para filtrar usuarios según varios criterios.
+     *
+     * @param enabled       Estado de habilitación del usuario (null para no filtrar).
+     * @param idResidencia ID de la residencia del usuario (null para no filtrar).
+     * @param idJuego      ID del juego en el que el usuario ha registrado partidas (null para no filtrar).
+     * @return Especificación que puede ser utilizada en consultas JPA.
+     */
     public static Specification<User> withFilters(Boolean enabled, Long idResidencia, Long idJuego) {
         return (Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             Predicate predicate = cb.conjunction();
@@ -39,6 +51,15 @@ public class UserSpecification {
 
     }
 
+    /**
+     * Crea una especificación para filtrar usuarios dados de baja según varios criterios.
+     *
+     * @param fecha        Fecha exacta de baja (null para no filtrar por fecha exacta).
+     * @param minFecha     Fecha mínima de baja (null para no filtrar por fecha mínima).
+     * @param maxFecha     Fecha máxima de baja (null para no filtrar por fecha máxima).
+     * @param idResidencia ID de la residencia del usuario (null para no filtrar por residencia).
+     * @return Especificación que puede ser utilizada en consultas JPA.
+     */
     public static Specification<User> withFiltersBaja(LocalDate fecha, LocalDate minFecha, LocalDate maxFecha, Long idResidencia) {
         return (Root<User> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             Predicate predicate = cb.conjunction();

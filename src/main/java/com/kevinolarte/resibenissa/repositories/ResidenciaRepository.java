@@ -37,5 +37,10 @@ public interface ResidenciaRepository extends JpaRepository<Residencia, Long> {
      */
     Optional<Residencia> findByNombre(String nombre);
 
+    /**
+     * Busca residencias que estén marcadas como dadas de baja.
+     *
+     * @return Lista de residencias que tienen el campo baja en true.
+     */
     List<Residencia> findByBajaTrue();
 }

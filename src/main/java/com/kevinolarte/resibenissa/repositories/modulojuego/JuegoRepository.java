@@ -19,10 +19,12 @@ import java.util.List;
 public interface JuegoRepository extends JpaRepository<Juego, Long> {
 
 
-
-
-    boolean existsByNombre(String nombre);
-
+    /**
+     * Busca si existe juegos por su nombre, ignorando mayúsculas y minúsculas.
+     * @param nombre Nombre del juego a buscar.
+     * @return Lista de juegos que coinciden con el nombre dado.
+     */
+    boolean existsByNombreIgnoreCase(String nombre);
 
     /**
      * Busca juegos cuyo nombre contenga una cadena específica, ignorando mayúsculas y minúsculas.

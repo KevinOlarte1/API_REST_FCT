@@ -25,11 +25,21 @@ import java.util.List;
 public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Long>, JpaSpecificationExecutor<RegistroJuego> {
 
 
-
+    /**
+     * Obtiene un registro de juego específico mediante su juego
+     * @param juego Juego del que se desea obtener el registro.
+     * @return Lista de registros de juego asociados al juego especificado.
+     */
     List<RegistroJuego> findByJuego(Juego juego);
 
+    /**
+     * Lista de registros de un juego específico y una dificultad concreta.
+     * @param juego Juego del que se desea obtener el registro.
+     * @param dificultad Dificultad del juego que se desea filtrar.
+     * @return Lista de registros de juego asociados al juego y dificultad especificados.
+     */
     List<RegistroJuego> findByJuegoAndDificultad(Juego juego, Dificultad dificultad);
 
 
-    List<RegistroJuego> findByJuegoAndResidente_Residencia(Juego juego, Residencia residenteResidencia);
+
 }

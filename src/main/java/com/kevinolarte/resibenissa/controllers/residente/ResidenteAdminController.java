@@ -80,15 +80,15 @@ public class ResidenteAdminController {
      */
     @GetMapping("/{idResidencia}/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
-            @PathVariable Long idResidencia,
-            @RequestParam(required = false) LocalDate fechaNacimiento,
-            @RequestParam(required = false) LocalDate minFNac,
-            @RequestParam(required = false) LocalDate maxFNac,
-            @RequestParam(required = false) Integer maxAge,
-            @RequestParam(required = false) Integer minAge,
-            @RequestParam(required = false) Long idJuego,
-            @RequestParam(required = false) Long idEvento,
-            @RequestParam(required = false)ResidenteFiltrado filtrado) {
+                                    @PathVariable Long idResidencia,
+                                    @RequestParam(required = false) LocalDate fechaNacimiento,
+                                    @RequestParam(required = false) LocalDate minFNac,
+                                    @RequestParam(required = false) LocalDate maxFNac,
+                                    @RequestParam(required = false) Integer maxAge,
+                                    @RequestParam(required = false) Integer minAge,
+                                    @RequestParam(required = false) Long idJuego,
+                                    @RequestParam(required = false) Long idEvento,
+                                    @RequestParam(required = false)ResidenteFiltrado filtrado) {
 
         return ResponseEntity.ok(residenteService.getAll(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento, filtrado));
     }

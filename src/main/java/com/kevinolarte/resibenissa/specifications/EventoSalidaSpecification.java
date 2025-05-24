@@ -9,8 +9,28 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+/**
+ * Especificación para filtrar eventos de salida basados en múltiples criterios.
+ * * Proporciona un método estático para construir una especificación con filtros dinámicos
+ */
 public class EventoSalidaSpecification {
 
+    /**
+     * Crea una especificación para filtrar eventos de salida según los criterios proporcionados.
+     *
+     * @param idResidencia ID de la residencia del evento.
+     * @param fecha Fecha específica del evento.
+     * @param minFecha Fecha mínima del evento.
+     * @param maxFecha Fecha máxima del evento.
+     * @param estado Estado del evento.
+     * @param idResidente ID del residente asociado al evento.
+     * @param idParticipante ID del participante asociado al evento.
+     * @param minRecursosHumanos Mínimo de recursos humanos requeridos.
+     * @param maxRecursosHumanos Máximo de recursos humanos requeridos.
+     * @param minRecursosMateriales Mínimo de recursos materiales requeridos.
+     * @param maxRecursosMateriales Máximo de recursos materiales requeridos.
+     * @return Especificación para filtrar eventos de salida.
+     */
     public static Specification<EventoSalida> withDynamicFilters(Long idResidencia,
                                                                  LocalDate fecha,
                                                                  LocalDate minFecha,

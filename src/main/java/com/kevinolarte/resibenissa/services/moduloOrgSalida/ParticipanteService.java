@@ -47,8 +47,7 @@ public class ParticipanteService {
      *                      el evento no pertenece a la residencia, el evento está cerrado o ya ha finalizado,
      *                      o el residente ya participa en otra salida el mismo día.
      */
-    public ParticipanteResponseDto add(ParticipanteDto input,
-                                                   Long idEventoSalida, Long idResidencia) {
+    public ParticipanteResponseDto add(ParticipanteDto input, Long idEventoSalida, Long idResidencia) {
         if (idEventoSalida == null || input.getIdResidente() == null || input.getRecursosHumanos() == null || input.getRecursosMateriales() == null || idResidencia == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -88,77 +87,8 @@ public class ParticipanteService {
         return new ParticipanteResponseDto(participanteRepository.save(participante));
     }
 
-    /**
-     * Actualiza los datos de un participante existente.
-     *
-     * @param input DTO con los nuevos datos.
-     * @param idResidencia ID de la residencia.
-     * @param idEventoSalida ID del evento de salida.
-     * @param idParticipante ID del participante.
-     * @return DTO del participante actualizado.
-     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
-     *                      el evento no pertenece a la residencia, o el evento está cerrado.
-     */
-    public ParticipanteResponseDto updateParticipante(ParticipanteDto input,
-                                                      Long idResidencia, Long idEventoSalida, Long idParticipante) {
-
-        Participante participante = getParticipante(idResidencia, idEventoSalida, idParticipante);
-
-        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEventoSalida, idResidencia);
-        // Verificar el estado del evento de salida
-        if (eventoSalida.getEstado() != EstadoSalida.ABIERTO) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
-        }
 
 
-
-        //Verificar si el evento de salida ya ha terminado
-        if (eventoSalida.getFechaInicio().isBefore(LocalDateTime.now())) {
-            if (input.getPostOpinion() != null && !input.getPostOpinion().trim().isEmpty()) {
-                participante.setPostOpinion(input.getPostOpinion());
-            }
-        }
-        else {
-            // Verificar que la preOpinion no sea nula o vacía
-            if (input.getPreOpinion() != null && !input.getPreOpinion().trim().isEmpty()) {
-                participante.setPreOpinion(input.getPreOpinion());
-            }
-
-            // Verificar que la asistencia no sea nula
-            if (input.getRecursosMateriales() != null){
-                participante.setRecursosMateriales(input.getRecursosMateriales());
-
-            }
-            if (input.getRecursosHumanos() != null){
-                participante.setRecursosHumanos(input.getRecursosHumanos());
-            }
-        }
-        return new ParticipanteResponseDto(participanteRepository.save(participante));
-    }
-
-    /**
-     * Elimina un participante de un evento de salida.
-     *
-     * @param idResidencia ID de la residencia.
-     * @param idEvento ID del evento de salida.
-     * @param idParticipante ID del participante a eliminar.
-     * @return DTO del participante eliminado.
-     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
-     *                      el evento no pertenece a la residencia o ya ha finalizado.
-     */
-    public void deleteParticipante(Long idResidencia, Long idEvento, Long idParticipante) {
-        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
-
-        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEvento, idResidencia);
-
-        // Verificar si la fecha de inicio del evento de salida ya ha pasado
-        if (eventoSalida.getFechaInicio().isBefore(LocalDateTime.now())) {
-            throw new ApiException(ApiErrorCode.PARTICIPANTE_INMUTABLE);
-        }
-
-        // Eliminar el participante
-        participanteRepository.delete(participante);
-    }
 
     /**
      * Obtiene los datos de un participante específico.
@@ -178,7 +108,21 @@ public class ParticipanteService {
 
     }
 
-
+    /**
+     * Obtiene una lista de participantes filtrados por varios parámetros.
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idResidente ID del residente (opcional).
+     * @param rM Indica si se filtran por recursos materiales. (opcional)
+     * @param rH Indica si se filtran por recursos humanos. (opcional)
+     * @param minEdad Edad mínima del residente (opcional).
+     * @param maxEdad Edad máxima del residente (opcional).
+     * @param preOpinion Indica si se filtran por preopinión. (opcional)
+     * @param postOpinion Indica si se filtran por postopinión. (opcional)
+     * @param asistenciPermitida Indica si se filtran por asistencia permitida. (opcional)
+     * @return Lista de participantes filtrados.
+     * @throws ApiException si falta algún campo obligatorio, el evento no existe o no pertenece a la residencia.
+     */
     public List<ParticipanteResponseDto> getAll(Long idResidencia, Long idEvento, Long idResidente,  Boolean rM,Boolean rH, Integer minEdad, Integer maxEdad, Boolean preOpinion, Boolean postOpinion, Boolean asistenciPermitida) {
         if (idResidencia == null || idEvento == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
@@ -192,13 +136,216 @@ public class ParticipanteService {
         );
 
 
-            return list.stream()
-                    .map(ParticipanteResponseDto::new).toList();
+        return list.stream()
+                .map(ParticipanteResponseDto::new).toList();
 
 
     }
 
-    protected Participante getParticipante(Long idResidencia, Long idEvento, Long idParticipante){
+
+
+
+    /**
+     * Elimina un participante de un evento de salida.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante a eliminar.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      el evento no pertenece a la residencia o ya ha finalizado.
+     */
+    public void deleteParticipante(Long idResidencia, Long idEvento, Long idParticipante) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEvento, idResidencia);
+
+        // Verificar si la fecha de inicio del evento de salida ya ha pasado
+        if (eventoSalida.getFechaInicio().isBefore(LocalDateTime.now())) {
+            throw new ApiException(ApiErrorCode.PARTICIPANTE_INMUTABLE);
+        }
+
+        // Eliminar el participante
+        participanteRepository.delete(participante);
+    }
+
+
+
+
+    /**
+     * Actualiza los datos de un participante en un evento de salida.
+     * @param input DTO con los nuevos datos del participante.
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante a actualizar.
+     * @return DTO del participante actualizado.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     */
+    public ParticipanteResponseDto update(ParticipanteDto input, Long idResidencia, Long idEvento, Long idParticipante) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+        if (input == null)
+            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+
+        // Verificar el estado del evento de salida
+        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO &&
+                participante.getEvento().getEstado() != EstadoSalida.CERRADO) {
+            if (input.getPostOpinion() != null && !input.getPostOpinion().trim().isEmpty()) {
+                if (participante.getEvento().getEstado() == EstadoSalida.FINALIZADA) {
+                    participante.setPostOpinion(input.getPostOpinion());
+                }
+
+            }
+        }
+        else{
+            // Actualizar los campos del participante
+            if (input.getRecursosHumanos() != null) {
+                participante.setRecursosHumanos(input.getRecursosHumanos());
+            }
+            if (input.getRecursosMateriales() != null) {
+                participante.setRecursosMateriales(input.getRecursosMateriales());
+            }
+            if (input.getPreOpinion() != null && !input.getPreOpinion().trim().isEmpty()) {
+                participante.setPreOpinion(input.getPreOpinion());
+            }
+        }
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
+
+    /**
+     * Permite la asistencia de un participante a un evento de salida.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante.
+     * @return DTO del participante con la asistencia permitida.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      o el evento no está abierto.
+     */
+    public ParticipanteResponseDto allow(Long idResidencia, Long idEvento, Long idParticipante) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Verificar el estado del evento de salida
+        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        participante.setAsistenciaPermitida(true);
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
+
+    /**
+     * Deniega la asistencia de un participante a un evento de salida.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante.
+     * @return DTO del participante con la asistencia denegada.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      o el evento no está abierto.
+     */
+    public ParticipanteResponseDto deny(Long idResidencia, Long idEvento, Long idParticipante) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Verificar el estado del evento de salida
+        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        participante.setAsistenciaPermitida(false);
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
+
+    /**
+     * Añade una preopinión a un participante en un evento de salida.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante.
+     * @param preOpinion Texto de la preopinión.
+     * @return DTO del participante con la preopinión añadida.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      o el evento no está abierto.
+     */
+    public ParticipanteResponseDto addPreOpinion(Long idResidencia, Long idEvento, Long idParticipante, String preOpinion) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Verificar el estado del evento de salida
+        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        // Verificar que la preOpinion no sea nula o vacía
+        if (preOpinion != null && !preOpinion.trim().isEmpty()) {
+            participante.setPreOpinion(preOpinion);
+        }
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
+
+    /**
+     * Añade una postopinión a un participante en un evento de salida.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante.
+     * @param postOpinion Texto de la postopinión.
+     * @return DTO del participante con la postopinión añadida.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      o el evento no está finalizado.
+     */
+    public ParticipanteResponseDto addPostOpinion(Long idResidencia, Long idEvento, Long idParticipante, String postOpinion) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Verificamos que la el estado no sea finalozado.
+        if (participante.getEvento().getEstado() != EstadoSalida.FINALIZADA) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        // Verificar que la postOpinion no sea nula o vacía
+        if (postOpinion != null && !postOpinion.trim().isEmpty()) {
+            participante.setPostOpinion(postOpinion);
+        }
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
+
+    /**
+     * Cambia los recursos de un participante en un evento de salida.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante.
+     * @param rH Indica si se asignan recursos humanos (opcional).
+     * @param rM Indica si se asignan recursos materiales (opcional).
+     * @return DTO del participante con los recursos actualizados.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      o el evento no está abierto o cerrado.
+     */
+    public ParticipanteResponseDto changeRecursos(Long idResidencia, Long idEvento, Long idParticipante, Boolean rH, Boolean rM) {
+        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
+
+        // Verificar el estado del evento de salida (si no es abierto o cerrado)
+        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO &&
+            participante.getEvento().getEstado() != EstadoSalida.CERRADO) {
+            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
+        }
+        // Verificar que la preOpinion no sea nula o vacía
+        if (rH != null) {
+            participante.setRecursosHumanos(rH);
+        }
+        if (rM != null) {
+            participante.setRecursosMateriales(rM);
+        }
+        return new ParticipanteResponseDto(participanteRepository.save(participante));
+    }
+
+
+
+
+    /**
+     * Obtiene un participante específico y valida que pertenezca a un evento de salida en una residencia.
+     *
+     * @param idResidencia ID de la residencia.
+     * @param idEvento ID del evento de salida.
+     * @param idParticipante ID del participante.
+     * @return El participante encontrado.
+     * @throws ApiException si falta algún campo obligatorio, el evento o el participante son inválidos,
+     *                      o no pertenecen a la residencia o evento.
+     */
+    public Participante getParticipante(Long idResidencia, Long idEvento, Long idParticipante){
         if (idResidencia == null || idEvento == null || idParticipante == null) {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
@@ -225,72 +372,4 @@ public class ParticipanteService {
         return participante;
     }
 
-
-    public ParticipanteResponseDto allow(Long idResidencia, Long idEvento, Long idParticipante) {
-        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
-
-        // Verificar el estado del evento de salida
-        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
-        }
-        participante.setAsistenciaPermitida(true);
-        return new ParticipanteResponseDto(participanteRepository.save(participante));
-    }
-
-    public ParticipanteResponseDto deny(Long idResidencia, Long idEvento, Long idParticipante) {
-        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
-
-        // Verificar el estado del evento de salida
-        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
-        }
-        participante.setAsistenciaPermitida(false);
-        return new ParticipanteResponseDto(participanteRepository.save(participante));
-    }
-
-    public ParticipanteResponseDto addPreOpinion(Long idResidencia, Long idEvento, Long idParticipante, String preOpinion) {
-        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
-
-        // Verificar el estado del evento de salida
-        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
-        }
-        // Verificar que la preOpinion no sea nula o vacía
-        if (preOpinion != null && !preOpinion.trim().isEmpty()) {
-            participante.setPreOpinion(preOpinion);
-        }
-        return new ParticipanteResponseDto(participanteRepository.save(participante));
-    }
-
-    public ParticipanteResponseDto addPostOpinion(Long idResidencia, Long idEvento, Long idParticipante, String postOpinion) {
-        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
-
-        // Verificamos que la el estado no sea finalozado.
-        if (participante.getEvento().getEstado() != EstadoSalida.FINALIZADA) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
-        }
-        // Verificar que la postOpinion no sea nula o vacía
-        if (postOpinion != null && !postOpinion.trim().isEmpty()) {
-            participante.setPostOpinion(postOpinion);
-        }
-        return new ParticipanteResponseDto(participanteRepository.save(participante));
-    }
-
-    public ParticipanteResponseDto changeRecursos(Long idResidencia, Long idEvento, Long idParticipante, Boolean rH, Boolean rM) {
-        Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
-
-        // Verificar el estado del evento de salida (si no es abierto o cerrado)
-        if (participante.getEvento().getEstado() != EstadoSalida.ABIERTO &&
-            participante.getEvento().getEstado() != EstadoSalida.CERRADO) {
-            throw new ApiException(ApiErrorCode.EVENTO_SALIDA_NO_DISPONIBLE);
-        }
-        // Verificar que la preOpinion no sea nula o vacía
-        if (rH != null) {
-            participante.setRecursosHumanos(rH);
-        }
-        if (rM != null) {
-            participante.setRecursosMateriales(rM);
-        }
-        return new ParticipanteResponseDto(participanteRepository.save(participante));
-    }
 }

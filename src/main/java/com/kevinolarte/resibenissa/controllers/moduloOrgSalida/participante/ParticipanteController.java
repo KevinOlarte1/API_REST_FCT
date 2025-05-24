@@ -20,7 +20,7 @@ import java.util.List;
  * Permite agregar, consultar, actualizar, eliminar y listar participantes asociados
  * a un evento específico dentro de una residencia.
  * </p>
- *
+ * URL base: /resi/evento/{idEvento}/participante
  * @author Kevin Olarte
  */
 @RequestMapping("/resi/evento/{idEvento}/participante")
@@ -39,8 +39,8 @@ public class ParticipanteController {
      */
     @PostMapping("/add")
     public ResponseEntity<ParticipanteResponseDto> add(
-                                                    @PathVariable Long idEvento,
-                                                    @RequestBody ParticipanteDto participanteDto) {
+                                @PathVariable Long idEvento,
+                                @RequestBody ParticipanteDto participanteDto) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
@@ -48,6 +48,7 @@ public class ParticipanteController {
         emailService.sendNotificationParticipante(participanteDto1);
         return ResponseEntity.ok(participanteDto1);
     }
+
 
     /**
      * Obtiene los datos de un participante específico en un evento de salida.
@@ -57,8 +58,8 @@ public class ParticipanteController {
      */
     @GetMapping("{idParticipante}/get")
     public ResponseEntity<ParticipanteResponseDto> get(
-                                                    @PathVariable Long idEvento,
-                                                    @PathVariable Long idParticipante) {
+                                @PathVariable Long idEvento,
+                                @PathVariable Long idParticipante) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
@@ -66,17 +67,31 @@ public class ParticipanteController {
     }
 
 
+    /**
+     * Obtiene todos los participantes de un evento de salida, con filtros opcionales.
+     *
+     * @param idEvento ID del evento del que se obtienen los participantes.
+     * @param idResidente ID del residente (opcional).
+     * @param rM Recurso material (opcional).
+     * @param rH Recurso humano (opcional).
+     * @param minEdad Edad mínima del participante (opcional).
+     * @param maxEdad Edad máxima del participante (opcional).
+     * @param preOpinion Si se filtran por opinión previa (opcional).
+     * @param postOpinion Si se filtran por opinión posterior (opcional).
+     * @param asistenciPermitida Si se filtran por asistencia permitida (opcional).
+     * @return {@link ResponseEntity} con la lista de participantes filtrados.
+     */
     @GetMapping("/getAll")
     public ResponseEntity<List<ParticipanteResponseDto>> getAllParticipantes(
-            @PathVariable Long idEvento,
-            @RequestParam(required = false) Long idResidente,
-            @RequestParam(required = false) Boolean rM,
-            @RequestParam(required = false) Boolean rH,
-            @RequestParam(required = false) Integer minEdad,
-            @RequestParam(required = false) Integer maxEdad,
-            @RequestParam(required = false) Boolean preOpinion,
-            @RequestParam(required = false) Boolean postOpinion,
-            @RequestParam(required = false) Boolean asistenciPermitida){
+                                @PathVariable Long idEvento,
+                                @RequestParam(required = false) Long idResidente,
+                                @RequestParam(required = false) Boolean rM,
+                                @RequestParam(required = false) Boolean rH,
+                                @RequestParam(required = false) Integer minEdad,
+                                @RequestParam(required = false) Integer maxEdad,
+                                @RequestParam(required = false) Boolean preOpinion,
+                                @RequestParam(required = false) Boolean postOpinion,
+                                @RequestParam(required = false) Boolean asistenciPermitida){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
@@ -91,8 +106,8 @@ public class ParticipanteController {
      */
     @DeleteMapping("/{idParticipante}/delete")
     public ResponseEntity<Void> deleteParticipante(
-            @PathVariable Long idEvento,
-            @PathVariable Long idParticipante) {
+                                @PathVariable Long idEvento,
+                                @PathVariable Long idParticipante) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
@@ -100,34 +115,56 @@ public class ParticipanteController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Añade una opinión previa de un participante en un evento de salida.
+     *
+     * @param idParticipante ID del participante al que se le añade la opinión.
+     * @param preOpinion Opinión previa del participante.
+     * @return {@link ResponseEntity} con el participante actualizado.
+     */
     @PatchMapping("/{idParticipante}/addPreOpinion")
     public ResponseEntity<ParticipanteResponseDto> addPreOpinion(
-            @PathVariable Long idEvento,
-            @PathVariable Long idParticipante,
-            @RequestParam String preOpinion) {
+                                @PathVariable Long idEvento,
+                                @PathVariable Long idParticipante,
+                                @RequestParam String preOpinion) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(participanteService.addPreOpinion(idResidencia, idEvento, idParticipante, preOpinion));
     }
 
+    /**
+     * Agrega una opinión posterior a la participación de un residente en un evento de salida.
+     *
+     * @param idParticipante ID del participante al que se le agregará la opinión.
+     * @param postOpinion Opinión posterior a la participación.
+     * @return {@link ResponseEntity} con el participante actualizado.
+     */
     @PatchMapping("/{idParticipante}/addPostOpinion")
     public ResponseEntity<ParticipanteResponseDto> addPostOpinion(
-            @PathVariable Long idEvento,
-            @PathVariable Long idParticipante,
-            @RequestParam String postOpinion) {
+                                @PathVariable Long idEvento,
+                                @PathVariable Long idParticipante,
+                                @RequestParam String postOpinion) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(participanteService.addPostOpinion(idResidencia, idEvento, idParticipante, postOpinion));
     }
 
+    /**
+     * Cambia los recursos asignados a un participante en un evento de salida.
+     *
+     * @param idParticipante ID del participante a actualizar.
+     * @param rH Recurso humano (opcional).
+     * @param rM Recurso material (opcional).
+     * @return {@link ResponseEntity} con el participante actualizado.
+     */
     @PatchMapping("/{idParticipante}/changeRecursos")
     public ResponseEntity<ParticipanteResponseDto> changeRecursos(
-            @PathVariable Long idEvento,
-            @PathVariable Long idParticipante,
-            @RequestParam (required = false) Boolean rH,
-            @RequestParam (required = false) Boolean rM){
+                                @PathVariable Long idEvento,
+                                @PathVariable Long idParticipante,
+                                @RequestParam (required = false) Boolean rH,
+                                @RequestParam (required = false) Boolean rM){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
@@ -135,24 +172,54 @@ public class ParticipanteController {
     }
 
 
-
+    /**
+     * Acepta la participación un participante en un evento de salida.
+     *
+     * @param idParticipante ID del participante a aceptar.
+     * @return {@link ResponseEntity} con el participante aceptado.
+     */
     @PostMapping("/{idParticipante}/allow")
     public ResponseEntity<ParticipanteResponseDto> allow(
-            @PathVariable Long idEvento,
-            @PathVariable Long idParticipante) {
+                                @PathVariable Long idEvento,
+                                @PathVariable Long idParticipante) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(participanteService.allow(idResidencia, idEvento, idParticipante));
     }
+
+    /**
+     * Deniega la participación de un residente en un evento de salida.
+     *
+     * @param idParticipante ID del participante a denegar.
+     * @return {@link ResponseEntity} con el participante actualizado.
+     */
     @PostMapping("/{idParticipante}/deny")
     public ResponseEntity<ParticipanteResponseDto> deny(
-            @PathVariable Long idEvento,
-            @PathVariable Long idParticipante) {
+                                @PathVariable Long idEvento,
+                                @PathVariable Long idParticipante) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
         return ResponseEntity.ok(participanteService.deny(idResidencia, idEvento, idParticipante));
+    }
+
+    /**
+     * Actualiza los datos de un participante existente en un evento de salida.
+     *
+     * @param idParticipante ID del participante a actualizar.
+     * @param participanteDto DTO con los nuevos datos del participante.
+     * @return {@link ResponseEntity} con el participante actualizado.
+     */
+    @PatchMapping("/{idParticipante}/update")
+    public ResponseEntity<ParticipanteResponseDto> update(
+                                @PathVariable Long idEvento,
+                                @PathVariable Long idParticipante,
+                                @RequestBody ParticipanteDto participanteDto) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
+        return ResponseEntity.ok(participanteService.update(participanteDto, idResidencia, idEvento, idParticipante));
     }
 
 

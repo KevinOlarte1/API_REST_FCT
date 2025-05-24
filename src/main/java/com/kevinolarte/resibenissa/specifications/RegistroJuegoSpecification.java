@@ -8,8 +8,30 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * Especificación para filtrar registros de juegos ({@link RegistroJuego}) basándose en múltiples criterios.
+ */
 public class RegistroJuegoSpecification {
 
+    /**
+     * Crea una especificación para filtrar registros de juegos según varios parámetros.
+     *
+     * @param idResidencia  ID de la residencia del residente.
+     * @param idJuego       ID del juego.
+     * @param idResidente   ID del residente.
+     * @param edad          Edad exacta del residente.
+     * @param minEdad       Edad mínima del residente.
+     * @param maxEdad       Edad máxima del residente.
+     * @param fecha         Fecha exacta del registro.
+     * @param minFecha      Fecha mínima del registro.
+     * @param maxFecha      Fecha máxima del registro.
+     * @param dificultad    Dificultad del juego.
+     * @param comentado     Indica si el registro tiene observación o no.
+     * @param promedio      Indica si se busca registros con duración promedio (±5%).
+     * @param masPromedio   Indica si se busca registros con duración mayor al promedio.
+     * @param menosPromedio Indica si se busca registros con duración menor al promedio.
+     * @return Especificación para filtrar registros de juegos.
+     */
     public static Specification<RegistroJuego> withDynamicFilters(
             Long idResidencia,
             Long idJuego,

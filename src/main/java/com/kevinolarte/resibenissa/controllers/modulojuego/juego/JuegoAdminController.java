@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
  * Permite registrar, consultar, listar, actualizar y eliminar juegos asociados a una residencia.
  * </p>
  *
- * Ruta base: <b>/resi/{idResidencia}/juego</b>
+ * Ruta base: <b>/admin/resi/juego</b>
  *
  * @author Kevin Olarte
  */
@@ -33,7 +33,7 @@ public class JuegoAdminController {
      */
     @PostMapping("/add")
     public ResponseEntity<JuegoResponseDto> add(
-                                            @RequestBody JuegoDto juegoDto) {
+                                @RequestBody JuegoDto juegoDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(juegoService.save(juegoDto));
 
     }
@@ -45,13 +45,15 @@ public class JuegoAdminController {
      */
     @GetMapping("/{idJuego}/get")
     public ResponseEntity<JuegoResponseDto> get(
-                                            @PathVariable Long idJuego) {
+                                @PathVariable Long idJuego) {
         return ResponseEntity.ok(juegoService.get(idJuego));
     }
 
     /**
      * Obtiene una lista de todos los juegos registrados en una residencia.
      *
+     * @param nombreJuego Nombre del juego para filtrar (opcional).
+     * @param maxRegistros Indica si se debe limitar la cantidad de registros devueltos (opcional).
      * @return {@link ResponseEntity} con la lista de juegos y estado 200 OK.
      */
     @GetMapping("/getAll")
@@ -60,6 +62,7 @@ public class JuegoAdminController {
                                 @RequestParam(required = false) Boolean maxRegistros) {
         return ResponseEntity.ok(juegoService.getAll(nombreJuego, maxRegistros));
     }
+
     /**
      * Elimina un juego de una residencia si no tiene referencias dependientes.
      *
@@ -83,8 +86,8 @@ public class JuegoAdminController {
      */
     @PatchMapping("/{idJuego}/update")
     public ResponseEntity<JuegoResponseDto> update(
-                                            @PathVariable Long idJuego,
-                                            @RequestBody JuegoDto juegoDto) {
+                                @PathVariable Long idJuego,
+                                @RequestBody JuegoDto juegoDto) {
         return ResponseEntity.ok(juegoService.update(idJuego, juegoDto));
     }
 

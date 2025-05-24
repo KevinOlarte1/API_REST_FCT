@@ -18,7 +18,7 @@ import java.util.List;
  * Permite registrar, consultar, listar, actualizar y eliminar juegos asociados a una residencia.
  * </p>
  *
- * Ruta base: <b>/resi/{idResidencia}/juego</b>
+ * Ruta base: <b>/resi/juego</b>
  *
  * @author Kevin Olarte
  */
@@ -37,7 +37,7 @@ public class JuegoController {
      */
     @GetMapping("/{idJuego}/get")
     public ResponseEntity<JuegoResponseDto> get(
-                                            @PathVariable Long idJuego) {
+                                        @PathVariable Long idJuego) {
 
         return ResponseEntity.ok(juegoService.get(idJuego));
     }
@@ -51,8 +51,8 @@ public class JuegoController {
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<JuegoResponseDto>> getAll(
-                                                @RequestParam(required = false) String nombreJuego,
-                                                @RequestParam(required = false) Boolean maxRegistros) {
+                                        @RequestParam(required = false) String nombreJuego,
+                                        @RequestParam(required = false) Boolean maxRegistros) {
         return ResponseEntity.ok(juegoService.getAll(nombreJuego, maxRegistros));
     }
 

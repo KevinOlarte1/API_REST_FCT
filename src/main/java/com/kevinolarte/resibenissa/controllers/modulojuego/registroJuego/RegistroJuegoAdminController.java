@@ -19,7 +19,7 @@ import java.util.List;
  * actualizar observaciones y eliminar registros específicos.
  * </p>
  * <p>
- * Todas las rutas expuestas están bajo el prefijo <code>admin/resi</code>.
+ * URL base: <code>admin/resi</code>.
  * </p>
  *
  * @author Kevin Olarte
@@ -34,15 +34,16 @@ public class RegistroJuegoAdminController {
     /**
      * Crea un nuevo registro de juego para un residente en una residencia y juego específicos.
      *
+     * @param idResidencia ID de la residencia.
      * @param idJuego ID del juego.
      * @param registroJuegoDto Datos del registro a guardar.
      * @return El registro de juego creado.
      */
     @PostMapping("{idResidencia}/registro/add")
     public ResponseEntity<RegistroJuegoResponseDto> add(
-                                                    @PathVariable Long idResidencia,
-                                                    @RequestParam Long idJuego,
-                                                    @RequestBody RegistroJuegoDto registroJuegoDto) {
+                                @PathVariable Long idResidencia,
+                                @RequestParam Long idJuego,
+                                @RequestBody RegistroJuegoDto registroJuegoDto) {
 
         RegistroJuegoResponseDto registroJuego = registroJuegoService.add(idResidencia, idJuego, registroJuegoDto);
         return ResponseEntity.ok(registroJuego);
@@ -52,13 +53,14 @@ public class RegistroJuegoAdminController {
     /**
      * Obtiene un registro de juego específico mediante su ID.
      *
+     * @param idResidencia ID de la residencia.
      * @param idRegistroJuego ID del registro de juego.
      * @return El registro de juego solicitado.
      */
     @GetMapping("/{idResidencia}/registro/{idRegistroJuego}/get")
     public ResponseEntity<RegistroJuegoResponseDto> get(
-                                                    @PathVariable Long idResidencia,
-                                                    @PathVariable Long idRegistroJuego) {
+                                @PathVariable Long idResidencia,
+                                @PathVariable Long idRegistroJuego) {
 
         return ResponseEntity.ok(registroJuegoService.get(idResidencia, idRegistroJuego));
     }
@@ -81,20 +83,20 @@ public class RegistroJuegoAdminController {
      */
     @GetMapping("/registro/getAll")
     public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
-                                                        @RequestParam(required = false) Long idJuego,
-                                                        @RequestParam(required = false) Dificultad dificultad,
-                                                        @RequestParam(required = false) Integer edad,
-                                                        @RequestParam(required = false) Integer minEdad,
-                                                        @RequestParam(required = false) Integer maxEdad,
-                                                        @RequestParam(required = false) Long idResidente,
-                                                        @RequestParam(required = false) LocalDate fecha,
-                                                        @RequestParam(required = false) LocalDate minFecha,
-                                                        @RequestParam(required = false) LocalDate maxFecha,
-                                                        @RequestParam(required = false) boolean promedio,
-                                                        @RequestParam(required = false) boolean masPromedio,
-                                                        @RequestParam(required = false) boolean menosPromedio,
-                                                        @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
-                                                        @RequestParam(required = false) Boolean comentado){
+                                @RequestParam(required = false) Long idJuego,
+                                @RequestParam(required = false) Dificultad dificultad,
+                                @RequestParam(required = false) Integer edad,
+                                @RequestParam(required = false) Integer minEdad,
+                                @RequestParam(required = false) Integer maxEdad,
+                                @RequestParam(required = false) Long idResidente,
+                                @RequestParam(required = false) LocalDate fecha,
+                                @RequestParam(required = false) LocalDate minFecha,
+                                @RequestParam(required = false) LocalDate maxFecha,
+                                @RequestParam(required = false) boolean promedio,
+                                @RequestParam(required = false) boolean masPromedio,
+                                @RequestParam(required = false) boolean menosPromedio,
+                                @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
+                                @RequestParam(required = false) Boolean comentado){
 
         return ResponseEntity.ok(registroJuegoService.getAll(idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, filtrado,comentado));
     }
@@ -118,42 +120,44 @@ public class RegistroJuegoAdminController {
      */
     @GetMapping("/{idResidencia}/registro/getAll")
     public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
-                                                        @PathVariable Long idResidencia,
-                                                        @RequestParam(required = false) Long idJuego,
-                                                        @RequestParam(required = false) Dificultad dificultad,
-                                                        @RequestParam(required = false) Integer edad,
-                                                        @RequestParam(required = false) Integer minEdad,
-                                                        @RequestParam(required = false) Integer maxEdad,
-                                                        @RequestParam(required = false) Long idResidente,
-                                                        @RequestParam(required = false) LocalDate fecha,
-                                                        @RequestParam(required = false) LocalDate minFecha,
-                                                        @RequestParam(required = false) LocalDate maxFecha,
-                                                        @RequestParam(required = false) boolean promedio,
-                                                        @RequestParam(required = false) boolean masPromedio,
-                                                        @RequestParam(required = false) boolean menosPromedio,
-                                                        @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
-                                                        @RequestParam(required = false) Boolean comentado){
+                                @PathVariable Long idResidencia,
+                                @RequestParam(required = false) Long idJuego,
+                                @RequestParam(required = false) Dificultad dificultad,
+                                @RequestParam(required = false) Integer edad,
+                                @RequestParam(required = false) Integer minEdad,
+                                @RequestParam(required = false) Integer maxEdad,
+                                @RequestParam(required = false) Long idResidente,
+                                @RequestParam(required = false) LocalDate fecha,
+                                @RequestParam(required = false) LocalDate minFecha,
+                                @RequestParam(required = false) LocalDate maxFecha,
+                                @RequestParam(required = false) boolean promedio,
+                                @RequestParam(required = false) boolean masPromedio,
+                                @RequestParam(required = false) boolean menosPromedio,
+                                @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
+                                @RequestParam(required = false) Boolean comentado){
         return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, filtrado, comentado));
     }
 
     /**
      * Actualiza un registro de juego existente añadiendo o modificando una observación.
      *
+     * @param idResidencia ID de la residencia donde se encuentra el registro.
      * @param idRegistroJuego ID del registro a actualizar.
      * @param registroJuegoDto DTO con los nuevos datos (principalmente observación).
      * @return Registro de juego actualizado.
      */
     @PatchMapping("/{idResidencia}/registro/{idRegistroJuego}/addComment")
     public ResponseEntity<RegistroJuegoResponseDto> update(
-                                                        @PathVariable Long idResidencia,
-                                                        @PathVariable Long idRegistroJuego,
-                                                        @RequestBody RegistroJuegoDto registroJuegoDto){
+                                @PathVariable Long idResidencia,
+                                @PathVariable Long idRegistroJuego,
+                                @RequestBody RegistroJuegoDto registroJuegoDto){
         return ResponseEntity.ok(registroJuegoService.update(idResidencia, idRegistroJuego, registroJuegoDto));
     }
 
     /**
      * Elimina un registro de juego específico.
      *
+     * @param idResidencia ID de la residencia donde se encuentra el registro.
      * @param idRegistroJuego ID del registro a eliminar.
      * @return Respuesta sin contenido si la eliminación fue exitosa.
      */
