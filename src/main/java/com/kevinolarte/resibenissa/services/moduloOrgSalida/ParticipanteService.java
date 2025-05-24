@@ -53,7 +53,7 @@ public class ParticipanteService {
         }
 
         // Verificar si el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEventoSalida, idResidencia);
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idResidencia, idEventoSalida);
 
         // Verificar si el residente existe
         Residente residente = residenteService.getResidente(idResidencia, input.getIdResidente());
@@ -128,7 +128,7 @@ public class ParticipanteService {
             throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         // Verificar si el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEvento, idResidencia);
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idResidencia, idEvento);
 
 
         List<Participante> list = participanteRepository.findAll(
@@ -157,7 +157,7 @@ public class ParticipanteService {
     public void deleteParticipante(Long idResidencia, Long idEvento, Long idParticipante) {
         Participante participante = getParticipante(idResidencia, idEvento, idParticipante);
 
-        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEvento, idResidencia);
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idResidencia, idEvento);
 
         // Verificar si la fecha de inicio del evento de salida ya ha pasado
         if (eventoSalida.getFechaInicio().isBefore(LocalDateTime.now())) {
@@ -351,7 +351,7 @@ public class ParticipanteService {
         }
 
         // Verificar si el evento de salida existe
-        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idEvento, idResidencia);
+        EventoSalida eventoSalida = eventoSalidaService.getEventoSalida(idResidencia, idEvento);
         if (eventoSalida == null) {
             throw new ApiException(ApiErrorCode.EVENTO_SALIDA_INVALIDO);
         }
