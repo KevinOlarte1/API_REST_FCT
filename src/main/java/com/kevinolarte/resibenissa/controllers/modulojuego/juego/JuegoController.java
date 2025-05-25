@@ -1,6 +1,9 @@
 package com.kevinolarte.resibenissa.controllers.modulojuego.juego;
 
 import com.kevinolarte.resibenissa.dto.out.modulojuego.JuegoResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.modulojuego.JuegoService;
 import lombok.AllArgsConstructor;
@@ -34,12 +37,21 @@ public class JuegoController {
      *
      * @param idJuego ID del juego a consultar.
      * @return {@link ResponseEntity} con los datos del juego solicitado.
+     * @throws ResiException si ocurre un error al obtener el juego.
      */
     @GetMapping("/{idJuego}/get")
     public ResponseEntity<JuegoResponseDto> get(
                                         @PathVariable Long idJuego) {
-
-        return ResponseEntity.ok(juegoService.get(idJuego));
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        JuegoResponseDto juego;
+        try {
+            juego = juegoService.get(idJuego);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
+        return ResponseEntity.ok(juego);
     }
 
     /**
@@ -48,12 +60,22 @@ public class JuegoController {
      * @param nombreJuego Filtro por nombre del juego (opcional).
      * @param maxRegistros Si es {@code true}, limita los resultados a un número máximo (definido en servicio).
      * @return {@link ResponseEntity} con la lista de juegos.
+     * @throws ApiException si ocurre un error al obtener los juegos.g
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<JuegoResponseDto>> getAll(
                                         @RequestParam(required = false) String nombreJuego,
                                         @RequestParam(required = false) Boolean maxRegistros) {
-        return ResponseEntity.ok(juegoService.getAll(nombreJuego, maxRegistros));
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<JuegoResponseDto> juegos;
+        try {
+            juegos = juegoService.getAll(nombreJuego, maxRegistros);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
+        return ResponseEntity.ok(juegos);
     }
 
 
