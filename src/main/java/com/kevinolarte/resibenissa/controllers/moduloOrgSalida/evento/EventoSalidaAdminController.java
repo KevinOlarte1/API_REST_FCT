@@ -3,6 +3,9 @@ package com.kevinolarte.resibenissa.controllers.moduloOrgSalida.evento;
 import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.EventoSalidaDto;
 import com.kevinolarte.resibenissa.dto.out.moduloOrgSalida.EventoSalidaResponseDto;
 import com.kevinolarte.resibenissa.enums.moduloOrgSalida.EstadoSalida;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.moduloOrgSalida.EventoSalidaService;
 import lombok.AllArgsConstructor;
@@ -39,14 +42,21 @@ public class EventoSalidaAdminController {
      *
      * @param idResidencia ID de la residencia donde se creará el evento de salida.
      * @param input DTO que contiene los datos del evento de salida a crear.
-     * @return {@link ResponseEntity} con el evento de salida creado.
+     * @return {@link ResponseEntity} con el evento de salida creado.ç
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PostMapping("/{idResidencia}/evento/add")
     public ResponseEntity<EventoSalidaResponseDto> add(
-                                @PathVariable Long idResidencia,
-                                @RequestBody EventoSalidaDto input) {
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(eventoSalidaService.add(input, idResidencia));
+            @PathVariable Long idResidencia,
+            @RequestBody EventoSalidaDto input) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(eventoSalidaService.add(input, idResidencia));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
 
@@ -56,13 +66,19 @@ public class EventoSalidaAdminController {
      * @param idResidencia ID de la residencia a la que pertenece el evento de salida.
      * @param idEventoSalida ID del evento de salida a consultar.
      * @return {@link ResponseEntity} con los datos del evento de salida encontrado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/{idResidencia}/evento/{idEventoSalida}/get")
     public ResponseEntity<EventoSalidaResponseDto> getEventoSalida(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEventoSalida) {
-
-        return ResponseEntity.ok(eventoSalidaService.get(idEventoSalida, idResidencia));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEventoSalida) {
+        try {
+            return ResponseEntity.ok(eventoSalidaService.get(idEventoSalida, idResidencia));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
 
@@ -81,22 +97,30 @@ public class EventoSalidaAdminController {
      * @param minRM              Mínimo número de participantes con recursos materiales
      * @param maxRM              Máximo número de participantes con recursos materiales
      * @return Lista de eventos de salida que cumplen los filtros
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/{idResidencia}/evento/getAll")
     public ResponseEntity<List<EventoSalidaResponseDto>> getAllEventosSalida(
-                                @PathVariable Long idResidencia,
-                                @RequestParam(required = false ) LocalDate fecha,
-                                @RequestParam(required = false) LocalDate minFecha,
-                                @RequestParam(required = false) LocalDate maxFecha,
-                                @RequestParam(required = false) EstadoSalida estado,
-                                @RequestParam(required = false) Long idResidente,
-                                @RequestParam(required = false) Long idParticipante,
-                                @RequestParam(required = false) Integer minRH,
-                                @RequestParam(required = false) Integer maxRH,
-                                @RequestParam(required = false) Integer minRM,
-                                @RequestParam(required = false) Integer maxRM) {
-
-        return ResponseEntity.ok(eventoSalidaService.getAll(idResidencia, fecha, minFecha, maxFecha, estado, idResidente, idParticipante, minRH, maxRH, minRM, maxRM));
+            @PathVariable Long idResidencia,
+            @RequestParam(required = false) LocalDate fecha,
+            @RequestParam(required = false) LocalDate minFecha,
+            @RequestParam(required = false) LocalDate maxFecha,
+            @RequestParam(required = false) EstadoSalida estado,
+            @RequestParam(required = false) Long idResidente,
+            @RequestParam(required = false) Long idParticipante,
+            @RequestParam(required = false) Integer minRH,
+            @RequestParam(required = false) Integer maxRH,
+            @RequestParam(required = false) Integer minRM,
+            @RequestParam(required = false) Integer maxRM) {
+        try {
+            return ResponseEntity.ok(eventoSalidaService.getAll(
+                    idResidencia, fecha, minFecha, maxFecha, estado,
+                    idResidente, idParticipante, minRH, maxRH, minRM, maxRM));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -113,22 +137,31 @@ public class EventoSalidaAdminController {
      * @param minRM              Mínimo número de participantes con recursos materiales
      * @param maxRM              Máximo número de participantes con recursos materiales
      * @return Lista de eventos de salida que cumplen los filtros
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/evento/getAll")
-    public ResponseEntity<List<EventoSalidaResponseDto>> getAllEventosSalida(
-                                @RequestParam(required = false ) LocalDate fecha,
-                                @RequestParam(required = false) LocalDate minFecha,
-                                @RequestParam(required = false) LocalDate maxFecha,
-                                @RequestParam(required = false) EstadoSalida estado,
-                                @RequestParam(required = false) Long idResidente,
-                                @RequestParam(required = false) Long idParticipante,
-                                @RequestParam(required = false) Integer minRH,
-                                @RequestParam(required = false) Integer maxRH,
-                                @RequestParam(required = false) Integer minRM,
-                                @RequestParam(required = false) Integer maxRM) {
-
-        return ResponseEntity.ok(eventoSalidaService.getAll(fecha, minFecha, maxFecha, estado, idResidente, idParticipante, minRH, maxRH, minRM, maxRM));
+    public ResponseEntity<List<EventoSalidaResponseDto>> getAllEventosSalidaSinResidencia(
+            @RequestParam(required = false) LocalDate fecha,
+            @RequestParam(required = false) LocalDate minFecha,
+            @RequestParam(required = false) LocalDate maxFecha,
+            @RequestParam(required = false) EstadoSalida estado,
+            @RequestParam(required = false) Long idResidente,
+            @RequestParam(required = false) Long idParticipante,
+            @RequestParam(required = false) Integer minRH,
+            @RequestParam(required = false) Integer maxRH,
+            @RequestParam(required = false) Integer minRM,
+            @RequestParam(required = false) Integer maxRM) {
+        try {
+            return ResponseEntity.ok(eventoSalidaService.getAll(
+                    fecha, minFecha, maxFecha, estado,
+                    idResidente, idParticipante, minRH, maxRH, minRM, maxRM));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
+
 
 
 
@@ -140,14 +173,21 @@ public class EventoSalidaAdminController {
      *
      * @param idResidencia ID de la residencia a la que pertenece el evento de salida.
      * @param idEventoSalida ID del evento de salida a eliminar.
+     * @return {@link ResponseEntity} sin contenido si la eliminación fue exitosa.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @DeleteMapping("/{idResidencia}/evento/{idEventoSalida}/delete")
     public ResponseEntity<Void> delete(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEventoSalida) {
-
-        eventoSalidaService.delete(idEventoSalida, idResidencia);
-        return ResponseEntity.noContent().build();
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEventoSalida) {
+        try {
+            eventoSalidaService.delete(idEventoSalida, idResidencia);
+            return ResponseEntity.noContent().build();
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -157,14 +197,20 @@ public class EventoSalidaAdminController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param nombre Nuevo nombre del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idResidencia}/evento/{idEventoSalida}/changeNombre")
     public ResponseEntity<EventoSalidaResponseDto> changeNombre(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEventoSalida,
-                                @RequestParam String nombre) {
-
-        return ResponseEntity.ok(eventoSalidaService.changeNombre(idEventoSalida, nombre, idResidencia));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEventoSalida,
+            @RequestParam String nombre) {
+        try {
+            return ResponseEntity.ok(eventoSalidaService.changeNombre(idEventoSalida, nombre, idResidencia));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -174,14 +220,20 @@ public class EventoSalidaAdminController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param descripcion Nueva descripción del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idResidencia}/evento/{idEventoSalida}/changeDescripcion")
     public ResponseEntity<EventoSalidaResponseDto> changeDescripcion(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEventoSalida,
-                                @RequestParam String descripcion) {
-
-        return ResponseEntity.ok(eventoSalidaService.changeDescripcion(idEventoSalida, descripcion, idResidencia));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEventoSalida,
+            @RequestParam String descripcion) {
+        try {
+            return ResponseEntity.ok(eventoSalidaService.changeDescripcion(idEventoSalida, descripcion, idResidencia));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -191,14 +243,20 @@ public class EventoSalidaAdminController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param fecha Nueva fecha del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
-    @PatchMapping("/{idResidencia}/evento/{idEventoSalida}/ChangeFecha")
+    @PatchMapping("/{idResidencia}/evento/{idEventoSalida}/changeFecha")
     public ResponseEntity<EventoSalidaResponseDto> changeFecha(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEventoSalida,
-                                @RequestParam LocalDateTime fecha) {
-
-        return ResponseEntity.ok(eventoSalidaService.changeFecha(idEventoSalida, fecha, idResidencia));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEventoSalida,
+            @RequestParam LocalDateTime fecha) {
+        try {
+            return ResponseEntity.ok(eventoSalidaService.changeFecha(idEventoSalida, fecha, idResidencia));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -208,14 +266,20 @@ public class EventoSalidaAdminController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param estado Nuevo estado del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idResidencia}/evento/{idEventoSalida}/changeEstado")
     public ResponseEntity<EventoSalidaResponseDto> changeEstado(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEventoSalida,
-                                @RequestParam EstadoSalida estado) {
-
-        return ResponseEntity.ok(eventoSalidaService.changeEstado(idEventoSalida, estado, idResidencia));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEventoSalida,
+            @RequestParam EstadoSalida estado) {
+        try {
+            return ResponseEntity.ok(eventoSalidaService.changeEstado(idEventoSalida, estado, idResidencia));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -225,14 +289,20 @@ public class EventoSalidaAdminController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param input DTO con los nuevos datos del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idResidencia}/evento/{idEventoSalida}/update")
     public ResponseEntity<EventoSalidaResponseDto> update(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEventoSalida,
-                                @RequestBody EventoSalidaDto input) {
-
-        return ResponseEntity.ok(eventoSalidaService.update(input, idResidencia, idEventoSalida));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEventoSalida,
+            @RequestBody EventoSalidaDto input) {
+        try {
+            return ResponseEntity.ok(eventoSalidaService.update(input, idResidencia, idEventoSalida));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
 }
