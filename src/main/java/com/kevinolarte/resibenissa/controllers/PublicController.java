@@ -2,10 +2,10 @@ package com.kevinolarte.resibenissa.controllers;
 
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.services.JwtService;
 import com.kevinolarte.resibenissa.services.moduloOrgSalida.ParticipanteService;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,8 +40,10 @@ public class PublicController {
             participanteService.allow(idResidencia, idEvento, idParticipante);
             return ResponseEntity.ok("✅ Permiso registrado correctamente.");
 
-        } catch (Exception e) {
-            throw new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        }catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO), null);
         }
     }
 
@@ -60,8 +62,10 @@ public class PublicController {
             participanteService.deny(idResidencia, idEvento, idParticipante);
             return ResponseEntity.ok("✅ Denegación registrada correctamente.");
 
-        } catch (Exception e) {
-            throw new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        }catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO), null);
         }
     }
 }

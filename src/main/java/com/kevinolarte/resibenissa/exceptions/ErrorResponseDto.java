@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 /**
  * DTO de salida que representa la respuesta de error estándar en la API.
  * <p>
- * Esta clase encapsula toda la información relevante cuando ocurre una {@link ApiException}
+ * Esta clase encapsula toda la información relevante cuando ocurre una {@link ResiException}
  * y se desea devolver una respuesta estructurada al cliente.
  * </p>
  *
@@ -36,7 +36,7 @@ public class ErrorResponseDto {
 
     private String timestamp;
 
-    public ErrorResponseDto(ApiException ex) {
+    public ErrorResponseDto(ResiException ex) {
         this.mensaje = ex.getErrorCode().getMessage();
         this.codigo = ex.getErrorCode().getCode();
         this.status = ex.getHttpStatus().value();

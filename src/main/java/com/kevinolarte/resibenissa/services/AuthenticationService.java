@@ -7,7 +7,7 @@ import com.kevinolarte.resibenissa.dto.in.auth.RegisterUserDto;
 import com.kevinolarte.resibenissa.dto.in.auth.VerifyUserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
-import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
@@ -57,17 +57,17 @@ public class AuthenticationService {
      *
      * @param input DTO con los datos del usuario a registrar.
      * @return DTO con los datos del usuario creado.
-     * @throws ApiException si el email es inválido, ya existe, o la residencia no es válida.
+     * @throws ResiException si el email es inválido, ya existe, o la residencia no es válida.
      */
     public UserResponseDto singUp(RegisterUserDto input){
         if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getPassword() == null || input.getPassword().trim().isEmpty()
             || input.getIdResidencia() == null || input.getNombre() == null || input.getNombre().trim().isEmpty() || input.getApellido() == null || input.getApellido().trim().isEmpty()){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         input.setEmail(input.getEmail().trim().toLowerCase());
         if (!EmailService.isEmailValid(input.getEmail())){
-            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+            throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
         }
 
         //Miramos si ese usuario y residencia existen
@@ -75,12 +75,12 @@ public class AuthenticationService {
         Residencia residenciaTest = residenciaService.getResidencia(input.getIdResidencia());
         if(userTest != null){
             if (userTest.isBaja())
-                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
-            throw new ApiException(ApiErrorCode.USER_EXIST);
+                throw new ResiException(ApiErrorCode.USUARIO_BAJA);
+            throw new ResiException(ApiErrorCode.USER_EXIST);
         }
 
         if (residenciaTest.isBaja())
-            throw new ApiException(ApiErrorCode.RESIDENCIA_BAJA);
+            throw new ResiException(ApiErrorCode.RESIDENCIA_BAJA);
 
         User user = new User(input.getNombre(), input.getApellido(),input.getEmail(), passwordEncoder.encode(input.getPassword()));
         user.setVerificationCode(generateVerificationCode());
@@ -100,31 +100,31 @@ public class AuthenticationService {
      *
      * @param input DTO con credenciales de acceso.
      * @return El objeto {@link User} autenticado.
-     * @throws ApiException si el usuario no existe o no está activado.
+     * @throws ResiException si el usuario no existe o no está activado.
      */
     public User authenticate(LoginUserDto input){
         if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getPassword() == null || input.getPassword().trim().isEmpty()){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         input.setEmail(input.getEmail().trim().toLowerCase());
         if (!EmailService.isEmailValid(input.getEmail())){
-            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+            throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
         }
 
         //Ver si ese usuario existe o no
         User user = userRepository.findByEmail(input.getEmail());
 
         if (user == null){
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
 
         //Ver si esta activado
         if(!user.isEnabled()){
-            throw new ApiException(ApiErrorCode.USER_NO_ACTIVADO);
+            throw new ResiException(ApiErrorCode.USER_NO_ACTIVADO);
         }
         //Ver si esta de baja
         if(user.isBaja()){
-            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+            throw new ResiException(ApiErrorCode.USUARIO_BAJA);
         }
 
         //Autehnticamos
@@ -136,7 +136,7 @@ public class AuthenticationService {
                     )
             );
         }catch (AuthenticationException e){
-            throw new ApiException(ApiErrorCode.CONTRASENA_INCORRECTA);
+            throw new ResiException(ApiErrorCode.CONTRASENA_INCORRECTA);
         }
 
         return user;
@@ -146,27 +146,27 @@ public class AuthenticationService {
      * Verifica el código enviado por correo y activa la cuenta del usuario.
      *
      * @param input DTO que contiene el email y el código de verificación.
-     * @throws ApiException si el código está expirado, es inválido, o el usuario no existe.
+     * @throws ResiException si el código está expirado, es inválido, o el usuario no existe.
      */
     public void verifyUser(VerifyUserDto input){
         if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getVerificationCode() == null || input.getVerificationCode().trim().isEmpty()){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         User user = userRepository.findByEmail(input.getEmail());
         if(user != null){
 
             if (user.isBaja()) {
-                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+                throw new ResiException(ApiErrorCode.USUARIO_BAJA);
             }
             if (user.isEnabled()) {
-                throw new ApiException(ApiErrorCode.USER_YA_ACTIVADO);
+                throw new ResiException(ApiErrorCode.USER_YA_ACTIVADO);
             }
 
 
 
 
             if(user.getVerificationExpiration().isBefore(LocalDateTime.now())){
-                throw new ApiException(ApiErrorCode.CODIGO_EXPIRADO);
+                throw new ResiException(ApiErrorCode.CODIGO_EXPIRADO);
             }
             if (user.getVerificationCode().equals(input.getVerificationCode())){
                 user.setEnabled(true);
@@ -174,11 +174,11 @@ public class AuthenticationService {
                 user.setVerificationExpiration(null);
                 userRepository.save(user); //CUIDADO!!!
             }else{
-                throw new ApiException(ApiErrorCode.CODIGO_INVALIDO);
+                throw new ResiException(ApiErrorCode.CODIGO_INVALIDO);
             }
         }
         else{
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
     }
 
@@ -186,24 +186,24 @@ public class AuthenticationService {
      * Reenvía un nuevo código de verificación por correo si el usuario aún no está activado.
      *
      * @param email Dirección de correo del usuario.
-     * @throws ApiException si el usuario no existe o ya está activado.
+     * @throws ResiException si el usuario no existe o ya está activado.
      */
     public void resendVerificationCode(String email){
         if (email == null || email.trim().isEmpty()){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         email = email.trim().toLowerCase();
         if (!EmailService.isEmailValid(email)){
-            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+            throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
         }
         User user = userRepository.findByEmail(email);
 
         if(user != null){
             if (user.isBaja()) {
-                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+                throw new ResiException(ApiErrorCode.USUARIO_BAJA);
             }
             if (user.isEnabled()){
-                throw new ApiException(ApiErrorCode.USER_YA_ACTIVADO);
+                throw new ResiException(ApiErrorCode.USER_YA_ACTIVADO);
             }
             user.setVerificationCode(generateVerificationCode());
             user.setVerificationExpiration(LocalDateTime.now().plusHours(1));
@@ -211,7 +211,7 @@ public class AuthenticationService {
             userRepository.save(user);
         }
         else{
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
     }
 
@@ -230,7 +230,7 @@ public class AuthenticationService {
      * Envía un correo con el código de verificación al usuario.
      *
      * @param user Usuario al que se le enviará el correo.
-     * @throws ApiException si ocurre un error al enviar el correo.
+     * @throws ResiException si ocurre un error al enviar el correo.
      */
     public void sendVerificationEmail(User user){
         String subject = "Account verification";
@@ -250,7 +250,7 @@ public class AuthenticationService {
         try{
             emailService.sendEmail(user.getEmail(), subject, htmlMessage);
         }catch (MessagingException e){
-            throw new ApiException(ApiErrorCode.ERROR_MAIL_SENDER);
+            throw new ResiException(ApiErrorCode.ERROR_MAIL_SENDER);
 
         }
     }

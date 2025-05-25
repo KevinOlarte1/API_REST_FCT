@@ -4,6 +4,9 @@ import com.kevinolarte.resibenissa.dto.in.auth.LoginUserDto;
 import com.kevinolarte.resibenissa.dto.in.auth.RegisterUserDto;
 import com.kevinolarte.resibenissa.dto.in.auth.VerifyUserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.dto.out.LoginResponseDto;
 import com.kevinolarte.resibenissa.services.AuthenticationService;
@@ -43,8 +46,16 @@ public class AuthenticationController {
      */
     @PostMapping("/signup")
     public ResponseEntity<UserResponseDto> register(@RequestBody RegisterUserDto registerUserDto){
-            UserResponseDto user = authenticationService.singUp(registerUserDto);
-            return ResponseEntity.ok(user);
+        UserResponseDto user;
+        try{
+            user = authenticationService.singUp(registerUserDto);
+        } catch (ResiException e){
+            throw new ApiException(e, null);
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+
+        return ResponseEntity.ok(user);
 
     }
 
@@ -56,14 +67,21 @@ public class AuthenticationController {
      */
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> authenticate(@RequestBody LoginUserDto loginUserDto){
+        LoginResponseDto loginResponse;
+        try{
             User userauthentication = authenticationService.authenticate(loginUserDto);
             String token = jwtService.generateToken(userauthentication);
-            LoginResponseDto loginResponse = new LoginResponseDto(
+            loginResponse = new LoginResponseDto(
                     token,
                     jwtService.getExpirationTime(),
                     userauthentication
             );
-            return ResponseEntity.ok(loginResponse);
+        }catch (ResiException e){
+            throw new ApiException(e, null);
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(loginResponse);
     }
 
     /**
@@ -74,8 +92,15 @@ public class AuthenticationController {
      */
     @PostMapping("/verify")
     public ResponseEntity<String> verifyUser(@RequestBody VerifyUserDto verifyUserDto){
+        try{
             authenticationService.verifyUser(verifyUserDto);
-            return ResponseEntity.ok("AcountVerfied");
+        }catch (ResiException e){
+            throw new ApiException(e, null);
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+
+        return ResponseEntity.ok("AcountVerfied");
 
     }
 
@@ -87,7 +112,13 @@ public class AuthenticationController {
      */
     @PostMapping("/resend")
     public ResponseEntity<String> resendVerificationCode(@RequestParam String email ){
-        authenticationService.resendVerificationCode(email);
+        try{
+            authenticationService.resendVerificationCode(email);
+        }catch (ResiException e){
+            throw new ApiException(e, null);
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
         return ResponseEntity.ok("Verification Code Resent");
 
     }

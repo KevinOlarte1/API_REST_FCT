@@ -1,7 +1,7 @@
 package com.kevinolarte.resibenissa.config;
 
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
-import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -41,10 +41,10 @@ public class AplicationConfiguration {
     return email -> {
         User user = userRepository.findByEmail(email);
         if(user == null){
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
         if (user.isBaja()){
-            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+            throw new ResiException(ApiErrorCode.USUARIO_BAJA);
         }
         return user;
     };

@@ -3,6 +3,9 @@ package com.kevinolarte.resibenissa.controllers.moduloOrgSalida.evento;
 import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.EventoSalidaDto;
 import com.kevinolarte.resibenissa.dto.out.moduloOrgSalida.EventoSalidaResponseDto;
 import com.kevinolarte.resibenissa.enums.moduloOrgSalida.EstadoSalida;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.moduloOrgSalida.EventoSalidaService;
 import lombok.AllArgsConstructor;
@@ -39,14 +42,19 @@ public class EventoSalidaController {
      *
      * @param input DTO que contiene los datos del evento de salida a crear.
      * @return {@link ResponseEntity} con el evento de salida creado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PostMapping("/add")
-    public ResponseEntity<EventoSalidaResponseDto> add(
-                                @RequestBody EventoSalidaDto input) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.status(HttpStatus.CREATED).body(eventoSalidaService.add(input, idResidencia));
+    public ResponseEntity<EventoSalidaResponseDto> add(@RequestBody EventoSalidaDto input) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(eventoSalidaService.add(input, currentUser.getResidencia().getId()));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
 
@@ -55,16 +63,19 @@ public class EventoSalidaController {
      *
      * @param idEventoSalida ID del evento de salida a consultar.
      * @return {@link ResponseEntity} con los datos del evento de salida encontrado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/{idEventoSalida}/get")
-    public ResponseEntity<EventoSalidaResponseDto> getEventoSalida(
-                                @PathVariable Long idEventoSalida) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(eventoSalidaService.get(idEventoSalida, idResidencia));
+    public ResponseEntity<EventoSalidaResponseDto> getEventoSalida(@PathVariable Long idEventoSalida) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(eventoSalidaService.get(idEventoSalida, currentUser.getResidencia().getId()));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
-
 
     /**
      * Obtiene una lista de eventos de salida filtrados por varios parámetros.
@@ -80,24 +91,33 @@ public class EventoSalidaController {
      * @param minRM Mínimo rango de minutos del evento de salida.
      * @param maxRM Máximo rango de minutos del evento de salida.
      * @return {@link ResponseEntity} con la lista de eventos de salida encontrados.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<EventoSalidaResponseDto>> getAllEventosSalida(
-                                @RequestParam(required = false ) LocalDate fecha,
-                                @RequestParam(required = false) LocalDate minFecha,
-                                @RequestParam(required = false) LocalDate maxFecha,
-                                @RequestParam(required = false) EstadoSalida estado,
-                                @RequestParam(required = false) Long idResidente,
-                                @RequestParam(required = false) Long idParticipante,
-                                @RequestParam(required = false) Integer minRH,
-                                @RequestParam(required = false) Integer maxRH,
-                                @RequestParam(required = false) Integer minRM,
-                                @RequestParam(required = false) Integer maxRM) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(eventoSalidaService.getAll(idResidencia, fecha, minFecha, maxFecha, estado, idResidente, idParticipante, minRH, maxRH, minRM, maxRM));
+            @RequestParam(required = false) LocalDate fecha,
+            @RequestParam(required = false) LocalDate minFecha,
+            @RequestParam(required = false) LocalDate maxFecha,
+            @RequestParam(required = false) EstadoSalida estado,
+            @RequestParam(required = false) Long idResidente,
+            @RequestParam(required = false) Long idParticipante,
+            @RequestParam(required = false) Integer minRH,
+            @RequestParam(required = false) Integer maxRH,
+            @RequestParam(required = false) Integer minRM,
+            @RequestParam(required = false) Integer maxRM) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(eventoSalidaService.getAll(
+                    currentUser.getResidencia().getId(),
+                    fecha, minFecha, maxFecha, estado,
+                    idResidente, idParticipante, minRH, maxRH, minRM, maxRM));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
+
 
 
 
@@ -108,15 +128,20 @@ public class EventoSalidaController {
      * </p>
      *
      * @param idEventoSalida ID del evento de salida a eliminar.
+     * @return {@link ResponseEntity} con estado NO_CONTENT si la eliminación fue exitosa.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @DeleteMapping("/{idEventoSalida}/delete")
-    public ResponseEntity<Void> delete(
-                                @PathVariable Long idEventoSalida) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        eventoSalidaService.delete(idEventoSalida, idResidencia);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<Void> delete(@PathVariable Long idEventoSalida) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            eventoSalidaService.delete(idEventoSalida, currentUser.getResidencia().getId());
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
 
@@ -126,14 +151,20 @@ public class EventoSalidaController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param nombre Nuevo nombre del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idEventoSalida}/changeNombre")
     public ResponseEntity<EventoSalidaResponseDto> changeNombre(
-                                @PathVariable Long idEventoSalida,
-                                @RequestParam String nombre) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(eventoSalidaService.changeNombre(idEventoSalida, nombre, idResidencia));
+            @PathVariable Long idEventoSalida,
+            @RequestParam String nombre) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(eventoSalidaService.changeNombre(idEventoSalida, nombre, currentUser.getResidencia().getId()));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
     /**
@@ -142,14 +173,20 @@ public class EventoSalidaController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param descripcion Nueva descripción del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idEventoSalida}/changeDescripcion")
     public ResponseEntity<EventoSalidaResponseDto> changeDescripcion(
-                                @PathVariable Long idEventoSalida,
-                                @RequestParam String descripcion) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(eventoSalidaService.changeDescripcion(idEventoSalida, descripcion, idResidencia));
+            @PathVariable Long idEventoSalida,
+            @RequestParam String descripcion) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(eventoSalidaService.changeDescripcion(idEventoSalida, descripcion, currentUser.getResidencia().getId()));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
     /**
@@ -158,14 +195,20 @@ public class EventoSalidaController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param fecha Nueva fecha del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idEventoSalida}/ChangeFecha")
     public ResponseEntity<EventoSalidaResponseDto> changeFecha(
-                                @PathVariable Long idEventoSalida,
-                                @RequestParam LocalDateTime fecha) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(eventoSalidaService.changeFecha(idEventoSalida, fecha, idResidencia));
+            @PathVariable Long idEventoSalida,
+            @RequestParam LocalDateTime fecha) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(eventoSalidaService.changeFecha(idEventoSalida, fecha, currentUser.getResidencia().getId()));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
     /**
@@ -174,14 +217,20 @@ public class EventoSalidaController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param estado Nuevo estado del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idEventoSalida}/changeEstado")
     public ResponseEntity<EventoSalidaResponseDto> changeEstado(
-                                @PathVariable Long idEventoSalida,
-                                @RequestParam EstadoSalida estado) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(eventoSalidaService.changeEstado(idEventoSalida, estado, idResidencia));
+            @PathVariable Long idEventoSalida,
+            @RequestParam EstadoSalida estado) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(eventoSalidaService.changeEstado(idEventoSalida, estado, currentUser.getResidencia().getId()));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
     /**
@@ -190,14 +239,20 @@ public class EventoSalidaController {
      * @param idEventoSalida ID del evento de salida a actualizar.
      * @param input DTO con los nuevos datos del evento de salida.
      * @return {@link ResponseEntity} con el evento de salida actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idEventoSalida}/update")
     public ResponseEntity<EventoSalidaResponseDto> update(
-                                @PathVariable Long idEventoSalida,
-                                @RequestBody EventoSalidaDto input) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(eventoSalidaService.update(input, idResidencia, idEventoSalida));
+            @PathVariable Long idEventoSalida,
+            @RequestBody EventoSalidaDto input) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(eventoSalidaService.update(input, currentUser.getResidencia().getId(), idEventoSalida));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
 

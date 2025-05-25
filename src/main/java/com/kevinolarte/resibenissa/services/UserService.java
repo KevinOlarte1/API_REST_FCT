@@ -5,7 +5,7 @@ import com.kevinolarte.resibenissa.dto.in.UserDto;
 import com.kevinolarte.resibenissa.dto.in.auth.ChangePasswordUserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
-import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import com.kevinolarte.resibenissa.models.User;
@@ -46,17 +46,17 @@ public class UserService {
      * @param idResidencia ID de la residencia a la que pertenece el usuario.
      * @param input Datos del usuario a guardar.
      * @return DTO con los datos del usuario guardado.
-     * @throws ApiException si los datos son inválidos o el usuario ya existe.
+     * @throws ResiException si los datos son inválidos o el usuario ya existe.
      */
     public UserResponseDto add(Long idResidencia, UserDto input) {
         if (input.getEmail() == null || input.getEmail().trim().isEmpty() || input.getPassword() == null || input.getPassword().trim().isEmpty()
                 || input.getIdResidencia() == null || input.getNombre() == null || input.getNombre().trim().isEmpty() || input.getApellido() == null || input.getApellido().trim().isEmpty()){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         input.setEmail(input.getEmail().trim().toLowerCase());
         if (!EmailService.isEmailValid(input.getEmail())){
-            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+            throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
         }
 
         //Miramos si ese usuario y residencia existen
@@ -64,12 +64,12 @@ public class UserService {
         Residencia residenciaTest = residenciaService.getResidencia(input.getIdResidencia());
         if(userTest != null){
             if (userTest.isBaja())
-                throw new ApiException(ApiErrorCode.USUARIO_BAJA);
-            throw new ApiException(ApiErrorCode.USER_EXIST);
+                throw new ResiException(ApiErrorCode.USUARIO_BAJA);
+            throw new ResiException(ApiErrorCode.USER_EXIST);
         }
 
         if (residenciaTest.isBaja())
-            throw new ApiException(ApiErrorCode.RESIDENCIA_BAJA);
+            throw new ResiException(ApiErrorCode.RESIDENCIA_BAJA);
 
         User user = new User(input.getNombre(), input.getApellido(),input.getEmail(), passwordEncoder.encode(input.getPassword()));
         user.setResidencia(residenciaTest);
@@ -89,7 +89,7 @@ public class UserService {
      * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario.
      * @return DTO con los datos del usuario.
-     * @throws ApiException si el ID de residencia o usuario es nulo, o si el usuario no pertenece a la residencia.
+     * @throws ResiException si el ID de residencia o usuario es nulo, o si el usuario no pertenece a la residencia.
      */
     public UserResponseDto get(Long idResidencia, Long idUser) {
         User userTmp = getUsuario(idResidencia, idUser);
@@ -103,22 +103,22 @@ public class UserService {
      * @param idResidencia ID de la residencia.
      * @param email Email del usuario.
      * @return DTO con los datos del usuario.
-     * @throws ApiException si el ID de residencia o email es nulo, o si el usuario no pertenece a la residencia.
+     * @throws ResiException si el ID de residencia o email es nulo, o si el usuario no pertenece a la residencia.
      */
     public UserResponseDto get(Long idResidencia, String email){
         if (idResidencia == null || email == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         //Validar si existe ese usuario
         User user = userRepository.findByEmail(email);
         if (user == null){
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
 
         //Validar si pertenece a esa residencia
         if (user.getResidencia() == null || !user.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
 
         // Si todo es correcto, devolver el usuario
@@ -129,7 +129,7 @@ public class UserService {
      * Obtiene una imagen como recurso desde el sistema de archivos.
      * @param filename Nombre del archivo solicitado (actualmente no se utiliza, se carga siempre la imagen por defecto).
      * @return {@link Resource} que representa la imagen cargada desde el sistema de archivos.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException si el archivo no existe o no puede accederse.
+     * @throws ResiException si el archivo no existe o no puede accederse.
      */
     public Resource getImage(String filename) {
 
@@ -138,10 +138,10 @@ public class UserService {
         try{
             resource = new UrlResource(filePath.toUri());
             if (!resource.exists()) {
-                throw new ApiException(ApiErrorCode.PROBLEMAS_CON_FILE);
+                throw new ResiException(ApiErrorCode.PROBLEMAS_CON_FILE);
             }
         }catch (Exception e){
-            throw new ApiException(ApiErrorCode.PROBLEMAS_CON_FILE);
+            throw new ResiException(ApiErrorCode.PROBLEMAS_CON_FILE);
         }
         return resource;
     }
@@ -153,11 +153,11 @@ public class UserService {
      * @param enabled Estado habilitado para filtrar (opcional).
      * @param idJuego ID del juego para filtrar (opcional).
      * @return Lista de usuarios que cumplen con los filtros aplicados.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
+     * @throws ResiException si la residencia no existe o el ID es nulo.
      */
     public List<UserResponseDto> getAll(Long idResidencia, Boolean enabled, Long idJuego){
         if (idResidencia == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         List<User> list = userRepository.findAll(UserSpecification.withFilters(enabled,idResidencia, idJuego));
@@ -174,7 +174,7 @@ public class UserService {
      * @param enabled Estado habilitado para filtrar (opcional).
      * @param idJuego ID del juego para filtrar (opcional).
      * @return Lista de usuarios que cumplen con los filtros aplicados.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
+     * @throws ResiException si la residencia no existe o el ID es nulo.
      */
     public List<UserResponseDto> getAll(Boolean enabled, Long idJuego) {
 
@@ -190,10 +190,10 @@ public class UserService {
      *
      * @param idResidencia ID de la residencia.
      * @return Lista de usuarios dados de baja en la residencia.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
+     * @throws ResiException si la residencia no existe o el ID es nulo.
      */
     public List<UserResponseDto> getAllBajas(Long idResidencia, LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
-        if (idResidencia == null) throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+        if (idResidencia == null) throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
 
         List<User> list = userRepository.findAll(UserSpecification.withFiltersBaja(fecha,minFecha, maxFecha, idResidencia));
 
@@ -209,7 +209,7 @@ public class UserService {
      * @param minFecha Fecha mínima de baja (opcional).
      * @param maxFecha Fecha máxima de baja (opcional).
      * @return Lista de usuarios dados de baja en la residencia.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
+     * @throws ResiException si la residencia no existe o el ID es nulo.
      */
     public List<UserResponseDto> getAllBajas(LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
 
@@ -227,14 +227,14 @@ public class UserService {
      *
      * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario.
-     * @throws ApiException si el usuario tiene registros de juego asociados.
+     * @throws ResiException si el usuario tiene registros de juego asociados.
      */
     public void deleteFisico(Long idResidencia, Long idUser) {
         User userTmp = getUsuario(idResidencia, idUser);
 
         // Comprobar juegos asociados
         if (userTmp.getRegistroJuegos() != null && !userTmp.getRegistroJuegos().isEmpty()){
-            throw new ApiException(ApiErrorCode.REFERENCIAS_DEPENDIENTES);
+            throw new ResiException(ApiErrorCode.REFERENCIAS_DEPENDIENTES);
         }
 
         userRepository.delete(userTmp);
@@ -246,25 +246,25 @@ public class UserService {
      *
      * @param idResidencia ID de la residencia.
      * @param idUser ID del usuario.
-     * @throws ApiException si el usuario no existe, no pertenece a la residencia o ya está dado de baja.
+     * @throws ResiException si el usuario no existe, no pertenece a la residencia o ya está dado de baja.
      */
     public void deleteLogico(Long idResidencia, Long idUser) {
         if (idResidencia == null || idUser == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         //Verificamos si existe el usuario
         User user = userRepository.findById(idUser).orElse(null);
         if (user == null){
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
         //Validamos si pertenece a la residencia
         if (!user.getResidencia().getId().equals(idResidencia)){
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
 
         //Validamos si el usuario ya esta de baja
         if (user.isBaja()){
-            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+            throw new ResiException(ApiErrorCode.USUARIO_BAJA);
         }
 
         //Dar de baja
@@ -280,18 +280,18 @@ public class UserService {
      *
      * @param idResidencia ID de la residencia del usuario.
      * @param idUser ID del usuario al que se le eliminarán las referencias.
-     * @throws ApiException en caso de error
+     * @throws ResiException en caso de error
      *
      */
     public void deleteReferencies(Long idResidencia, Long idUser) {
         if (idResidencia == null || idUser == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         User userTmp = userRepository.findById(idUser)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+                .orElseThrow(() -> new ResiException(ApiErrorCode.USUARIO_INVALIDO));
         //Validar si pertenece a esa residencia
         if (!userTmp.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
         // Desvincular el usuario de todos los registros de juego
         for(RegistroJuego reg : userTmp.getRegistroJuegos()){
@@ -314,13 +314,13 @@ public class UserService {
      * @param idUser ID del usuario a actualizar.
      * @param input Datos nuevos del usuario.
      * @return DTO con los datos del usuario actualizado.
-     * @throws ApiException si los datos son inválidos o el usuario no pertenece a la residencia.
+     * @throws ResiException si los datos son inválidos o el usuario no pertenece a la residencia.
      */
     public UserResponseDto update(Long idResidencia, Long idUser, UserDto input) {
         User userTmp = getUsuario(idResidencia, idUser);
         //Comprobar si elm usuario esta de baja
         if (userTmp.isBaja()) {
-            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+            throw new ResiException(ApiErrorCode.USUARIO_BAJA);
         }
 
         if (input != null){
@@ -338,11 +338,11 @@ public class UserService {
             if (EmailService.isEmailValid(input.getEmail())) {
                 //Validar si el email ya existe
                 if (userRepository.findByEmail(input.getEmail()) != null) {
-                    throw new ApiException(ApiErrorCode.CORREO_DUPLICADO);
+                    throw new ResiException(ApiErrorCode.CORREO_DUPLICADO);
                 }
                 userTmp.setEmail(input.getEmail());
             } else {
-                throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+                throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
             }
 
         }
@@ -356,27 +356,27 @@ public class UserService {
      * @param idUser ID del usuario.
      * @param input Objeto con la contraseña actual y la nueva.
      * @return DTO con los datos del usuario actualizado.
-     * @throws ApiException si los datos son inválidos o la contraseña actual no coincide.
+     * @throws ResiException si los datos son inválidos o la contraseña actual no coincide.
      */
     public UserResponseDto updatePassword(Long idResidencia, Long idUser, ChangePasswordUserDto input) {
         if (idResidencia == null || idUser == null || input == null ||
                 input.getOldPassword() == null || input.getNewPassword() == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         //Validar si existe ese usuario
         User userTmp = userRepository.findById(idUser)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+                .orElseThrow(() -> new ResiException(ApiErrorCode.USUARIO_INVALIDO));
         //Validar si pertenece a esa residencia
         if (!userTmp.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
         //Comprobar si elm usuario esta de baja
         if (userTmp.isBaja()) {
-            throw new ApiException(ApiErrorCode.USUARIO_BAJA);
+            throw new ResiException(ApiErrorCode.USUARIO_BAJA);
         }
         //Validar si la contraseña es correcta
         if (!passwordEncoder.matches(input.getOldPassword(), userTmp.getPassword())) {
-            throw new ApiException(ApiErrorCode.CONTRASENA_INCORRECTA); // Asegúrate de definir este código si no existe
+            throw new ResiException(ApiErrorCode.CONTRASENA_INCORRECTA); // Asegúrate de definir este código si no existe
         }
 
         userTmp.setPassword(passwordEncoder.encode(input.getNewPassword()));
@@ -397,19 +397,19 @@ public class UserService {
      * @param idResidencia ID de la residencia.
      * @param idUsuario ID del usuario.
      * @return DTO del usuario solicitado.
-     * @throws ApiException si el ID es nulo, el usuario no existe o no pertenece a la residencia.
+     * @throws ResiException si el ID es nulo, el usuario no existe o no pertenece a la residencia.
      */
     public User getUsuario(Long idResidencia, Long idUsuario) {
         if (idResidencia == null || idUsuario == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         //validar si existe ese usuario
         User userTmp = userRepository.findById(idUsuario)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USUARIO_INVALIDO));
+                .orElseThrow(() -> new ResiException(ApiErrorCode.USUARIO_INVALIDO));
 
         //Validar si pertenece a esa residencia
         if (userTmp.getResidencia() == null || !userTmp.getResidencia().getId().equals(idResidencia)) {
-            throw new ApiException(ApiErrorCode.USUARIO_INVALIDO);
+            throw new ResiException(ApiErrorCode.USUARIO_INVALIDO);
         }
         return userTmp;
     }

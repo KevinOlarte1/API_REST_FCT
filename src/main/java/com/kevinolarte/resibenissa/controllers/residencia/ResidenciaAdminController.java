@@ -4,6 +4,9 @@ package com.kevinolarte.resibenissa.controllers.residencia;
 import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaPublicResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.services.ResidenciaService;
 import lombok.AllArgsConstructor;
@@ -37,11 +40,21 @@ public class ResidenciaAdminController {
      *
      * @param residenciaDto DTO con los datos de la residencia a crear.
      * @return {@link ResponseEntity} con estado {@code 201 Created} y el DTO de la residencia creada.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PostMapping("/add")
     public ResponseEntity<ResidenciaResponseDto> add(
                                 @RequestBody ResidenciaDto residenciaDto) {
-        ResidenciaResponseDto residencia = residenciaService.add(residenciaDto);
+        ResidenciaResponseDto residencia;
+        try {
+            residencia = residenciaService.add(residenciaDto);
+        } catch (ResiException e) {
+            // Manejo de excepciones específicas de la aplicación
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            // Manejo de excepciones genéricas
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(residencia);
 
     }
@@ -55,37 +68,73 @@ public class ResidenciaAdminController {
     @GetMapping("/{idResidencia}/get")
     public ResponseEntity<ResidenciaResponseDto> get(
                                 @PathVariable Long idResidencia) {
-        return ResponseEntity.ok(residenciaService.get(idResidencia));
+        ResidenciaResponseDto residencia;
+        try {
+            residencia = residenciaService.get(idResidencia);
+        } catch (ResiException e) {
+            // Manejo de excepciones específicas de la aplicación
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            // Manejo de excepciones genéricas
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residencia);
     }
 
     /**
      * Obtiene todas las residencias.
      *
      * @return {@link ResponseEntity} con estado {@code 200 OK} y una lista de DTOs de residencias.
+     * @throws ApiException si ocurre un error al intentar obtener las residencias.
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<ResidenciaPublicResponseDto>> getAll() {
-        return ResponseEntity.ok(residenciaService.getAll());
+        List<ResidenciaPublicResponseDto> residencias;
+        try {
+            residencias = residenciaService.getAll();
+        } catch (Exception e) {
+            // Manejo de excepciones genéricas
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residencias);
     }
 
     /**
      * Obtiene todos los que estan de baja
      * @return {@link ResponseEntity} con estado {@code 200 OK} y una lista de DTOs de residencias.
+     * @throws ApiException si ocurre un error al intentar obtener las residencias.
      */
     @GetMapping("/getAll/baja")
     public ResponseEntity<List<ResidenciaPublicResponseDto>> getAllBaja() {
-        return ResponseEntity.ok(residenciaService.getAllBaja());
+        List<ResidenciaPublicResponseDto> residencias;
+        try {
+            residencias = residenciaService.getAllBaja();
+        } catch (Exception e) {
+            // Manejo de excepciones genéricas
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residencias);
     }
 
     /**
      * Elimina una residencia por su ID.
      *
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
+     * @param idResidencia ID de la residencia a eliminar.
+     * @throws ApiException si ocurre un error al intentar eliminar la residencia.
      */
     @DeleteMapping("/{idResidencia}/delete")
     public ResponseEntity<Void> remove(
                                 @PathVariable Long idResidencia) {
-        residenciaService.deleteFisico(idResidencia);
+        try {
+            residenciaService.deleteFisico(idResidencia);
+        }catch (ResiException e) {
+            // Manejo de excepciones específicas de la aplicación
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            // Manejo de excepciones genéricas
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -93,11 +142,21 @@ public class ResidenciaAdminController {
      * Elimina una residencia de forma lógica. Dandolo de baja.
      *
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
+     * @param idResidencia ID de la residencia a dar de baja.
+     * @throws ApiException si ocurre un error al intentar eliminar la residencia.
      */
     @PatchMapping("/{idResidencia}/baja")
     public ResponseEntity<Void> baja(
                                 @PathVariable Long idResidencia) {
-        residenciaService.deleteLogico(idResidencia);
+        try {
+            residenciaService.deleteLogico(idResidencia);
+        }catch (ResiException e) {
+            // Manejo de excepciones específicas de la aplicación
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            // Manejo de excepciones genéricas
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

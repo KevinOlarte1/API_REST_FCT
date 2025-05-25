@@ -3,6 +3,9 @@ package com.kevinolarte.resibenissa.controllers.residencia;
 import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaPublicResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.ResidenciaService;
@@ -37,22 +40,38 @@ public class ResidenciaController {
      * Obtiene una residencia por su ID.
      *
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el DTO de la residencia encontrada.
+     * @throws ResiException si ocurre un error al obtener la residencia.
      */
     @GetMapping("/get")
     public ResponseEntity<ResidenciaResponseDto> get() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(residenciaService.get(currentUser.getResidencia().getId()));
+        ResidenciaResponseDto residencia;
+        try{
+            residencia = residenciaService.get(currentUser.getResidencia().getId());
+        } catch (ResiException e) {
+            return ResponseEntity.status(e.getHttpStatus()).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.ok(residencia);
     }
 
     /**
      * Obtiene todas las residencias.
      *
      * @return {@link ResponseEntity} con estado {@code 200 OK} y una lista de DTOs de residencias.
+     * @throws ApiException si ocurre un error al obtener las residencias.
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<ResidenciaPublicResponseDto>> getAll() {
-        return ResponseEntity.ok(residenciaService.getAll());
+        List<ResidenciaPublicResponseDto> residencias;
+        try{
+            residencias = residenciaService.getAll();
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residencias);
     }
 
 

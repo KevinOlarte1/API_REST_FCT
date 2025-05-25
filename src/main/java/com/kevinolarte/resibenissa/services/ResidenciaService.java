@@ -4,7 +4,7 @@ import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaPublicResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
-import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
@@ -47,28 +47,28 @@ public class ResidenciaService {
      *
      * @param input DTO que contiene el nombre y correo de la residencia.
      * @return {@link ResidenciaResponseDto} de la residencia creada.
-     * @throws ApiException en caso de errores de validación o duplicados.
+     * @throws ResiException en caso de errores de validación o duplicados.
      */
     public ResidenciaResponseDto add(ResidenciaDto input) throws RuntimeException{
         if (input.getNombre() == null || input.getEmail() == null
                 || input.getNombre().trim().isEmpty() || input.getEmail().trim().isEmpty()){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         // Validar formato del correo electrónico
         input.setEmail(input.getEmail().toLowerCase().trim());
         if (!EmailService.isEmailValid(input.getEmail())){
-            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+            throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
         }
 
         // Comprobar si ya existe una residencia con ese correo o nombre
         Optional<Residencia> residenciaTmp = residenciaRepository.findByEmail(input.getEmail());
         Optional<Residencia> residenciaTmp2 = residenciaRepository.findByNombre(input.getNombre());
         if(residenciaTmp.isPresent()){
-            throw new ApiException(ApiErrorCode.CORREO_DUPLICADO);
+            throw new ResiException(ApiErrorCode.CORREO_DUPLICADO);
         }
         if(residenciaTmp2.isPresent()){
-            throw new ApiException(ApiErrorCode.NOMBRE_DUPLICADO);
+            throw new ResiException(ApiErrorCode.NOMBRE_DUPLICADO);
         }
 
         Residencia residencia = new Residencia(input.getNombre(), input.getEmail());
@@ -83,17 +83,17 @@ public class ResidenciaService {
      *
      * @param idResidencia ID de la residencia a recuperar.
      * @return {@link ResidenciaResponseDto} de la residencia encontrada.
-     * @throws ApiException si el ID es nulo o no existe una residencia con ese ID.
+     * @throws ResiException si el ID es nulo o no existe una residencia con ese ID.
      */
     public ResidenciaResponseDto get(Long idResidencia) {
         Residencia resi;
 
         // Comprobar si el ID de residencia es nulo
         if (idResidencia == null)
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         else
             resi = residenciaRepository.findById(idResidencia)
-                    .orElseThrow(() -> new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO));
+                    .orElseThrow(() -> new ResiException(ApiErrorCode.RESIDENCIA_INVALIDO));
 
 
         return new ResidenciaResponseDto(resi);
@@ -127,13 +127,13 @@ public class ResidenciaService {
      * </p>
      *
      * @param idResidencia ID de la residencia a eliminar.
-     * @throws ApiException si no se encuentra la residencia especificada.
+     * @throws ResiException si no se encuentra la residencia especificada.
      */
     public void deleteFisico(Long idResidencia) {
         Residencia residenciaTmp = residenciaRepository.findById(idResidencia).orElse(null);
 
         if(residenciaTmp == null){
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+            throw new ResiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
         residenciaRepository.delete(residenciaTmp);
@@ -142,12 +142,12 @@ public class ResidenciaService {
     /**
      * Elimina una residencia de forma lógica, marcando su estado como inactivo.
      * @param id ID de la residencia a eliminar.
-     * @throws ApiException si no se encuentra la residencia.
+     * @throws ResiException si no se encuentra la residencia.
      */
     public void deleteLogico(Long id) {
         Residencia residencia = residenciaRepository.findById(id).orElse(null);
         if (residencia == null) {
-            throw new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO);
+            throw new ResiException(ApiErrorCode.RESIDENCIA_INVALIDO);
         }
 
         residencia.setBaja(true);
@@ -186,10 +186,10 @@ public class ResidenciaService {
      *
      * @param id ID de la residencia.
      * @return {@link Residencia} encontrada.
-     * @throws ApiException si no se encuentra la residencia.
+     * @throws ResiException si no se encuentra la residencia.
      */
     public Residencia getResidencia(Long id){
-        return residenciaRepository.findById(id).orElseThrow(() -> new ApiException(ApiErrorCode.RESIDENCIA_INVALIDO));
+        return residenciaRepository.findById(id).orElseThrow(() -> new ResiException(ApiErrorCode.RESIDENCIA_INVALIDO));
     }
 
 }

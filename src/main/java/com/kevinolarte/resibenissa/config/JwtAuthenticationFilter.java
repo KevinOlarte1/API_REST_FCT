@@ -1,7 +1,7 @@
 package com.kevinolarte.resibenissa.config;
 
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
-import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.JwtService;
 import jakarta.servlet.FilterChain;
@@ -66,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         //Ver si esa cabeza esta nulla o no es un token bearer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             System.out.println("No hay token");
-            handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
+            handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
             System.out.println("Pasando al siguiente filtro");
             return;
         }
@@ -92,7 +92,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     if (!user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))){
 
                         exceptionLanzada = true;
-                        handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
+                        handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
                         filterChain.doFilter(request, response);
                         return;
 
@@ -113,7 +113,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
                 else {
                     //Si no es valido, lanzamos la exception
-                    handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
+                    handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
                 }
             }
 
@@ -121,7 +121,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch(Exception e){
             System.out.println(e.getMessage());
             if (!exceptionLanzada)
-                handlerExceptionResolver.resolveException(request, response, null, new ApiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
+                handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
 
         }
 

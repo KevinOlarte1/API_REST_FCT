@@ -18,37 +18,36 @@ import java.util.List;
  * @Author    Kevin Olarte
  */
 @Entity
+@Table(name = "logger")
 @Getter
 @Setter
-@Table(name = "log_accion")
-public class LogAccion {
+public class Logger {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nombre;
-
+    private String endpoint;
+    private String metodo;
     private String descripcion;
-    private String correoUser;
-
-    private LocalDateTime fecha = LocalDateTime.now();
+    private LocalDateTime fecha;
 
     @ManyToOne
-    @JoinColumn(name = "fk_log")
-    private LogAccion logPadre;
+    @JoinColumn(name = "id_padre")
+    private Logger padre;
 
-    @OneToMany(mappedBy = "logPadre")
-    private List<LogAccion> hijos = new ArrayList<>();
+    @OneToMany(mappedBy = "padre", cascade = CascadeType.ALL)
+    private List<Logger> hijos = new ArrayList<>();
 
+    // Constructores
+    public Logger() {}
 
-    public LogAccion(String nombre, String descripcion, String correoUser) {
-        this.nombre = nombre;
+    public Logger(String endpoint, String metodo, String descripcion) {
+        this.endpoint = endpoint;
+        this.metodo = metodo;
         this.descripcion = descripcion;
-        this.correoUser = correoUser;
+        this.fecha = LocalDateTime.now();
     }
 
-    public LogAccion() {
-
-    }
+    // Getters y setters
 }

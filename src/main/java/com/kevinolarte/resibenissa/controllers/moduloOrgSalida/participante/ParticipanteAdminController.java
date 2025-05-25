@@ -2,9 +2,13 @@ package com.kevinolarte.resibenissa.controllers.moduloOrgSalida.participante;
 
 import com.kevinolarte.resibenissa.dto.in.moduloOrgSalida.ParticipanteDto;
 import com.kevinolarte.resibenissa.dto.out.moduloOrgSalida.ParticipanteResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.moduloOrgSalida.ParticipanteService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,14 +40,21 @@ public class ParticipanteAdminController {
      * @param idEvento ID del evento de salida al que se registra el participante.
      * @param participanteDto DTO con los datos del participante a registrar.
      * @return {@link ResponseEntity} con el participante creado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PostMapping("/add")
     public ResponseEntity<ParticipanteResponseDto> add(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEvento,
-                                @RequestBody ParticipanteDto participanteDto) {
-
-        return ResponseEntity.ok(participanteService.add(participanteDto, idEvento, idResidencia));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEvento,
+            @RequestBody ParticipanteDto participanteDto) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(participanteService.add(participanteDto, idEvento, idResidencia));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -53,14 +64,20 @@ public class ParticipanteAdminController {
      * @param idEvento ID del evento de salida al que pertenece el participante.
      * @param idParticipante ID del participante a consultar.
      * @return {@link ResponseEntity} con los datos del participante encontrado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("{idParticipante}/get")
     public ResponseEntity<ParticipanteResponseDto> get(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEvento,
-                                @PathVariable Long idParticipante) {
-
-        return ResponseEntity.ok(participanteService.get(idResidencia, idEvento, idParticipante));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante) {
+        try {
+            return ResponseEntity.ok(participanteService.get(idResidencia, idEvento, idParticipante));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
 
@@ -78,23 +95,30 @@ public class ParticipanteAdminController {
      * @param postOpinion Filtra por participantes con opinión posterior (opcional).
      * @param asistenciPermitida Filtra por participantes con asistencia permitida (opcional).
      * @return {@link ResponseEntity} con la lista de participantes encontrados.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<ParticipanteResponseDto>> getAllParticipantes(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEvento,
-                                @RequestParam(required = false) Long idResidente,
-                                @RequestParam(required = false) Boolean rM,
-                                @RequestParam(required = false) Boolean rH,
-                                @RequestParam(required = false)Integer minEdad,
-                                @RequestParam(required = false)Integer maxEdad,
-                                @RequestParam(required = false)Boolean preOpinion,
-                                @RequestParam(required = false)Boolean postOpinion,
-                                @RequestParam(required = false)Boolean asistenciPermitida) {
-
-        List<ParticipanteResponseDto> e =participanteService.getAll(idResidencia, idEvento, idResidente, rM, rH, minEdad, maxEdad, preOpinion, postOpinion, asistenciPermitida);
-        return ResponseEntity.ok(e);
-
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEvento,
+            @RequestParam(required = false) Long idResidente,
+            @RequestParam(required = false) Boolean rM,
+            @RequestParam(required = false) Boolean rH,
+            @RequestParam(required = false) Integer minEdad,
+            @RequestParam(required = false) Integer maxEdad,
+            @RequestParam(required = false) Boolean preOpinion,
+            @RequestParam(required = false) Boolean postOpinion,
+            @RequestParam(required = false) Boolean asistenciPermitida) {
+        try {
+            List<ParticipanteResponseDto> result = participanteService.getAll(
+                    idResidencia, idEvento, idResidente, rM, rH, minEdad, maxEdad, preOpinion, postOpinion, asistenciPermitida
+            );
+            return ResponseEntity.ok(result);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
 
@@ -105,15 +129,21 @@ public class ParticipanteAdminController {
      * @param idResidencia ID de la residencia donde se encuentra el evento.
      * @param idEvento ID del evento de salida del que se elimina el participante.
      * @return {@link ResponseEntity} con el estado de la operación.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @DeleteMapping("/{idParticipante}/delete")
     public ResponseEntity<Void> deleteParticipante(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEvento,
-                                @PathVariable Long idParticipante) {
-
-        participanteService.deleteParticipante(idResidencia, idEvento, idParticipante);
-        return ResponseEntity.noContent().build();
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante) {
+        try {
+            participanteService.deleteParticipante(idResidencia, idEvento, idParticipante);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -124,15 +154,21 @@ public class ParticipanteAdminController {
      * @param idEvento ID del evento de salida al que pertenece el participante.
      * @param participanteDto DTO con los nuevos datos del participante.
      * @return {@link ResponseEntity} con el participante actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idParticipante}/update")
     public ResponseEntity<ParticipanteResponseDto> update(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEvento,
-                                @PathVariable Long idParticipante,
-                                @RequestBody ParticipanteDto participanteDto) {
-
-        return ResponseEntity.ok(participanteService.update(participanteDto, idResidencia, idEvento, idParticipante));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante,
+            @RequestBody ParticipanteDto participanteDto) {
+        try {
+            return ResponseEntity.ok(participanteService.update(participanteDto, idResidencia, idEvento, idParticipante));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
 
@@ -142,16 +178,20 @@ public class ParticipanteAdminController {
      * @param idParticipante ID del participante al que se le añade la opinión.
      * @param preOpinion Opinión previa del participante.
      * @return {@link ResponseEntity} con el participante actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idParticipante}/addPreOpinion")
     public ResponseEntity<ParticipanteResponseDto> addPreOpinion(
-                                @PathVariable Long idEvento,
-                                @PathVariable Long idParticipante,
-                                @RequestParam String preOpinion) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(participanteService.addPreOpinion(idResidencia, idEvento, idParticipante, preOpinion));
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante,
+            @RequestParam String preOpinion) {
+        try {
+            return ResponseEntity.ok(participanteService.addPreOpinion(null, idEvento, idParticipante, preOpinion));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -165,13 +205,17 @@ public class ParticipanteAdminController {
      */
     @PatchMapping("/{idParticipante}/addPostOpinion")
     public ResponseEntity<ParticipanteResponseDto> addPostOpinion(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEvento,
-                                @PathVariable Long idParticipante,
-                                @RequestParam String postOpinion) {
-
-
-        return ResponseEntity.ok(participanteService.addPostOpinion(idResidencia, idEvento, idParticipante, postOpinion));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante,
+            @RequestParam String postOpinion) {
+        try {
+            return ResponseEntity.ok(participanteService.addPostOpinion(idResidencia, idEvento, idParticipante, postOpinion));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -183,16 +227,22 @@ public class ParticipanteAdminController {
      * @param rH Recurso humano (opcional).
      * @param rM Recurso material (opcional).
      * @return {@link ResponseEntity} con el participante actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idParticipante}/changeRecursos")
     public ResponseEntity<ParticipanteResponseDto> changeRecursos(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEvento,
-                                @PathVariable Long idParticipante,
-                                @RequestParam (required = false) Boolean rH,
-                                @RequestParam (required = false) Boolean rM){
-
-        return ResponseEntity.ok(participanteService.changeRecursos(idResidencia, idEvento, idParticipante, rH, rM));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante,
+            @RequestParam(required = false) Boolean rH,
+            @RequestParam(required = false) Boolean rM) {
+        try {
+            return ResponseEntity.ok(participanteService.changeRecursos(idResidencia, idEvento, idParticipante, rH, rM));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
 
@@ -203,15 +253,22 @@ public class ParticipanteAdminController {
      * @param idResidencia ID de la residencia donde se encuentra el evento.
      * @param idEvento ID del evento de salida al que pertenece el participante.
      * @return {@link ResponseEntity} con el participante aceptado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PostMapping("/{idParticipante}/allow")
     public ResponseEntity<ParticipanteResponseDto> allow(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEvento,
-                                @PathVariable Long idParticipante) {
-
-        return ResponseEntity.ok(participanteService.allow(idResidencia, idEvento, idParticipante));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante) {
+        try {
+            return ResponseEntity.ok(participanteService.allow(idResidencia, idEvento, idParticipante));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
+
 
     /**
      * Deniega la participación de un residente en un evento de salida.
@@ -220,14 +277,20 @@ public class ParticipanteAdminController {
      * @param idResidencia ID de la residencia donde se encuentra el evento.
      * @param idEvento ID del evento de salida al que pertenece el participante.
      * @return {@link ResponseEntity} con el participante actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PostMapping("/{idParticipante}/deny")
     public ResponseEntity<ParticipanteResponseDto> deny(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idEvento,
-                                @PathVariable Long idParticipante) {
-
-        return ResponseEntity.ok(participanteService.deny(idResidencia, idEvento, idParticipante));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idEvento,
+            @PathVariable Long idParticipante) {
+        try {
+            return ResponseEntity.ok(participanteService.deny(idResidencia, idEvento, idParticipante));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
 }

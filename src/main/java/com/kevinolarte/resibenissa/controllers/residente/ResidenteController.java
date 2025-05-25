@@ -4,6 +4,9 @@ import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
 import com.kevinolarte.resibenissa.enums.Filtrado.ResidenteFiltrado;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
@@ -41,6 +44,7 @@ public class ResidenteController {
      *
      * @param residenteDto DTO con los datos del nuevo residente.
      * @return {@link ResponseEntity} con estado {@code 201 Created} y el residente creado.
+     * @throws ApiException si ocurre un error durante el proceso de registro.
      */
     @PostMapping("/add")
     public ResponseEntity<ResidenteResponseDto> add(
@@ -48,7 +52,15 @@ public class ResidenteController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(residenteService.add(currentUser.getResidencia().getId(), residenteDto));
+        ResidenteResponseDto residenteResponseDto;
+        try {
+            residenteResponseDto = residenteService.add(currentUser.getResidencia().getId(), residenteDto);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(residenteResponseDto);
 
     }
 
@@ -58,6 +70,7 @@ public class ResidenteController {
      *
      * @param idResidente ID del residente.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el residente encontrado.
+     * @throws ApiException si ocurre un error al intentar obtener el residente.
      */
     @GetMapping("/{idResidente}/get")
     public ResponseEntity<ResidenteResponseDto> get(
@@ -65,7 +78,16 @@ public class ResidenteController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(residenteService.get(currentUser.getResidencia().getId(), idResidente));
+
+        ResidenteResponseDto residenteResponseDto;
+        try {
+            residenteResponseDto = residenteService.get(currentUser.getResidencia().getId(), idResidente);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residenteResponseDto);
 
     }
 
@@ -81,6 +103,7 @@ public class ResidenteController {
      * @param idJuego ID de juego asociado (opcional).
      * @param idEvento ID de evento asociado (opcional).
      * @return {@link ResponseEntity} con la lista de residentes filtrados.
+     * @throws ApiException si ocurre un error al intentar obtener los residentes.
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
@@ -96,7 +119,16 @@ public class ResidenteController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(residenteService.getAll(currentUser.getResidencia().getId(),fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento, filtrado));
+
+        List<ResidenteResponseDto> residentes;
+        try{
+            residentes = residenteService.getAll(currentUser.getResidencia().getId(),fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento, filtrado);
+        }catch (ResiException e){
+            throw new ApiException(e, null);
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residentes);
     }
 
 
@@ -108,6 +140,7 @@ public class ResidenteController {
      * @param minFecha Fecha mínima de baja (opcional).
      * @param maxFecha Fecha máxima de baja (opcional).
      * @return {@link ResponseEntity} con la lista de residentes dados de baja.
+     * @throws ApiException si ocurre un error al intentar obtener los residentes dados de baja.
      */
     @GetMapping("/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
@@ -116,7 +149,15 @@ public class ResidenteController {
                                 @RequestParam(required = false) LocalDate maxFecha){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(residenteService.getAllBajas(currentUser.getResidencia().getId(),fecha, minFecha, maxFecha));
+        List<ResidenteResponseDto> residentesBajas;
+        try {
+            residentesBajas =  residenteService.getAllBajas(currentUser.getResidencia().getId(),fecha, minFecha, maxFecha);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residentesBajas);
     }
 
     /**
@@ -124,6 +165,7 @@ public class ResidenteController {
      *
      * @param idResidente ID del residente a dar de baja.
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si se realizó correctamente.
+     * @throws ApiException si ocurre un error al intentar dar de baja al residente.
      */
     @PatchMapping("/{idResidente}/baja")
     public ResponseEntity<Void> deleteLogico(
@@ -131,7 +173,13 @@ public class ResidenteController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         User currentUser = (User) auth.getPrincipal();
-        residenteService.deleteLogico(currentUser.getResidencia().getId(),idResidente);
+        try{
+            residenteService.deleteLogico(currentUser.getResidencia().getId(),idResidente);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -142,6 +190,7 @@ public class ResidenteController {
      * @param idResidente ID del residente a actualizar.
      * @param residenteDto DTO con los nuevos datos del residente.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el residente actualizado.
+     * @throws ApiException si ocurre un error al intentar actualizar el residente.
      */
     @PatchMapping("/{idResidente}/update")
     public ResponseEntity<ResidenteResponseDto> update(
@@ -150,7 +199,15 @@ public class ResidenteController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(residenteService.update(currentUser.getResidencia().getId(), idResidente, residenteDto));
+        ResidenteResponseDto residenteResponseDto;
+        try {
+            residenteResponseDto = residenteService.update(currentUser.getResidencia().getId(), idResidente, residenteDto);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residenteResponseDto);
     }
 
 
@@ -168,7 +225,13 @@ public class ResidenteController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         User currentUser = (User) auth.getPrincipal();
-        residenteService.sendEmailFamiliar(currentUser.getResidencia().getId(), idResidente, emailRequestDto);
+        try{
+            residenteService.sendEmailFamiliar(currentUser.getResidencia().getId(), idResidente, emailRequestDto);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

@@ -2,12 +2,10 @@ package com.kevinolarte.resibenissa.services;
 
 import com.kevinolarte.resibenissa.dto.out.moduloOrgSalida.ParticipanteResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
-import com.kevinolarte.resibenissa.exceptions.ApiException;
-import com.kevinolarte.resibenissa.models.Residente;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -126,7 +124,7 @@ public class EmailService {
             }
 
         } catch (Exception e) {
-            throw new ApiException(ApiErrorCode.ERROR_MAIL_SENDER);
+            throw new ResiException(ApiErrorCode.ERROR_MAIL_SENDER);
         }
     }
 

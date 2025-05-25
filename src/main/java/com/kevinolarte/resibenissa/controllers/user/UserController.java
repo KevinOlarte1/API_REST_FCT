@@ -4,6 +4,9 @@ import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.UserDto;
 import com.kevinolarte.resibenissa.dto.in.auth.ChangePasswordUserDto;
 import com.kevinolarte.resibenissa.dto.out.UserResponseDto;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.UserService;
 import lombok.AllArgsConstructor;
@@ -47,6 +50,7 @@ public class UserController {
     public ResponseEntity<UserResponseDto> getMe() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
+
         return ResponseEntity.ok(new UserResponseDto(currentUser));
     }
 
@@ -55,7 +59,7 @@ public class UserController {
      *
      * @param idUser ID del usuario a consultar.
      * @return DTO con los datos del usuario.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
+     * @throws ApiException si ocurre un error al intentar obtener el usuario.
      */
     @GetMapping("/{idUser}/get")
     public ResponseEntity<UserResponseDto> get(
@@ -63,26 +67,16 @@ public class UserController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.get(currentUser.getResidencia().getId(), idUser));
+        UserResponseDto userResponseDto;
+        try{
+            userResponseDto = userService.get(currentUser.getResidencia().getId(), idUser);
+        }catch (ResiException e){
+            throw new ApiException(e, currentUser);
+        }
+        return ResponseEntity.ok(userResponseDto);
 
     }
 
-    /**
-     * Obtiene la información de un usuario específico por su email, dentro de la misma residencia del usuario autenticado.
-     *
-     * @param email Email del usuario a consultar.
-     * @return DTO con los datos del usuario.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
-     */
-    @GetMapping("/get")
-    public ResponseEntity<UserResponseDto> get(
-                                @RequestParam (required = true) String email){
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.get(currentUser.getResidencia().getId(), email));
-
-    }
 
     /**
      * Obtiene todos los usuarios filtrando opcionalmente por si están habilitados y
@@ -91,7 +85,7 @@ public class UserController {
      * @param enabled Filtro opcional para usuarios habilitados.
      * @param idJuego Filtro opcional por ID de juego.
      * @return Lista de DTOs con los datos de los usuarios.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
+     * @throws ApiException si ocurre un error al intentar obtener los usuarios.
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<UserResponseDto>> getAll(
@@ -100,7 +94,15 @@ public class UserController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.getAll(currentUser.getResidencia().getId(), enabled, idJuego));
+        List<UserResponseDto> userResponseDtos;
+        try {
+            userResponseDtos = userService.getAll(currentUser.getResidencia().getId(), enabled, idJuego);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
+        return ResponseEntity.ok(userResponseDtos);
 
     }
 
@@ -111,7 +113,7 @@ public class UserController {
      * @param minFecha  Fecha mínima de baja.
      * @param maxFecha  Fecha máxima de baja.
      * @return Lista de usuarios dados de baja en el rango indicado.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
+     * @throws ApiException si ocurre un error al intentar obtener los usuarios dados de baja.
      */
     @GetMapping("/getAll/bajas")
     public ResponseEntity<List<UserResponseDto>> getAllBajas(
@@ -121,7 +123,15 @@ public class UserController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.getAllBajas(currentUser.getResidencia().getId(), fecha, minFecha, maxFecha));
+        List<UserResponseDto> userResponseDtos;
+        try {
+            userResponseDtos = userService.getAllBajas(currentUser.getResidencia().getId(), fecha, minFecha, maxFecha);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
+        return ResponseEntity.ok(userResponseDtos);
 
     }
 
@@ -145,7 +155,7 @@ public class UserController {
      *
      * @param userDto Objeto DTO con los nuevos datos del usuario.
      * @return DTO actualizado con la información del usuario.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
+     * @throws ApiException si ocurre un error al intentar actualizar los datos del usuario.
      */
     @PatchMapping("/update")
     public ResponseEntity<UserResponseDto> update(
@@ -153,7 +163,16 @@ public class UserController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.update(currentUser.getResidencia().getId(), currentUser.getId(), userDto));
+        UserResponseDto userResponseDto;
+        try {
+            userResponseDto = userService.update(currentUser.getResidencia().getId(), currentUser.getId(), userDto);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
+
+        return ResponseEntity.ok(userResponseDto);
     }
 
     /**
@@ -161,7 +180,7 @@ public class UserController {
      *
      * @param changePasswordUserDto DTO con la contraseña antigua y la nueva.
      * @return DTO actualizado del usuario tras el cambio de contraseña.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
+     * @throws ApiException si ocurre un error al intentar cambiar la contraseña.
      */
     @PatchMapping("/update/changePassword")
     public ResponseEntity<UserResponseDto> changePassword(
@@ -169,20 +188,34 @@ public class UserController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        return ResponseEntity.ok(userService.updatePassword(currentUser.getResidencia().getId(), currentUser.getId(), changePasswordUserDto));
+        UserResponseDto userResponseDto;
+        try {
+            userResponseDto = userService.updatePassword(currentUser.getResidencia().getId(), currentUser.getId(), changePasswordUserDto);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
+        return ResponseEntity.ok(userResponseDto);
     }
 
     /**
      * Marca lógicamente como dado de baja al usuario.
      *
      * @return Respuesta sin contenido (HTTP 204) si se realiza correctamente.
-     * @throws com.kevinolarte.resibenissa.exceptions.ApiException en caso de error o problemas
+     * @throws ApiException si ocurre un error al intentar dar de baja al usuario.
      */
     @PatchMapping("/baja")
     public ResponseEntity<Void> baja() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
-        userService.deleteLogico(currentUser.getResidencia().getId(), currentUser.getId());
+        try {
+            userService.deleteLogico(currentUser.getResidencia().getId(), currentUser.getId());
+        }catch (ResiException e){
+            throw new ApiException(e, currentUser);
+        } catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

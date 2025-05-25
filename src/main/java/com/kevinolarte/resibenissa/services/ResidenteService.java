@@ -1,14 +1,12 @@
 package com.kevinolarte.resibenissa.services;
 
 
-import com.kevinolarte.resibenissa.dto.in.ResidenciaDto;
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
-import com.kevinolarte.resibenissa.dto.out.ResidenciaResponseDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
 import com.kevinolarte.resibenissa.enums.Filtrado.ResidenteFiltrado;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
-import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.Residencia;
 import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
@@ -22,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -51,35 +48,35 @@ public class ResidenteService {
      * @param idResidencia ID de la residencia.
      * @param input        DTO con los datos del residente.
      * @return DTO del residente creado.
-     * @throws ApiException en caso de datos inválidos o duplicidad de documento.
+     * @throws ResiException en caso de datos inválidos o duplicidad de documento.
      */
-    public ResidenteResponseDto add(Long idResidencia, ResidenteDto input) throws ApiException {
+    public ResidenteResponseDto add(Long idResidencia, ResidenteDto input) throws ResiException {
         if (input.getNombre() == null || input.getApellido() == null || input.getFechaNacimiento() == null || input.getDocumentoIdentidad() == null ||
                 input.getNombre().trim().isEmpty() || input.getApellido().trim().isEmpty() || input.getDocumentoIdentidad().trim().isEmpty() || idResidencia == null ||
             input.getFamiliar1() == null || input.getFamiliar1().trim().isEmpty()) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         // Validar el formato del documento de identidad
         input.setDocumentoIdentidad(input.getDocumentoIdentidad().trim().toUpperCase());
         if (input.getDocumentoIdentidad().length() != 8) {
-            throw new ApiException(ApiErrorCode.DOCUMENTO_INVALIDO);
+            throw new ResiException(ApiErrorCode.DOCUMENTO_INVALIDO);
         }
 
         //Validar correo familiar 1
         if (!EmailService.isEmailValid(input.getFamiliar1().toLowerCase().trim())){
-            throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+            throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
         }
         //Validar correo familiar 2
         if (input.getFamiliar2() != null && !input.getFamiliar2().trim().isEmpty())
             if (!EmailService.isEmailValid(input.getFamiliar2().toLowerCase().trim()))
-                throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+                throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
 
 
 
         // Validar que la fecha de nacimiento no sea futura
         if (input.getFechaNacimiento().isAfter(LocalDate.now())) {
-            throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
+            throw new ResiException(ApiErrorCode.FECHA_INVALIDO);
         }
 
         // Validar que la residencia existe
@@ -88,7 +85,7 @@ public class ResidenteService {
         // Validar que no existe otro residente con el mismo documento de identidad en cualquier residencia
         Residente residenteDup = residenteRepository.findByDocuemntoIdentidad(input.getDocumentoIdentidad());
         if (residenteDup != null) {
-            throw new ApiException(ApiErrorCode.DOCUMENTO_DUPLICADO);
+            throw new ResiException(ApiErrorCode.DOCUMENTO_DUPLICADO);
         }
 
         // Crear el nuevo residente
@@ -108,7 +105,7 @@ public class ResidenteService {
      * @param idResidencia ID de la residencia.
      * @param idResidente  ID del residente.
      * @return DTO del residente encontrado.
-     * @throws ApiException si el residente no existe o no pertenece a la residencia.
+     * @throws ResiException si el residente no existe o no pertenece a la residencia.
      */
     public ResidenteResponseDto get(Long idResidencia, Long idResidente) {
 
@@ -129,7 +126,7 @@ public class ResidenteService {
      * @param idJuego           ID de juego asociado (opcional).
      * @param idEvento          ID de evento asociado (opcional).
      * @return Lista de residentes filtrados.
-     * @throws ApiException si la residencia no existe.
+     * @throws ResiException si la residencia no existe.
      */
     public List<ResidenteResponseDto> getAll(LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento, ResidenteFiltrado filtrado) {
 
@@ -157,11 +154,11 @@ public class ResidenteService {
      * @param idJuego           ID de juego asociado (opcional).
      * @param idEvento          ID de evento asociado (opcional).
      * @return Lista de residentes filtrados.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
+     * @throws ResiException si la residencia no existe o el ID es nulo.
      */
     public List<ResidenteResponseDto> getAll(Long idResidencia, LocalDate fechaNacimiento, LocalDate minFNac, LocalDate maxFNac, Integer maxAge, Integer minAge, Long idJuego, Long idEvento,  ResidenteFiltrado filtrado) {
         if (idResidencia == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         // Validar que la residencia existe
         Residencia residencia = residenciaService.getResidencia(idResidencia);
@@ -182,11 +179,11 @@ public class ResidenteService {
      * @param minFecha Fecha mínima de baja (opcional).
      * @param maxFecha Fecha máxima de baja (opcional).
      * @return Lista de residentes dados de baja.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
+     * @throws ResiException si la residencia no existe o el ID es nulo.
      */
     public List<ResidenteResponseDto> getAllBajas(Long idResidencia, LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
         if (idResidencia == null){
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         List<Residente> lista =  residenteRepository.findAll(ResidenteSpecification.withFiltersBaja(fecha, minFecha, maxFecha, idResidencia));
@@ -200,7 +197,7 @@ public class ResidenteService {
      * @param minFecha Fecha mínima de baja (opcional).
      * @param maxFecha Fecha máxima de baja (opcional).
      * @return Lista de residentes dados de baja.
-     * @throws ApiException si la residencia no existe o el ID es nulo.
+     * @throws ResiException si la residencia no existe o el ID es nulo.
      */
     public List<ResidenteResponseDto> getAllBajas( LocalDate fecha, LocalDate minFecha, LocalDate maxFecha) {
         List<Residente> lista =  residenteRepository.findAll(ResidenteSpecification.withFiltersBaja(fecha, minFecha, maxFecha, null));
@@ -216,7 +213,7 @@ public class ResidenteService {
      *
      * @param idResidencia ID de la residencia.
      * @param idResidente  ID del residente.
-     * @throws ApiException si no existe el residente o no pertenece a la residencia.
+     * @throws ResiException si no existe el residente o no pertenece a la residencia.
      */
     public void deleteFisico(Long idResidencia, Long idResidente) {
         Residente residenteTmp = getResidente(idResidencia, idResidente);
@@ -230,7 +227,7 @@ public class ResidenteService {
      *
      * @param idResidencia ID de la residencia.
      * @param idResidente  ID del residente.
-     * @throws ApiException si el residente no existe o ya está dado de baja.
+     * @throws ResiException si el residente no existe o ya está dado de baja.
      */
     public void deleteLogico(Long idResidencia, Long idResidente) {
         // Validar que el residente existe
@@ -238,7 +235,7 @@ public class ResidenteService {
 
         //Dar de baja al residente
         if (residenteUpdatable.isBaja())
-            throw new ApiException(ApiErrorCode.RESIDENTE_BAJA);
+            throw new ResiException(ApiErrorCode.RESIDENTE_BAJA);
 
         darBajaUser(residenteUpdatable, passwordEncoder);
         participanteRepository.deleteAll(residenteUpdatable.getParticipantes());
@@ -257,18 +254,18 @@ public class ResidenteService {
      * @param idResidente  ID del residente.
      * @param input        DTO con los nuevos datos a actualizar.
      * @return DTO del residente actualizado.
-     * @throws ApiException si los datos son inválidos o se detecta duplicidad de documento.
+     * @throws ResiException si los datos son inválidos o se detecta duplicidad de documento.
      */
     public ResidenteResponseDto update(Long idResidencia, Long idResidente, ResidenteDto input) {
         if (idResidencia == null || idResidente == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         // Validar que el residente existe
         Residente residenteUpdatable = getResidente(idResidencia, idResidente);
 
         //Comprobar si el residente ya se ha dado de baja
         if (residenteUpdatable.isBaja()) {
-            throw new ApiException(ApiErrorCode.RESIDENTE_BAJA);
+            throw new ResiException(ApiErrorCode.RESIDENTE_BAJA);
         }
 
         //Si ha añadido algun campo en el input para actualizar
@@ -277,14 +274,14 @@ public class ResidenteService {
             if (input.getDocumentoIdentidad() != null) {
                 input.setDocumentoIdentidad(input.getDocumentoIdentidad().trim().toUpperCase());
                 if (input.getDocumentoIdentidad().length() != 8) {
-                    throw new ApiException(ApiErrorCode.DOCUMENTO_INVALIDO);
+                    throw new ResiException(ApiErrorCode.DOCUMENTO_INVALIDO);
                 }
 
                 // Comprobar si ya existe otro residente con el mismo documento de identidad
                 Residente residenteDup = residenteRepository.findByDocuemntoIdentidad(input.getDocumentoIdentidad());
                 if (residenteDup != null) {
                     if (!Objects.equals(residenteDup.getId(), idResidente)) {
-                        throw new ApiException(ApiErrorCode.DOCUMENTO_DUPLICADO);
+                        throw new ResiException(ApiErrorCode.DOCUMENTO_DUPLICADO);
                     }
 
                 } else
@@ -293,7 +290,7 @@ public class ResidenteService {
             if (input.getFechaNacimiento() != null) {
                 // Validar que la fecha de nacimiento no sea futura
                 if (input.getFechaNacimiento().isAfter(LocalDate.now())) {
-                    throw new ApiException(ApiErrorCode.FECHA_INVALIDO);
+                    throw new ResiException(ApiErrorCode.FECHA_INVALIDO);
                 }
                 residenteUpdatable.setFechaNacimiento(input.getFechaNacimiento());
             }
@@ -306,14 +303,14 @@ public class ResidenteService {
             if (input.getFamiliar1() != null && !input.getFamiliar1().trim().isEmpty()) {
                 //Validar correo familiar 1
                 if (!EmailService.isEmailValid(input.getFamiliar1().toLowerCase().trim())) {
-                    throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+                    throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
                 }
                 residenteUpdatable.setFamiliar1(input.getFamiliar1());
             }
             if (input.getFamiliar2() != null && !input.getFamiliar2().trim().isEmpty()) {
                 //Validar correo familiar 2
                 if (!EmailService.isEmailValid(input.getFamiliar2().toLowerCase().trim())) {
-                    throw new ApiException(ApiErrorCode.CORREO_INVALIDO);
+                    throw new ResiException(ApiErrorCode.CORREO_INVALIDO);
                 }
                 residenteUpdatable.setFamiliar2(input.getFamiliar2());
             }
@@ -336,7 +333,7 @@ public class ResidenteService {
      * @param idResidencia ID de la residencia.
      * @param idResidente  ID del residente.
      * @param input        DTO con el asunto y cuerpo del correo.
-     * @throws ApiException si el residente no existe o no tiene familiares asociados.
+     * @throws ResiException si el residente no existe o no tiene familiares asociados.
      */
     public void sendEmailFamiliar(Long idResidencia, Long idResidente, EmailRequestDto input) {
 
@@ -345,7 +342,7 @@ public class ResidenteService {
 
         if (input == null || input.getSubject() == null || input.getBody() == null ||
                 input.getSubject().trim().isEmpty() || input.getBody().trim().isEmpty()) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
         //Enviar correo al familiar
         try{
@@ -353,7 +350,7 @@ public class ResidenteService {
             if(residenteTmp.getFamiliar2() != null)
                 emailService.sendEmail(residenteTmp.getFamiliar2(), input.getSubject(), input.getBody());
         }catch (Exception e){
-            throw new ApiException(ApiErrorCode.ERROR_MAIL_SENDER);
+            throw new ResiException(ApiErrorCode.ERROR_MAIL_SENDER);
         }
     }
 
@@ -384,21 +381,21 @@ public class ResidenteService {
      * @param idResidencia ID de la residencia.
      * @param idResidente  ID del residente.
      * @return Residente encontrado.
-     * @throws ApiException si no existe o no pertenece a la residencia.
+     * @throws ResiException si no existe o no pertenece a la residencia.
      */
     public Residente getResidente(Long idResidencia, Long idResidente) {
         if (idResidencia == null || idResidente == null) {
-            throw new ApiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
+            throw new ResiException(ApiErrorCode.CAMPOS_OBLIGATORIOS);
         }
 
         // Validar que el residente existe
         Residente residenteTmp = residenteRepository.findById(idResidente).orElse(null);
         if (residenteTmp == null) {
-            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+            throw new ResiException(ApiErrorCode.RESIDENTE_INVALIDO);
         }
         //Comrpobar que el residente pertenece a la residencia
         if (!Objects.equals(residenteTmp.getResidencia().getId(), idResidencia)) {
-            throw new ApiException(ApiErrorCode.RESIDENTE_INVALIDO);
+            throw new ResiException(ApiErrorCode.RESIDENTE_INVALIDO);
         }
         return residenteTmp;
     }

@@ -14,9 +14,9 @@ import org.springframework.http.HttpStatus;
  *   <li>Un {@link HttpStatus} que será devuelto como código HTTP en la respuesta.</li>
  * </ul>
  *
- * <p>Esta clase se utiliza junto a {@link ApiException} para lanzar errores consistentes.</p>
+ * <p>Esta clase se utiliza junto a {@link ResiException} para lanzar errores consistentes.</p>
  *
- * @see ApiException
+ * @see ResiException
  * @author Kevin Olarte
  */
 @Getter
@@ -55,7 +55,8 @@ public enum ApiErrorCode {
     RANGO_EDAD_INVALIDO(1029, "Rango de edad inadecuado" , HttpStatus.NOT_ACCEPTABLE ),
     USUARIO_BAJA(1030, "Usuario dado de baja", HttpStatus.NOT_ACCEPTABLE),
     RESIDENCIA_BAJA(1031, "Residencia dado de baja", HttpStatus.NOT_ACCEPTABLE),
-    ESTADO_INVALIDO(1032, "Este estado no se puede cambiar por el otro, sigue la secuencia.",HttpStatus.NOT_ACCEPTABLE);
+    ESTADO_INVALIDO(1032, "Este estado no se puede cambiar por el otro, sigue la secuencia.",HttpStatus.NOT_ACCEPTABLE),
+    PROBLEMA_INTERNO(5000, "Error interno del servidor", HttpStatus.INTERNAL_SERVER_ERROR);
 
 
     private final int code;

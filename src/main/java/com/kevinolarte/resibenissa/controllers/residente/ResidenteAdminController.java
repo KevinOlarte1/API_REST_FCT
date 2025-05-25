@@ -4,6 +4,9 @@ import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
 import com.kevinolarte.resibenissa.enums.Filtrado.ResidenteFiltrado;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import lombok.AllArgsConstructor;
@@ -40,12 +43,21 @@ public class ResidenteAdminController {
      * @param idResidencia ID de la residencia.
      * @param residenteDto DTO con los datos del residente a crear.
      * @return {@link ResponseEntity} con estado {@code 201 Created} y el residente creado.
+     * @throws ApiException si ocurre un error al procesar la solicitud, como campos obligatorios faltantes
      */
     @PostMapping("/{idResidencia}/resident/add")
     public ResponseEntity<ResidenteResponseDto> add(
                                     @PathVariable Long idResidencia,
                                     @RequestBody ResidenteDto residenteDto){
-        return ResponseEntity.status(HttpStatus.CREATED).body(residenteService.add(idResidencia, residenteDto));
+        ResidenteResponseDto residenteResponseDto;
+        try{
+            residenteResponseDto = residenteService.add(idResidencia, residenteDto);
+        }catch (ResiException e){
+            throw new ApiException(e, null);
+        }catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(residenteResponseDto);
 
     }
 
@@ -55,13 +67,22 @@ public class ResidenteAdminController {
      * @param idResidencia ID de la residencia.
      * @param idResidente ID del residente.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y los datos del residente.
+     * @throws ApiException si ocurre un error al procesar la solicitud, como campos obligatorios faltantes
      */
     @GetMapping("/{idResidencia}/resident/{idResidente}/get")
     public ResponseEntity<ResidenteResponseDto> get(
                                     @PathVariable Long idResidencia,
                                     @PathVariable Long idResidente) {
 
-        return ResponseEntity.ok(residenteService.get(idResidencia, idResidente));
+        ResidenteResponseDto residenteResponseDto;
+        try {
+            residenteResponseDto = residenteService.get(idResidencia, idResidente);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residenteResponseDto);
 
     }
 
@@ -77,6 +98,7 @@ public class ResidenteAdminController {
      * @param idJuego ID de juego asociado (opcional).
      * @param idEvento ID de evento asociado (opcional).
      * @return {@link ResponseEntity} con la lista de residentes filtrados.
+     * @throws ApiException si ocurre un error al procesar la solicitud, como campos obligatorios faltantes
      */
     @GetMapping("/{idResidencia}/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
@@ -90,7 +112,15 @@ public class ResidenteAdminController {
                                     @RequestParam(required = false) Long idEvento,
                                     @RequestParam(required = false)ResidenteFiltrado filtrado) {
 
-        return ResponseEntity.ok(residenteService.getAll(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento, filtrado));
+        List<ResidenteResponseDto> residentes;
+        try {
+            residentes = residenteService.getAll(idResidencia, fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento, filtrado);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residentes);
     }
 
     /**
@@ -104,6 +134,7 @@ public class ResidenteAdminController {
      * @param idJuego ID de juego asociado (opcional).
      * @param idEvento ID de evento asociado (opcional).
      * @return {@link ResponseEntity} con la lista global de residentes filtrados.
+     * @throws ApiException si ocurre un error al procesar la solicitud, como campos obligatorios faltantes
      */
     @GetMapping("/resident/getAll")
     public ResponseEntity<List<ResidenteResponseDto>> getAll(
@@ -115,7 +146,15 @@ public class ResidenteAdminController {
                                     @RequestParam(required = false) Long idJuego,
                                     @RequestParam(required = false) Long idEvento,
                                     @RequestParam(required = false) ResidenteFiltrado filtrado) {
-        return ResponseEntity.ok(residenteService.getAll(fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento,filtrado));
+        List<ResidenteResponseDto> residentes;
+        try {
+            residentes = residenteService.getAll(fechaNacimiento, minFNac, maxFNac, maxAge, minAge, idJuego, idEvento, filtrado);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residentes);
     }
 
     /**
@@ -126,6 +165,7 @@ public class ResidenteAdminController {
      * @param minFecha Fecha mínima de baja (opcional).
      * @param maxFecha Fecha máxima de baja (opcional).
      * @return {@link ResponseEntity} con la lista de residentes dados de baja.
+     * @throws ApiException si ocurre un error al procesar la solicitud, como campos obligatorios faltantes
      */
     @GetMapping("/{idResidencia}/resident/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
@@ -133,8 +173,15 @@ public class ResidenteAdminController {
                                     @RequestParam(required = false) LocalDate fecha,
                                     @RequestParam(required = false) LocalDate minFecha,
                                     @RequestParam(required = false) LocalDate maxFecha){
-
-        return ResponseEntity.ok(residenteService.getAllBajas(idResidencia, fecha, minFecha, maxFecha));
+        List<ResidenteResponseDto> residentes;
+        try{
+            residentes = residenteService.getAllBajas(idResidencia, fecha, minFecha, maxFecha);
+        }catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residentes);
     }
 
     /**
@@ -144,13 +191,22 @@ public class ResidenteAdminController {
      * @param minFecha Fecha mínima de baja (opcional).
      * @param maxFecha Fecha máxima de baja (opcional).
      * @return {@link ResponseEntity} con la lista global de residentes dados de baja.
+     * @throws ApiException si ocurre un error al procesar la solicitud, como campos obligatorios faltantes
      */
     @GetMapping("/resident/getAll/bajas")
     public ResponseEntity<List<ResidenteResponseDto>> getAllBajas(
                                     @RequestParam(required = false) LocalDate fecha,
                                     @RequestParam(required = false) LocalDate minFecha,
                                     @RequestParam(required = false) LocalDate maxFecha){
-        return ResponseEntity.ok(residenteService.getAllBajas(fecha, minFecha, maxFecha));
+        List<ResidenteResponseDto> residentes;
+        try {
+            residentes = residenteService.getAllBajas(fecha, minFecha, maxFecha);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residentes);
     }
 
     /**
@@ -159,13 +215,20 @@ public class ResidenteAdminController {
      * @param idResidencia ID de la residencia.
      * @param idResidente ID del residente.
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si la eliminación fue exitosa.
+     * @throws ApiException si ocurre un error al procesar la solicitud, como campos obligatorios faltantes
      */
     @DeleteMapping("/{idResidencia}/resident/{idResidente}/delete")
     public ResponseEntity<Void> delete(
                                     @PathVariable Long idResidencia,
                                     @PathVariable Long idResidente) {
 
-        residenteService.deleteFisico(idResidencia,idResidente);
+        try{
+            residenteService.deleteFisico(idResidencia,idResidente);
+        }catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -175,12 +238,20 @@ public class ResidenteAdminController {
      * @param idResidencia ID de la residencia.
      * @param idResidente ID del residente.
      * @return {@link ResponseEntity} con estado {@code 204 No Content} si se realizó correctamente.
+     * @throws ApiException si ocurre un error al procesar la solicitud, como campos obligatorios faltantes
      */
     @PatchMapping("{idResidencia}/resident/{idResidente}/baja")
     public ResponseEntity<Void> deleteLogico(
                                     @PathVariable Long idResidencia,
                                     @PathVariable Long idResidente) {
-        residenteService.deleteLogico(idResidencia,idResidente);
+        try{
+            residenteService.deleteLogico(idResidencia,idResidente);
+
+        }catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -191,13 +262,22 @@ public class ResidenteAdminController {
      * @param idResidente ID del residente a actualizar.
      * @param residenteDto DTO con los datos a actualizar.
      * @return {@link ResponseEntity} con estado {@code 200 OK} y el residente actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud, como campos obligatorios faltantes
      */
     @PatchMapping("{idResidencia}/resident/{idResidente}/update")
     public ResponseEntity<ResidenteResponseDto> update(
                                     @PathVariable Long idResidencia,
                                     @PathVariable Long idResidente,
                                     @RequestBody ResidenteDto residenteDto) {
-        return ResponseEntity.ok(residenteService.update(idResidencia, idResidente, residenteDto));
+        ResidenteResponseDto residenteResponseDto;
+        try {
+            residenteResponseDto = residenteService.update(idResidencia, idResidente, residenteDto);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
+        return ResponseEntity.ok(residenteResponseDto);
     }
 
     /**
@@ -213,8 +293,14 @@ public class ResidenteAdminController {
                                     @PathVariable Long idResidencia,
                                     @PathVariable Long idResidente,
                                     @RequestBody EmailRequestDto emailRequestDto) {
+        try{
+            residenteService.sendEmailFamiliar(idResidencia, idResidente, emailRequestDto);
 
-        residenteService.sendEmailFamiliar(idResidencia, idResidente, emailRequestDto);
+        }catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
