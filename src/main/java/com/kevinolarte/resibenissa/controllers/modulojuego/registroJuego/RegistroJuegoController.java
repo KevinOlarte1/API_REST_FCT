@@ -4,9 +4,13 @@ import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.enums.Filtrado.RegistroJuegoFiltrado;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.modulojuego.RegistroJuegoService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,16 +45,21 @@ public class RegistroJuegoController {
      * @param idJuego ID del juego.
      * @param registroJuegoDto Datos del registro a guardar.
      * @return El registro de juego creado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PostMapping("/juego/{idJuego}/add")
     public ResponseEntity<RegistroJuegoResponseDto> add(
             @PathVariable Long idJuego,
             @RequestBody RegistroJuegoDto registroJuegoDto) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        RegistroJuegoResponseDto registroJuego = registroJuegoService.add(idResidencia, idJuego, registroJuegoDto);
-        return ResponseEntity.ok(registroJuego);
-
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            RegistroJuegoResponseDto registroJuego = registroJuegoService.add(currentUser.getResidencia().getId(), idJuego, registroJuegoDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(registroJuego);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
     /**
@@ -58,14 +67,18 @@ public class RegistroJuegoController {
      *
      *@param idRegistroJuego ID del registro de juego.
      * @return El registro de juego solicitado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/{idRegistroJuego}/get")
-    public ResponseEntity<RegistroJuegoResponseDto> get(
-            @PathVariable Long idRegistroJuego) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(registroJuegoService.get(idResidencia, idRegistroJuego));
+    public ResponseEntity<RegistroJuegoResponseDto> get(@PathVariable Long idRegistroJuego) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(registroJuegoService.get(currentUser.getResidencia().getId(), idRegistroJuego));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
     /**
@@ -83,6 +96,7 @@ public class RegistroJuegoController {
      * @param menosPromedio true si se desea obtener los registros con puntajes inferiores al promedio, false en caso contrario.
      * @param dificultad Dificultad del juego (opcional).
      * @return Lista de registros de juego filtrados.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/getAll")
     public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
@@ -99,10 +113,22 @@ public class RegistroJuegoController {
             @RequestParam(required = false) boolean menosPromedio,
             @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
             @RequestParam(required = false) Dificultad dificultad,
-            @RequestParam(required = false) Boolean comentado){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, filtrado, comentado));
+            @RequestParam(required = false) Boolean comentado) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(
+                    registroJuegoService.getAll(
+                            currentUser.getResidencia().getId(),
+                            idJuego, dificultad, edad, minEdad, maxEdad,
+                            idResidente, fecha, minFecha, maxFecha,
+                            promedio, masPromedio, menosPromedio, filtrado, comentado
+                    )
+            );
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
 
@@ -113,14 +139,20 @@ public class RegistroJuegoController {
      * @param idRegistroJuego ID del registro a actualizar.
      * @param registroJuegoDto DTO con los nuevos datos (principalmente observación).
      * @return Registro de juego actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idRegistroJuego}/addComment")
     public ResponseEntity<RegistroJuegoResponseDto> update(
             @PathVariable Long idRegistroJuego,
-            @RequestBody RegistroJuegoDto registroJuegoDto){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        return ResponseEntity.ok(registroJuegoService.update(idResidencia, idRegistroJuego, registroJuegoDto));
+            @RequestBody RegistroJuegoDto registroJuegoDto) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            return ResponseEntity.ok(registroJuegoService.update(currentUser.getResidencia().getId(), idRegistroJuego, registroJuegoDto));
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
 
@@ -129,14 +161,19 @@ public class RegistroJuegoController {
      *
      * @param idRegistroJuego ID del registro a eliminar.
      * @return Respuesta sin contenido si la eliminación fue exitosa.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @DeleteMapping("/{idRegistroJuego}/delete")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long idRegistroJuego){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idResidencia = ((User) auth.getPrincipal()).getResidencia().getId();
-        registroJuegoService.delete(idResidencia, idRegistroJuego);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> delete(@PathVariable Long idRegistroJuego) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            registroJuegoService.delete(currentUser.getResidencia().getId(), idRegistroJuego);
+            return ResponseEntity.noContent().build();
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+        }
     }
 
 }

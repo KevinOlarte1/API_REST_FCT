@@ -4,8 +4,12 @@ import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.enums.Filtrado.RegistroJuegoFiltrado;
+import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
+import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.services.modulojuego.RegistroJuegoService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,16 +42,21 @@ public class RegistroJuegoAdminController {
      * @param idJuego ID del juego.
      * @param registroJuegoDto Datos del registro a guardar.
      * @return El registro de juego creado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PostMapping("{idResidencia}/registro/add")
     public ResponseEntity<RegistroJuegoResponseDto> add(
-                                @PathVariable Long idResidencia,
-                                @RequestParam Long idJuego,
-                                @RequestBody RegistroJuegoDto registroJuegoDto) {
-
-        RegistroJuegoResponseDto registroJuego = registroJuegoService.add(idResidencia, idJuego, registroJuegoDto);
-        return ResponseEntity.ok(registroJuego);
-
+            @PathVariable Long idResidencia,
+            @RequestParam Long idJuego,
+            @RequestBody RegistroJuegoDto registroJuegoDto) {
+        try {
+            RegistroJuegoResponseDto registroJuego = registroJuegoService.add(idResidencia, idJuego, registroJuegoDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(registroJuego);
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -56,13 +65,19 @@ public class RegistroJuegoAdminController {
      * @param idResidencia ID de la residencia.
      * @param idRegistroJuego ID del registro de juego.
      * @return El registro de juego solicitado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/{idResidencia}/registro/{idRegistroJuego}/get")
     public ResponseEntity<RegistroJuegoResponseDto> get(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idRegistroJuego) {
-
-        return ResponseEntity.ok(registroJuegoService.get(idResidencia, idRegistroJuego));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idRegistroJuego) {
+        try {
+            return ResponseEntity.ok(registroJuegoService.get(idResidencia, idRegistroJuego));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -80,25 +95,35 @@ public class RegistroJuegoAdminController {
      * @param masPromedio true si se desea obtener los registros con puntajes superiores al promedio, false en caso contrario.
      * @param menosPromedio true si se desea obtener los registros con puntajes inferiores al promedio, false en caso contrario.
      * @return Lista de registros de juego filtrados.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/registro/getAll")
     public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
-                                @RequestParam(required = false) Long idJuego,
-                                @RequestParam(required = false) Dificultad dificultad,
-                                @RequestParam(required = false) Integer edad,
-                                @RequestParam(required = false) Integer minEdad,
-                                @RequestParam(required = false) Integer maxEdad,
-                                @RequestParam(required = false) Long idResidente,
-                                @RequestParam(required = false) LocalDate fecha,
-                                @RequestParam(required = false) LocalDate minFecha,
-                                @RequestParam(required = false) LocalDate maxFecha,
-                                @RequestParam(required = false) boolean promedio,
-                                @RequestParam(required = false) boolean masPromedio,
-                                @RequestParam(required = false) boolean menosPromedio,
-                                @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
-                                @RequestParam(required = false) Boolean comentado){
-
-        return ResponseEntity.ok(registroJuegoService.getAll(idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, filtrado,comentado));
+            @RequestParam(required = false) Long idJuego,
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Integer edad,
+            @RequestParam(required = false) Integer minEdad,
+            @RequestParam(required = false) Integer maxEdad,
+            @RequestParam(required = false) Long idResidente,
+            @RequestParam(required = false) LocalDate fecha,
+            @RequestParam(required = false) LocalDate minFecha,
+            @RequestParam(required = false) LocalDate maxFecha,
+            @RequestParam(required = false) boolean promedio,
+            @RequestParam(required = false) boolean masPromedio,
+            @RequestParam(required = false) boolean menosPromedio,
+            @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
+            @RequestParam(required = false) Boolean comentado) {
+        try {
+            return ResponseEntity.ok(registroJuegoService.getAll(
+                    idJuego, dificultad, edad, minEdad, maxEdad,
+                    idResidente, fecha, minFecha, maxFecha,
+                    promedio, masPromedio, menosPromedio,
+                    filtrado, comentado));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -117,25 +142,36 @@ public class RegistroJuegoAdminController {
      * @param masPromedio true si se desea obtener los registros con puntajes superiores al promedio, false en caso contrario.
      * @param menosPromedio true si se desea obtener los registros con puntajes inferiores al promedio, false en caso contrario.
      * @return Lista de registros de juego filtrados.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @GetMapping("/{idResidencia}/registro/getAll")
     public ResponseEntity<List<RegistroJuegoResponseDto>> getAll(
-                                @PathVariable Long idResidencia,
-                                @RequestParam(required = false) Long idJuego,
-                                @RequestParam(required = false) Dificultad dificultad,
-                                @RequestParam(required = false) Integer edad,
-                                @RequestParam(required = false) Integer minEdad,
-                                @RequestParam(required = false) Integer maxEdad,
-                                @RequestParam(required = false) Long idResidente,
-                                @RequestParam(required = false) LocalDate fecha,
-                                @RequestParam(required = false) LocalDate minFecha,
-                                @RequestParam(required = false) LocalDate maxFecha,
-                                @RequestParam(required = false) boolean promedio,
-                                @RequestParam(required = false) boolean masPromedio,
-                                @RequestParam(required = false) boolean menosPromedio,
-                                @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
-                                @RequestParam(required = false) Boolean comentado){
-        return ResponseEntity.ok(registroJuegoService.getAll(idResidencia, idJuego, dificultad, edad, minEdad, maxEdad, idResidente, fecha, minFecha, maxFecha, promedio, masPromedio, menosPromedio, filtrado, comentado));
+            @PathVariable Long idResidencia,
+            @RequestParam(required = false) Long idJuego,
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Integer edad,
+            @RequestParam(required = false) Integer minEdad,
+            @RequestParam(required = false) Integer maxEdad,
+            @RequestParam(required = false) Long idResidente,
+            @RequestParam(required = false) LocalDate fecha,
+            @RequestParam(required = false) LocalDate minFecha,
+            @RequestParam(required = false) LocalDate maxFecha,
+            @RequestParam(required = false) boolean promedio,
+            @RequestParam(required = false) boolean masPromedio,
+            @RequestParam(required = false) boolean menosPromedio,
+            @RequestParam(required = false) RegistroJuegoFiltrado filtrado,
+            @RequestParam(required = false) Boolean comentado) {
+        try {
+            return ResponseEntity.ok(registroJuegoService.getAll(
+                    idResidencia, idJuego, dificultad, edad, minEdad, maxEdad,
+                    idResidente, fecha, minFecha, maxFecha,
+                    promedio, masPromedio, menosPromedio,
+                    filtrado, comentado));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -145,13 +181,20 @@ public class RegistroJuegoAdminController {
      * @param idRegistroJuego ID del registro a actualizar.
      * @param registroJuegoDto DTO con los nuevos datos (principalmente observación).
      * @return Registro de juego actualizado.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @PatchMapping("/{idResidencia}/registro/{idRegistroJuego}/addComment")
     public ResponseEntity<RegistroJuegoResponseDto> update(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idRegistroJuego,
-                                @RequestBody RegistroJuegoDto registroJuegoDto){
-        return ResponseEntity.ok(registroJuegoService.update(idResidencia, idRegistroJuego, registroJuegoDto));
+            @PathVariable Long idResidencia,
+            @PathVariable Long idRegistroJuego,
+            @RequestBody RegistroJuegoDto registroJuegoDto) {
+        try {
+            return ResponseEntity.ok(registroJuegoService.update(idResidencia, idRegistroJuego, registroJuegoDto));
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
     /**
@@ -160,13 +203,20 @@ public class RegistroJuegoAdminController {
      * @param idResidencia ID de la residencia donde se encuentra el registro.
      * @param idRegistroJuego ID del registro a eliminar.
      * @return Respuesta sin contenido si la eliminación fue exitosa.
+     * @throws ApiException si ocurre un error al procesar la solicitud.
      */
     @DeleteMapping("/{idResidencia}/registro/{idRegistroJuego}/delete")
     public ResponseEntity<Void> delete(
-                                @PathVariable Long idResidencia,
-                                @PathVariable Long idRegistroJuego){
-        registroJuegoService.delete(idResidencia, idRegistroJuego);
-        return ResponseEntity.noContent().build();
+            @PathVariable Long idResidencia,
+            @PathVariable Long idRegistroJuego) {
+        try {
+            registroJuegoService.delete(idResidencia, idRegistroJuego);
+            return ResponseEntity.noContent().build();
+        } catch (ResiException e) {
+            throw new ApiException(e, null);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+        }
     }
 
 
