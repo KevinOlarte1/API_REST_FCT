@@ -71,7 +71,6 @@ public class Residencia {
 
 
 
-
     public Residencia(String nombre, String email) {
         this.nombre = nombre;
         this.email = email;

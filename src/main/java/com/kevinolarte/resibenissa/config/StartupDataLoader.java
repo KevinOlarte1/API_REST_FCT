@@ -11,6 +11,7 @@ import com.kevinolarte.resibenissa.models.Residente;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.models.moduloOrgSalida.EventoSalida;
 import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
+import com.kevinolarte.resibenissa.models.moduloWallet.Wallet;
 import com.kevinolarte.resibenissa.models.modulojuego.Juego;
 import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import com.kevinolarte.resibenissa.repositories.ResidenciaRepository;
@@ -18,6 +19,7 @@ import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
 import com.kevinolarte.resibenissa.repositories.UserRepository;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.EventoSalidaRepository;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
+import com.kevinolarte.resibenissa.repositories.moduloWallet.WalletRepository;
 import com.kevinolarte.resibenissa.repositories.modulojuego.JuegoRepository;
 import com.kevinolarte.resibenissa.repositories.modulojuego.RegistroJuegoRepository;
 import jakarta.annotation.PostConstruct;
@@ -43,6 +45,7 @@ public class StartupDataLoader {
     private final EventoSalidaRepository eventoSalidaRepository;
     private final ParticipanteRepository participanteRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final WalletRepository walletRepository;
 
     @PostConstruct
     public void init() {
@@ -81,6 +84,11 @@ public class StartupDataLoader {
         residente10.setResidencia(residenciaDefault);
 
         residente1 = residenteRepository.save(residente1);
+
+        Wallet wallet1 = new Wallet();
+        wallet1.setSaldoTotal(1000.0);
+        wallet1.setResidente(residente1);
+        walletRepository.save(wallet1);
         residente2 = residenteRepository.save(residente2);
         residente3 = residenteRepository.save(residente3);
         residente4 = residenteRepository.save(residente4);

@@ -56,7 +56,8 @@ public enum ApiErrorCode {
     USUARIO_BAJA(1030, "Usuario dado de baja", HttpStatus.NOT_ACCEPTABLE),
     RESIDENCIA_BAJA(1031, "Residencia dado de baja", HttpStatus.NOT_ACCEPTABLE),
     ESTADO_INVALIDO(1032, "Este estado no se puede cambiar por el otro, sigue la secuencia.",HttpStatus.NOT_ACCEPTABLE),
-    PROBLEMA_INTERNO(5000, "Error interno del servidor", HttpStatus.INTERNAL_SERVER_ERROR);
+    PROBLEMA_INTERNO(5000, "Error interno del servidor", HttpStatus.INTERNAL_SERVER_ERROR),
+    WALLET_NO_ENCONTRADA(1033,"Wallet no encontrada" , HttpStatus.NOT_FOUND ),;
 
 
     private final int code;

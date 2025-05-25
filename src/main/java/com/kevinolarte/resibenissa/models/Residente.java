@@ -2,6 +2,7 @@ package com.kevinolarte.resibenissa.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kevinolarte.resibenissa.models.moduloOrgSalida.Participante;
+import com.kevinolarte.resibenissa.models.moduloWallet.Wallet;
 import com.kevinolarte.resibenissa.models.modulojuego.RegistroJuego;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -76,6 +77,10 @@ public class Residente {
     @OneToMany(mappedBy = "residente", cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Participante> participantes = new LinkedHashSet<>();
+
+    @OneToOne(mappedBy = "residente", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Wallet wallet;
 
     private boolean baja;
     private LocalDateTime fechaBaja;
