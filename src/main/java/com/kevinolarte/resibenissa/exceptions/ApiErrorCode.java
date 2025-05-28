@@ -57,7 +57,9 @@ public enum ApiErrorCode {
     RESIDENCIA_BAJA(1031, "Residencia dado de baja", HttpStatus.NOT_ACCEPTABLE),
     ESTADO_INVALIDO(1032, "Este estado no se puede cambiar por el otro, sigue la secuencia.",HttpStatus.NOT_ACCEPTABLE),
     PROBLEMA_INTERNO(5000, "Error interno del servidor", HttpStatus.INTERNAL_SERVER_ERROR),
-    WALLET_NO_ENCONTRADA(1033,"Wallet no encontrada" , HttpStatus.NOT_FOUND ),;
+    WALLET_NO_ENCONTRADA(1033,"Wallet no encontrada" , HttpStatus.NOT_FOUND ),
+    MONTO_INVALIDO(1034,"El monto seleccionado no es valido" , HttpStatus.NOT_ACCEPTABLE ),
+    SALDO_INSUFICIENTE(1035, "No tiene suficiente saldo", HttpStatus.NOT_ACCEPTABLE);
 
 
     private final int code;

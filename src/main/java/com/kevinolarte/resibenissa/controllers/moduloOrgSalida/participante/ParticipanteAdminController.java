@@ -51,9 +51,9 @@ public class ParticipanteAdminController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(participanteService.add(participanteDto, idEvento, idResidencia));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -74,9 +74,9 @@ public class ParticipanteAdminController {
         try {
             return ResponseEntity.ok(participanteService.get(idResidencia, idEvento, idParticipante));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -115,9 +115,9 @@ public class ParticipanteAdminController {
             );
             return ResponseEntity.ok(result);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -140,9 +140,9 @@ public class ParticipanteAdminController {
             participanteService.deleteParticipante(idResidencia, idEvento, idParticipante);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -165,9 +165,9 @@ public class ParticipanteAdminController {
         try {
             return ResponseEntity.ok(participanteService.update(participanteDto, idResidencia, idEvento, idParticipante));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -182,15 +182,16 @@ public class ParticipanteAdminController {
      */
     @PatchMapping("/{idParticipante}/addPreOpinion")
     public ResponseEntity<ParticipanteResponseDto> addPreOpinion(
+            @PathVariable Long idResidencia,
             @PathVariable Long idEvento,
             @PathVariable Long idParticipante,
             @RequestParam String preOpinion) {
         try {
-            return ResponseEntity.ok(participanteService.addPreOpinion(null, idEvento, idParticipante, preOpinion));
+            return ResponseEntity.ok(participanteService.addPreOpinion(idResidencia, idEvento, idParticipante, preOpinion));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -212,9 +213,9 @@ public class ParticipanteAdminController {
         try {
             return ResponseEntity.ok(participanteService.addPostOpinion(idResidencia, idEvento, idParticipante, postOpinion));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -239,9 +240,9 @@ public class ParticipanteAdminController {
         try {
             return ResponseEntity.ok(participanteService.changeRecursos(idResidencia, idEvento, idParticipante, rH, rM));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -263,9 +264,9 @@ public class ParticipanteAdminController {
         try {
             return ResponseEntity.ok(participanteService.allow(idResidencia, idEvento, idParticipante));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -287,9 +288,9 @@ public class ParticipanteAdminController {
         try {
             return ResponseEntity.ok(participanteService.deny(idResidencia, idEvento, idParticipante));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 

@@ -400,4 +400,7 @@ public class ResidenteService {
         return residenteTmp;
     }
 
+
+
+
 }

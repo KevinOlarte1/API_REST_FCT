@@ -50,10 +50,10 @@ public class ResidenciaAdminController {
             residencia = residenciaService.add(residenciaDto);
         } catch (ResiException e) {
             // Manejo de excepciones específicas de la aplicación
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
             // Manejo de excepciones genéricas
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(residencia);
 
@@ -73,10 +73,10 @@ public class ResidenciaAdminController {
             residencia = residenciaService.get(idResidencia);
         } catch (ResiException e) {
             // Manejo de excepciones específicas de la aplicación
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
             // Manejo de excepciones genéricas
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(residencia);
     }
@@ -94,7 +94,7 @@ public class ResidenciaAdminController {
             residencias = residenciaService.getAll();
         } catch (Exception e) {
             // Manejo de excepciones genéricas
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(residencias);
     }
@@ -111,7 +111,7 @@ public class ResidenciaAdminController {
             residencias = residenciaService.getAllBaja();
         } catch (Exception e) {
             // Manejo de excepciones genéricas
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(residencias);
     }
@@ -130,10 +130,10 @@ public class ResidenciaAdminController {
             residenciaService.deleteFisico(idResidencia);
         }catch (ResiException e) {
             // Manejo de excepciones específicas de la aplicación
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
             // Manejo de excepciones genéricas
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -152,10 +152,10 @@ public class ResidenciaAdminController {
             residenciaService.deleteLogico(idResidencia);
         }catch (ResiException e) {
             // Manejo de excepciones específicas de la aplicación
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
             // Manejo de excepciones genéricas
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

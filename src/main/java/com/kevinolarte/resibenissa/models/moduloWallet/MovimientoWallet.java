@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 public class MovimientoWallet {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

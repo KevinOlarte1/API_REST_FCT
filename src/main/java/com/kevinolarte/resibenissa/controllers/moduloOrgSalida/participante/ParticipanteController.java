@@ -53,7 +53,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -74,7 +74,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -111,7 +111,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -132,7 +132,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -155,7 +155,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -178,7 +178,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -203,7 +203,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -224,7 +224,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -245,7 +245,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -268,7 +268,7 @@ public class ParticipanteController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 

@@ -50,9 +50,9 @@ public class AuthenticationController {
         try{
             user = authenticationService.singUp(registerUserDto);
         } catch (ResiException e){
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         }catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
 
         return ResponseEntity.ok(user);
@@ -77,9 +77,9 @@ public class AuthenticationController {
                     userauthentication
             );
         }catch (ResiException e){
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         }catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(loginResponse);
     }
@@ -95,9 +95,9 @@ public class AuthenticationController {
         try{
             authenticationService.verifyUser(verifyUserDto);
         }catch (ResiException e){
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         }catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
 
         return ResponseEntity.ok("AcountVerfied");
@@ -115,9 +115,9 @@ public class AuthenticationController {
         try{
             authenticationService.resendVerificationCode(email);
         }catch (ResiException e){
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         }catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok("Verification Code Resent");
 

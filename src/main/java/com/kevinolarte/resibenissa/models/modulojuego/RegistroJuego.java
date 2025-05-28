@@ -77,6 +77,13 @@ public class RegistroJuego {
         this.dificultad = input.getDificultad();
         this.observacion = "";
     }
+    public RegistroJuego(RegistroJuegoDto input, LocalDateTime fecha) {
+        this.num = input.getNum();
+        this.duracion = input.getDuracion();
+        this.fecha = fecha;
+        this.dificultad = input.getDificultad();
+        this.observacion = "";
+    }
 
     public RegistroJuego() {
 

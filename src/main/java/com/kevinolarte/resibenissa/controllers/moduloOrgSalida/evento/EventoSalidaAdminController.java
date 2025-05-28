@@ -53,9 +53,9 @@ public class EventoSalidaAdminController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(eventoSalidaService.add(input, idResidencia));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -75,9 +75,9 @@ public class EventoSalidaAdminController {
         try {
             return ResponseEntity.ok(eventoSalidaService.get(idEventoSalida, idResidencia));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -117,9 +117,9 @@ public class EventoSalidaAdminController {
                     idResidencia, fecha, minFecha, maxFecha, estado,
                     idResidente, idParticipante, minRH, maxRH, minRM, maxRM));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -156,9 +156,9 @@ public class EventoSalidaAdminController {
                     fecha, minFecha, maxFecha, estado,
                     idResidente, idParticipante, minRH, maxRH, minRM, maxRM));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -184,9 +184,9 @@ public class EventoSalidaAdminController {
             eventoSalidaService.delete(idEventoSalida, idResidencia);
             return ResponseEntity.noContent().build();
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -207,9 +207,9 @@ public class EventoSalidaAdminController {
         try {
             return ResponseEntity.ok(eventoSalidaService.changeNombre(idEventoSalida, nombre, idResidencia));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -230,9 +230,9 @@ public class EventoSalidaAdminController {
         try {
             return ResponseEntity.ok(eventoSalidaService.changeDescripcion(idEventoSalida, descripcion, idResidencia));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -253,9 +253,9 @@ public class EventoSalidaAdminController {
         try {
             return ResponseEntity.ok(eventoSalidaService.changeFecha(idEventoSalida, fecha, idResidencia));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -276,9 +276,9 @@ public class EventoSalidaAdminController {
         try {
             return ResponseEntity.ok(eventoSalidaService.changeEstado(idEventoSalida, estado, idResidencia));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -299,9 +299,9 @@ public class EventoSalidaAdminController {
         try {
             return ResponseEntity.ok(eventoSalidaService.update(input, idResidencia, idEventoSalida));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 

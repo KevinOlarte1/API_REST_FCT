@@ -3,6 +3,8 @@ package com.kevinolarte.resibenissa.services;
 import com.kevinolarte.resibenissa.dto.out.moduloOrgSalida.ParticipanteResponseDto;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ResiException;
+import com.kevinolarte.resibenissa.models.Residente;
+import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
@@ -35,6 +37,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class EmailService {
 
+    private final ResidenteRepository residenteRepository;
     private JavaMailSender mailSender;
     private JwtService jwtService;
 
@@ -108,10 +111,12 @@ public class EmailService {
             // Leer la plantilla HTML desde resources/templates
             Path htmlPath = Paths.get("src/main/resources/templates/permiso-excursion.html");
             String html = Files.readString(htmlPath);
+            Residente residente = residenteRepository.findById(participanteDto.getIdResidente())
+                    .orElseThrow(() -> new ResiException(ApiErrorCode.RESIDENTE_INVALIDO));
 
             // Reemplazar los placeholders
             html = html.replace("{{nombreFamiliar}}", "Familiar")
-                    .replace("{{nombreResidente}}", "Residente " + participanteDto.getIdResidente())
+                    .replace("{{nombreResidente}}", "Residente " + residente.getNombre() + " " + residente.getApellido())
                     .replace("{{nombreExcursion}}", "Excursión especial")
                     .replace("{{fecha}}", LocalDate.now().plusDays(7).toString()) // ejemplo de fecha
                     .replace("{{urlPermitir}}", urlPermitir)

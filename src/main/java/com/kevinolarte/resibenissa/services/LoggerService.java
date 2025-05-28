@@ -33,7 +33,6 @@ public class LoggerService {
     }
 
     public void registrarLogError(String descripcion) {
-        System.out.println("Entro en metodo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         Logger father = loggerRepository.findById(LogContext.getCurrentLogId()).orElseThrow(() -> new RuntimeException("Log not found"));
         Logger log = new Logger(
                 null,

@@ -29,6 +29,8 @@ public class Logger {
 
     private String endpoint;
     private String metodo;
+
+    @Column(length = 1000)
     private String descripcion;
     private LocalDateTime fecha;
 

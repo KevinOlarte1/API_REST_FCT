@@ -51,9 +51,9 @@ public class UserAdminController {
         try {
             user = userService.add(idResidencia, userDto);
         }catch (ResiException e){
-          throw new ApiException(e, null);
+          throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(user);
 
@@ -75,9 +75,9 @@ public class UserAdminController {
         try {
             user = userService.get(idResidencia, idUser);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(user);
 
@@ -100,9 +100,9 @@ public class UserAdminController {
         try {
             user = userService.get(idResidencia, email);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(user);
 
@@ -128,9 +128,9 @@ public class UserAdminController {
         try {
             user = userService.getAll(idResidencia, enabled, idJuego);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(user);
 
@@ -153,9 +153,9 @@ public class UserAdminController {
         try {
             user = userService.getAll(enabled, idJuego);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(user);
 
@@ -182,9 +182,9 @@ public class UserAdminController {
         try {
             user = userService.getAllBajas(idResidencia, fecha, minFecha, maxFecha);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(user);
 
@@ -209,9 +209,9 @@ public class UserAdminController {
         try {
             user = userService.getAllBajas(fecha, minFecha, maxFecha);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(user);
 
@@ -233,9 +233,9 @@ public class UserAdminController {
             userService.deleteFisico(idResidencia,idUser);
 
         }catch (ResiException e){
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -256,9 +256,9 @@ public class UserAdminController {
         try{
             userService.deleteReferencies(idResidencia, idUser);
         }catch (ResiException e){
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
 
         return  ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -283,9 +283,9 @@ public class UserAdminController {
         try {
             user = userService.update(idResidencia, idUser, userDto);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(user);
     }
@@ -309,9 +309,9 @@ public class UserAdminController {
         try {
             userResponseDto = userService.updatePassword(idResidencia, idUser, changePasswordUserDto);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(userResponseDto);
     }
@@ -332,9 +332,9 @@ public class UserAdminController {
         try{
             userService.deleteLogico(idResidencia, idUser);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

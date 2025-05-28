@@ -8,11 +8,22 @@ import lombok.Setter;
 @Setter
 public class ApiException extends RuntimeException {
    private ResiException resiException;
-   private User user;
+   private String mensaje;
 
     public ApiException(ResiException resiException, User user) {
         super(resiException.getMessage());
         this.resiException = resiException;
-        this.user = user;
+        this.mensaje =  resiException.getMessage() + " - Usuario: " + user.getUsername();
+    }
+    public ApiException(ResiException resiException, User user, String mensaje) {
+        super(resiException.getMessage());
+        this.resiException = resiException;
+        this.mensaje =  mensaje + " - Usuario: " + user.getUsername();
+    }
+
+    public ApiException(ResiException resiException, String mensaje) {
+        super(resiException.getMessage());
+        this.resiException = resiException;
+        this.mensaje = mensaje;
     }
 }

@@ -13,5 +13,5 @@ package com.kevinolarte.resibenissa.enums.modulojuego;
  * author Kevin Olarte
  */
 public enum Dificultad {
-    DIFICULTAD1, DIFICULTAD2, DIFICULTAD3;
+        DIFICULTAD1, DIFICULTAD2, DIFICULTAD3;
 }

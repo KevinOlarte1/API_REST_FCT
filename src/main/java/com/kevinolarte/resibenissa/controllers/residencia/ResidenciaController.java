@@ -50,9 +50,9 @@ public class ResidenciaController {
         try{
             residencia = residenciaService.get(currentUser.getResidencia().getId());
         } catch (ResiException e) {
-            return ResponseEntity.status(e.getHttpStatus()).build();
+            throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
         return ResponseEntity.ok(residencia);
     }
@@ -69,7 +69,7 @@ public class ResidenciaController {
         try{
             residencias = residenciaService.getAll();
         }catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
         return ResponseEntity.ok(residencias);
     }

@@ -100,7 +100,7 @@ public class UserController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         }catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
         return ResponseEntity.ok(userResponseDtos);
 
@@ -129,7 +129,7 @@ public class UserController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         }catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
         return ResponseEntity.ok(userResponseDtos);
 
@@ -169,7 +169,7 @@ public class UserController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         }catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
 
         return ResponseEntity.ok(userResponseDto);
@@ -194,7 +194,7 @@ public class UserController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
         return ResponseEntity.ok(userResponseDto);
     }
@@ -214,7 +214,7 @@ public class UserController {
         }catch (ResiException e){
             throw new ApiException(e, currentUser);
         } catch (Exception e){
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

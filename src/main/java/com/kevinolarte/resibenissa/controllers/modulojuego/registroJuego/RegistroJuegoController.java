@@ -1,9 +1,11 @@
 package com.kevinolarte.resibenissa.controllers.modulojuego.registroJuego;
 
 import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
+import com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.enums.Filtrado.RegistroJuegoFiltrado;
+import com.kevinolarte.resibenissa.enums.modulojuego.TipoAgrupacion;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.exceptions.ResiException;
@@ -39,6 +41,7 @@ public class RegistroJuegoController {
     private final RegistroJuegoService registroJuegoService;
 
 
+
     /**
      * Crea un nuevo registro de juego para un residente en una residencia y juego específicos.
      *
@@ -58,7 +61,7 @@ public class RegistroJuegoController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -77,7 +80,7 @@ public class RegistroJuegoController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -127,7 +130,7 @@ public class RegistroJuegoController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -151,7 +154,7 @@ public class RegistroJuegoController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
 
@@ -172,8 +175,47 @@ public class RegistroJuegoController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
+
+    @GetMapping("/media-duracion")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracionPorResidencia(
+            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+            @RequestParam(required = false) Dificultad dificultad) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+
+        try{
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracionPorResidencia(currentUser.getResidencia().getId(), tipo, dificultad);
+            return ResponseEntity.ok(medias);
+        }catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+        }
+    }
+
+    @GetMapping("/media-num")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaErroresPorResidencia(
+            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+            @RequestParam(required = false) Dificultad dificultad) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+
+        try {
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErroresPorResidencia(currentUser.getResidencia().getId(), tipo, dificultad);
+            return ResponseEntity.ok(medias);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+        }
+    }
+
+
+
 
 }

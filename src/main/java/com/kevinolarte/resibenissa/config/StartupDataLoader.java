@@ -57,7 +57,7 @@ public class StartupDataLoader {
         user.setResidencia(residenciaAdmin);
         user.setEnabled(true);
 
-        sender.setResidencia(residenciaAdmin);
+        sender.setResidencia(residenciaDefault);
         sender.setEnabled(true);
         user = userRepository.save(user);
         sender = userRepository.save(sender);
@@ -107,7 +107,7 @@ public class StartupDataLoader {
             RegistroJuegoDto dto = new RegistroJuegoDto();
             dto.setIdJuego(juego.getId());
             dto.setIdResidente(rnd.nextLong(1, 10));
-            dto.setDificultad(Dificultad.values()[rnd.nextInt(0, 3)]);
+            dto.setDificultad(Dificultad.DIFICULTAD1); //Dificultad.values()[rnd.nextInt(0, 3)]
             dto.setIdUsuario(user.getId());
             dto.setNum(rnd.nextInt(1, 100));
             dto.setDuracion(rnd.nextDouble(1, 100));
@@ -146,10 +146,46 @@ public class StartupDataLoader {
 
         }
 
+        // Generar registros aleatorios para los residentes
+        generarRegistrosAleatorios(residente1, juego, user, 100);
+        generarRegistrosAleatorios(residente2, juego, user, 50);
 
 
 
 
 
     }
+    private void generarRegistrosAleatorios(Residente residente, Juego juego, User usuario, int cantidad) {
+        Random random = new Random();
+        LocalDate now = LocalDate.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        int maxDay = 28;
+
+        for (int i = 0; i < cantidad; i++) {
+            // Día aleatorio dentro del mes actual
+            int randomDay = random.nextInt(maxDay) + 1; // Día entre 1 y maxDay
+            int randomMonth = random.nextInt(12) + 1; // Mes entre 1 y 12
+            int hour = random.nextInt(12) + 8; // Horario entre 8:00 y 20:00 aprox
+            int minute = random.nextInt(60);
+
+            LocalDateTime fechaAleatoria = LocalDateTime.of(year, randomMonth, randomDay, hour, minute);
+
+            RegistroJuegoDto dto = new RegistroJuegoDto();
+            dto.setIdJuego(juego.getId());
+            dto.setIdResidente(residente.getId());
+            dto.setDificultad(Dificultad.DIFICULTAD1); //(Dificultad.values()[random.nextInt(Dificultad.values().length)]
+            dto.setIdUsuario(usuario.getId());
+            dto.setNum(random.nextInt(5) + 1); // entre 1 y 5 errores
+            dto.setDuracion(20 + random.nextDouble() * 80); // entre 20 y 100
+
+            RegistroJuego registro = new RegistroJuego(dto, fechaAleatoria);
+            registro.setResidente(residente);
+            registro.setJuego(juego);
+            registro.setUsuario(usuario);
+
+            registroJuegoRepository.save(registro);
+        }
+    }
+
 }

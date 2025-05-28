@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponseDto> handleApiException(ApiException ex) {
-        loggerService.registrarLogError(ex.getResiException().getErrorCode().getMessage());
+        loggerService.registrarLogError(ex.getMensaje());
         ErrorResponseDto error =
                 new ErrorResponseDto(ex.getResiException());
         return ResponseEntity.status(ex.getResiException().getHttpStatus()).body(error);

@@ -14,81 +14,78 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-
-@RequestMapping("/resi/residente/{idResidente}/wallet")
 @RestController
+@RequestMapping("/admin/resi/{idResidencia}/resi/{idResidente}/wallet")
 @AllArgsConstructor
-public class WalletController {
+public class WalletAdminController {
+
     private final WalletService walletService;
 
     @GetMapping("/informe")
     public ResponseEntity<byte[]> getInforme(
+            @PathVariable Long idResidencia,
             @PathVariable Long idResidente) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        User currentUser = (User) auth.getPrincipal();
-
         try{
-            byte[] pdf = walletService.getInforme(currentUser.getResidencia().getId(), idResidente);
+            byte[] pdf = walletService.getInforme(idResidencia, idResidente);
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=informe_wallet_" + currentUser.getId() + ".pdf")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=informe_wallet_" + idResidente + ".pdf")
                     .contentType(MediaType.APPLICATION_PDF)
                     .body(pdf);
         }catch (ResiException e){
-            throw new ApiException(e, currentUser);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
-
     @PostMapping("/deposit")
     public ResponseEntity<String> deposit(
+            @PathVariable Long idResidencia,
             @PathVariable Long idResidente,
             @RequestBody MovimientoRequestDTO input) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
         try {
-            walletService.deposit(currentUser.getResidencia().getId(), idResidente, input);
+            walletService.deposit(idResidencia, idResidente, input);
             return ResponseEntity.ok("Deposit successful");
         } catch (ResiException e) {
-            throw new ApiException(e, currentUser);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
     @PostMapping("/retire")
     public ResponseEntity<String> retire(
+            @PathVariable Long idResidencia,
             @PathVariable Long idResidente,
             @RequestBody MovimientoRequestDTO input) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
+
         try {
-            walletService.retire(currentUser.getResidencia().getId(), idResidente, input);
+            walletService.retire(idResidencia, idResidente, input);
             return ResponseEntity.ok("Retire successful");
         } catch (ResiException e) {
-            throw new ApiException(e, currentUser);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
     @GetMapping("/getSaldo")
     public ResponseEntity<Double> getSaldo(
+            @PathVariable Long idResidencia,
             @PathVariable Long idResidente) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
         try {
-            Double saldo = walletService.getSaldo(currentUser.getResidencia().getId(), idResidente);
+            Double saldo = walletService.getSaldo(idResidencia, idResidente);
             return ResponseEntity.ok(saldo);
         } catch (ResiException e) {
-            throw new ApiException(e, currentUser);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
+
 }
+
+

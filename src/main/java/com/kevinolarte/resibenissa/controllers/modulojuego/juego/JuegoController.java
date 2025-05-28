@@ -1,11 +1,15 @@
 package com.kevinolarte.resibenissa.controllers.modulojuego.juego;
 
 import com.kevinolarte.resibenissa.dto.out.modulojuego.JuegoResponseDto;
+import com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO;
+import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
+import com.kevinolarte.resibenissa.enums.modulojuego.TipoAgrupacion;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.modulojuego.JuegoService;
+import com.kevinolarte.resibenissa.services.modulojuego.RegistroJuegoService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,6 +34,7 @@ import java.util.List;
 @AllArgsConstructor
 public class JuegoController {
     private final JuegoService juegoService;
+    private final RegistroJuegoService registroJuegoService;
 
 
     /**
@@ -49,7 +54,7 @@ public class JuegoController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
         return ResponseEntity.ok(juego);
     }
@@ -73,10 +78,58 @@ public class JuegoController {
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
         return ResponseEntity.ok(juegos);
     }
+
+    /**
+     * Obtiene la media de duración para un juego dentro de una residencia, agrupada por día, mes o año.
+     *
+     * @param idJuego      ID del juego a analizar.
+     * @param tipo         Tipo de agrupación temporal: DIARIO, MENSUAL o ANUAL.
+     * @param dificultad   Nivel de dificultad a filtrar (opcional).
+     * @return Lista con duración media agrupada por tipo indicado.
+     */
+    @GetMapping("/{idJuego}/media-duracion")
+    public ResponseEntity<List< MediaRegistroDTO>> getMediaDuracionPorJuegoYResidencia(@PathVariable Long idJuego,
+
+                                                                                      @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+                                                                                      @RequestParam(required = false) Dificultad dificultad) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            List<MediaRegistroDTO> resultado = registroJuegoService.getMediaDuracionPorJuegoYResidencia(idJuego, currentUser.getResidencia().getId(), tipo, dificultad);
+            return ResponseEntity.ok(resultado);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+        }
+    }
+
+    /**
+     * Obtiene la media de errores para un juego dentro de una residencia, agrupada por día, mes o año.
+     *
+     * @param idJuego      ID del juego a analizar.
+     * @param tipo         Tipo de agrupación temporal: DIARIO, MENSUAL o ANUAL.
+     * @param dificultad   Nivel de dificultad a filtrar (opcional).
+     * @return Lista con errores medios agrupados por tipo indicado.
+     */
+    @GetMapping("/{idJuego}/media-errores")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaErroresPorJuegoYResidencia(@PathVariable Long idJuego,
+                                                                                     @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+                                                                                     @RequestParam(required = false) Dificultad dificultad) {
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        try {
+            List<MediaRegistroDTO> resultado = registroJuegoService.getMediaErroresPorJuegoYResidencia(idJuego, currentUser.getResidencia().getId(), tipo, dificultad);
+            return ResponseEntity.ok(resultado);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+        }
+    }
+
 
 
 

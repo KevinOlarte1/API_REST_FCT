@@ -1,16 +1,21 @@
 package com.kevinolarte.resibenissa.controllers.modulojuego.registroJuego;
 
 import com.kevinolarte.resibenissa.dto.in.modulojuego.RegistroJuegoDto;
+import com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO;
 import com.kevinolarte.resibenissa.dto.out.modulojuego.RegistroJuegoResponseDto;
 import com.kevinolarte.resibenissa.enums.modulojuego.Dificultad;
 import com.kevinolarte.resibenissa.enums.Filtrado.RegistroJuegoFiltrado;
+import com.kevinolarte.resibenissa.enums.modulojuego.TipoAgrupacion;
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
 import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.exceptions.ResiException;
+import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.modulojuego.RegistroJuegoService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -53,9 +58,9 @@ public class RegistroJuegoAdminController {
             RegistroJuegoResponseDto registroJuego = registroJuegoService.add(idResidencia, idJuego, registroJuegoDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(registroJuego);
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -74,9 +79,9 @@ public class RegistroJuegoAdminController {
         try {
             return ResponseEntity.ok(registroJuegoService.get(idResidencia, idRegistroJuego));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -120,9 +125,9 @@ public class RegistroJuegoAdminController {
                     promedio, masPromedio, menosPromedio,
                     filtrado, comentado));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -168,9 +173,9 @@ public class RegistroJuegoAdminController {
                     promedio, masPromedio, menosPromedio,
                     filtrado, comentado));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -191,9 +196,9 @@ public class RegistroJuegoAdminController {
         try {
             return ResponseEntity.ok(registroJuegoService.update(idResidencia, idRegistroJuego, registroJuegoDto));
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
@@ -213,9 +218,75 @@ public class RegistroJuegoAdminController {
             registroJuegoService.delete(idResidencia, idRegistroJuego);
             return ResponseEntity.noContent().build();
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
+        }
+    }
+
+    @GetMapping("/{idResidencia}/registro/media-duracion")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracionPorResidencia(
+            @PathVariable Long idResidencia,
+            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+            @RequestParam(required = false) Dificultad dificultad) {
+
+
+        try{
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracionPorResidencia(idResidencia, tipo, dificultad);
+            return ResponseEntity.ok(medias);
+        }catch (ResiException e) {
+            throw new ApiException(e, e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
+        }
+    }
+
+    @GetMapping("/registro/media-duracion")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracionPorResidencia(
+            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+            @RequestParam(required = false) Dificultad dificultad) {
+
+
+        try{
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracionGlobal(tipo, dificultad);
+            return ResponseEntity.ok(medias);
+        }catch (ResiException e) {
+            throw new ApiException(e, e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
+        }
+    }
+
+    @GetMapping("/{idResidencia}/registro/media-num")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaErroresPorResidencia(
+            @PathVariable Long idResidencia,
+            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+            @RequestParam(required = false) Dificultad dificultad) {
+
+
+        try {
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErroresPorResidencia(idResidencia, tipo, dificultad);
+            return ResponseEntity.ok(medias);
+        } catch (ResiException e) {
+            throw new ApiException(e, e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
+        }
+    }
+
+    @GetMapping("/registro/media-num")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaErroresPorResidencia(
+            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+            @RequestParam(required = false) Dificultad dificultad) {
+
+
+        try {
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErroresGlobal(tipo, dificultad);
+            return ResponseEntity.ok(medias);
+        } catch (ResiException e) {
+            throw new ApiException(e, e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
         }
     }
 
