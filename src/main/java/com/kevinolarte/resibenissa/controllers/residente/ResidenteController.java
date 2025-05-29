@@ -1,5 +1,6 @@
 package com.kevinolarte.resibenissa.controllers.residente;
 
+import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
@@ -14,7 +15,10 @@ import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.ResidenteService;
 import com.kevinolarte.resibenissa.services.modulojuego.RegistroJuegoService;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -280,6 +284,21 @@ public class ResidenteController {
         }
 
         return ResponseEntity.ok(medias);
+    }
+
+    /**
+     * Descarga la imagen por defecto del usuario.
+     *
+     * @return Recurso de imagen por defecto como archivo adjunto.
+     */
+    @GetMapping("/defualtImage")
+    public ResponseEntity<Resource> downloadImage(){
+        Resource resource = residenteService.getImage(Conf.imageDefault);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 
 

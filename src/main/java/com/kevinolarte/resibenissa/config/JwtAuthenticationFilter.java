@@ -60,14 +60,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
         boolean exceptionLanzada = false;
-        System.out.println("Ejecutando el filtro de JWT");
         final String authHeader = request.getHeader("Authorization");
-        System.out.println("Bienvenida al filtro de JWT");
         //Ver si esa cabeza esta nulla o no es un token bearer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("No hay token");
             handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
-            System.out.println("Pasando al siguiente filtro");
             return;
         }
         try{
@@ -99,7 +95,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     }
                 }
-
                 //Comprobamos si ese token es de ese usario y no esta expirado
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     //Damos authorizacion

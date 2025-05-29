@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.services;
 
 
+import com.kevinolarte.resibenissa.config.Conf;
 import com.kevinolarte.resibenissa.dto.in.ResidenteDto;
 import com.kevinolarte.resibenissa.dto.in.moduloReporting.EmailRequestDto;
 import com.kevinolarte.resibenissa.dto.out.ResidenteResponseDto;
@@ -13,11 +14,15 @@ import com.kevinolarte.resibenissa.repositories.ResidenteRepository;
 import com.kevinolarte.resibenissa.repositories.moduloOrgSalida.ParticipanteRepository;
 import com.kevinolarte.resibenissa.specifications.ResidenteSpecification;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -401,6 +406,24 @@ public class ResidenteService {
     }
 
 
+    /**
+     * Obtiene una imagen como recurso desde el sistema de archivos.
+     * @param filename Nombre del archivo solicitado (actualmente no se utiliza, se carga siempre la imagen por defecto).
+     * @return {@link Resource} que representa la imagen cargada desde el sistema de archivos.
+     * @throws ResiException si el archivo no existe o no puede accederse.
+     */
+    public Resource getImage(String filename) {
 
-
+        Path filePath = Paths.get("src/main/resources/static/uploads").resolve(Conf.imageDefault).normalize();
+        Resource resource;
+        try{
+            resource = new UrlResource(filePath.toUri());
+            if (!resource.exists()) {
+                throw new ResiException(ApiErrorCode.PROBLEMAS_CON_FILE);
+            }
+        }catch (Exception e){
+            throw new ResiException(ApiErrorCode.PROBLEMAS_CON_FILE);
+        }
+        return resource;
+    }
 }
