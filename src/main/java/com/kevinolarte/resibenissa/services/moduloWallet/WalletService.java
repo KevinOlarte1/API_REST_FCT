@@ -90,7 +90,7 @@ public class WalletService {
      * @throws ResiException si el monto es inválido o si la wallet no se encuentra.
      */
     public void deposit(Long idResidencia, Long idResidente, MovimientoRequestDTO input) {
-        if (moneyValid(input.getCantidad())) {
+        if (!moneyValid(input.getCantidad())) {
             throw new ResiException(ApiErrorCode.MONTO_INVALIDO); // crea este código si aún no lo tienes
         }
         System.out.println("asdaaasdasdasd");
@@ -132,7 +132,7 @@ public class WalletService {
 
 
     public void retire(Long idResidencia, Long idResidente, MovimientoRequestDTO input) {
-        if (moneyValid(input.getCantidad())) {
+        if (!moneyValid(input.getCantidad())) {
             throw new ResiException(ApiErrorCode.MONTO_INVALIDO);
         }
 

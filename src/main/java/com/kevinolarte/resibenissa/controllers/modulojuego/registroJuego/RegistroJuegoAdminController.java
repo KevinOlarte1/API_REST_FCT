@@ -261,7 +261,7 @@ public class RegistroJuegoAdminController {
         }
     }
 
-    @GetMapping("{idResidencia}/registro/residente/{idResidente}/media-duracion")
+    @GetMapping("{idResidencia}/registro/resident/{idResidente}/media-duracion")
     public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracionPorResidente(@PathVariable Long idResidencia,
                                                                                  @PathVariable Long idResidente,
                                                                                @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
@@ -277,7 +277,7 @@ public class RegistroJuegoAdminController {
         }
     }
 
-    @GetMapping("{idResidencia}/registro/residente/{idResidente}/media-num")
+    @GetMapping("{idResidencia}/registro/resident/{idResidente}/media-num")
     public ResponseEntity<List<MediaRegistroDTO>> getMediaNumPorResidente(@PathVariable Long idResidencia,
                                                                                @PathVariable Long idResidente,
                                                                                @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,

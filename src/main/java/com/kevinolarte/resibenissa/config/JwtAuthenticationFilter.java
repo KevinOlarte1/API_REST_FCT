@@ -5,6 +5,7 @@ import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.JwtService;
+import com.kevinolarte.resibenissa.services.LoggerService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,6 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final HandlerExceptionResolver handlerExceptionResolver;
+    private final LoggerService loggerService;
 
 
     /**
@@ -61,6 +63,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
+        String endpoint = request.getRequestURI();
+        String metodo = request.getMethod();
+
+
+        // Aquí puedes añadir más lógica para determinar el usuario autenticado
+        String descripcion = "Acceso a endpoint";
+
+        loggerService.registrarLog(endpoint, metodo, descripcion);
 
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {

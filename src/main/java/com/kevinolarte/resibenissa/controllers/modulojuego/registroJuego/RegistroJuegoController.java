@@ -56,6 +56,7 @@ public class RegistroJuegoController {
             @RequestBody RegistroJuegoDto registroJuegoDto) {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         try {
+            registroJuegoDto.setIdUsuario(currentUser.getId());
             RegistroJuegoResponseDto registroJuego = registroJuegoService.add(currentUser.getResidencia().getId(), idJuego, registroJuegoDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(registroJuego);
         } catch (ResiException e) {
@@ -218,7 +219,7 @@ public class RegistroJuegoController {
     }
 
 
-    @GetMapping("/residente/{idResidente}/media-duracion")
+    @GetMapping("/resident/{idResidente}/media-duracion")
     public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracion(
             @PathVariable Long idResidente,
             @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
@@ -240,27 +241,7 @@ public class RegistroJuegoController {
         return ResponseEntity.ok(medias);
     }
 
-    @GetMapping("/residente/{idResidente}/media-num")
-    public ResponseEntity<List<MediaRegistroDTO>> getMediaErrores(
-            @PathVariable Long idResidente,
-            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad,
-            @RequestParam(required = false) Long idJuego) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-
-        List<MediaRegistroDTO> medias;
-        try {
-            medias = registroJuegoService.getMediaErrores(currentUser.getResidencia().getId(), idResidente, tipo, dificultad, idJuego);
-        } catch (ResiException e) {
-            throw new ApiException(e, currentUser);
-        } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
-        }
-
-        return ResponseEntity.ok(medias);
-    }
 
 
 

@@ -310,86 +310,6 @@ paths:
                     timestamp: 2025-04-13T21:00:0
 
 
-  /resi/add:
-    post:
-      tags:
-        - Residencia
-      summary: Registrar una nueva residencia
-      description: Crea una nueva residencia validando campos obligatorios, formato de correo y unicidad.
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Residencia.Dto'
-      responses:
-        '201':
-          description: Residencia registrada con éxito
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Residencia.ResponseDto'
-        '400':
-          description: Datos del cuerpo nulos/vacios
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CAMPOS_OBLIGATORIOS:
-                  value:
-                    mensaje: Faltan campos obligatorios
-                    codigo: 1001
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
-        '405':
-          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                ENDPOINT_PROTEGIDO:
-                  value:
-                    mensaje: Tiene que tener permiso para acceder aqui.
-                    codigo: 1020
-                    status: 405
-                    timestamp: 2025-04-13T21:00:0
-        '406':
-          description: Correo Invalido, tiene que ser un correo con extructura correcta.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CORREO_INVALIDO:
-                  value:
-                    mensaje: Email invalid
-                    codigo: 1002
-                    status: 406
-                    timestamp: 2025-04-13T21:00:0
-        '409':
-          description: Email o nombre que han sido ingreado en el cuerpo ya existen en otra residencia.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              examples:
-                CORREO_DUPLICADO:
-                  value:
-                    mensaje: Email ya existente
-                    codigo: 1003
-                    status: 409
-                    timestamp: 2025-04-13T21:00:00
-                NOMBRE_DUPLICADO:
-                  value:
-                    mensaje: Nombre ya existente
-                    codigo: 1004
-                    status: 409
-                    timestamp: 2025-04-13T21:00:00
-
   /resi/{idResidencia}/get:
     get:
       tags:
@@ -467,52 +387,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Residencia.PublicResponseDto'
-
-
-  /resi/{idResidencia}/delete:
-    delete:
-      tags:
-        - Residencia
-      summary: Eliminar una Residencia existente.
-      description: Elimina una residencia en cascada, con todas las entidades relacionadas a el.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '204':
-          description: Residencia borrada correctamente
-        '404':
-          description: Residencia invalida, no encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                RESIDENCIA_INVALIDO:
-                  value:
-                    mensaje: Residencia invalida
-                    codigo: 1006
-                    status: 404
-                    timestamp: 2025-04-13T21:00:00
-        '405':
-          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                ENDPOINT_PROTEGIDO:
-                  value:
-                    mensaje: Tiene que tener permiso para acceder aqui.
-                    codigo: 1020
-                    status: 405
-                    timestamp: 2025-04-13T21:00:0
 
   /resi/resident/add:
     post:
@@ -678,53 +552,54 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: documentoIdentidad
-          in: query
-          required: false
-          schema:
-            type: string
         - name: fechaNacimiento
           in: query
           required: false
           schema:
             type: string
             format: date
-        - name: year
+          description: Fecha exacta de nacimiento del residente
+        - name: minFNac
           in: query
           required: false
           schema:
-            type: integer
-            format: int64
-        - name: month
+            type: string
+            format: date
+          description: Fecha mínima de nacimiento
+        - name: maxFNac
           in: query
           required: false
           schema:
-              type: integer
-              format: int64
+            type: string
+            format: date
+          description: Fecha máxima de nacimiento
         - name: maxAge
           in: query
           required: false
           schema:
             type: integer
-            format: int64
+          description: Edad máxima del residente
         - name: minAge
           in: query
           required: false
           schema:
-              type: integer
-              format: int64
+            type: integer
+          description: Edad mínima del residente
         - name: idJuego
           in: query
           required: false
           schema:
             type: integer
-            format: int64
-        - name: idEventoSalida
+          description: ID del juego con el que ha interactuado el residente
+        - name: idEvento
           in: query
           required: false
           schema:
             type: integer
-            format: int64
+          description: ID del evento en el que ha participado el residente
+        - name: filtrado
+          in: query
+          required: false
       responses:
         '200':
           description: Residente(s) econtrado(s)
@@ -773,6 +648,7 @@ paths:
                     codigo: 1029
                     status: 406
                     timestamp: 2025-04-13T21:00:00
+
   /resi/resident/getAll/bajas:
     get:
       tags:
@@ -782,11 +658,27 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: documentoIdentidad
+        - name: fecha
           in: query
           required: false
           schema:
             type: string
+            format: date
+          description: Fecha exacta de baja del residente
+        - name: minFecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha mínima de baja del residente
+        - name: maxFecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha máxima de baja del residente
       responses:
         '200':
           description: Residente(s) econtrado(s)
@@ -809,66 +701,6 @@ paths:
                   codigo: 1006
                   status: 404
                   timestamp: 2025-04-13T21:00:00
-        '405':
-          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                ENDPOINT_PROTEGIDO:
-                  value:
-                    mensaje: Tiene que tener permiso para acceder aqui.
-                    codigo: 1020
-                    status: 405
-                    timestamp: 2025-04-13T21:00:0
-
-
-  /resi/resident/{idResidente}/delete:
-    delete:
-      tags:
-        - Residente
-      summary: Eliminar un Residente.
-      description: Elimina un Residente en cascada, con todas las entidades relacionadas que dependan de el.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: idResidente
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '204':
-          description: Residente borrada
-
-        '400':
-          description: Campos nulos/vacios de las variable path
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CAMPOS_OBLIGATORIOS:
-                  value:
-                    mensaje: Faltan campos obligatorios
-                    codigo: 1001
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
-        '404':
-          description: Residente invalida, no encontrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                RESIDENCIA_INVALIDO:
-                  value:
-                    mensaje: Residente invalida
-                    codigo: 1009
-                    status: 404
-                    timestamp: 2025-04-13T21:00:00
         '405':
           description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
           content:
@@ -1046,6 +878,22 @@ paths:
                         status: 409
                         timestamp: 2025-04-13T21:00:00
 
+  /resi/user/me:
+    get:
+      tags:
+        - User
+      summary: Obten info de mi user
+      description: Te da toda la información del usuario que esta logueado.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User.ResponseDto'
+
   /resi/user/{idUser}/get:
     get:
       tags:
@@ -1122,24 +970,7 @@ paths:
           required: false
           schema:
             type: boolean
-        - name: email
-          in: query
-          required: false
-          schema:
-            type: string
         - name: idJuego
-          in: query
-          required: false
-          schema:
-              type: integer
-              format: int64
-        - name: minRegistro
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int64
-        - name: maxRegistro
           in: query
           required: false
           schema:
@@ -1203,11 +1034,27 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: email
+        - name: fecha
           in: query
           required: false
           schema:
             type: string
+            format: date
+          description: Fecha exacta de baja del usuario
+        - name: minFecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha mínima de baja del usuario
+        - name: maxFecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha máxima de baja del usuario
       responses:
         '404':
           description: Residencia invalida, no encontrada
@@ -1236,134 +1083,6 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/user/{idUser}/delete:
-    delete:
-      tags:
-          - User
-      summary: Eliminar un Usuario.
-      description: Elimina un usuario en cascada, con todas las entidades relacionadas a el. Pero el registro de jeugo no se borra
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: idUser
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '204':
-          description: Usuario borrado
-        '400':
-          description: campos nulos/vacios de la variable de la url
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CAMPOS_OBLIGATORIOS:
-                  value:
-                    mensaje: Faltan campos obligatorios
-                    codigo: 1001
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
-        '404':
-          description: Usuario invalido, no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                USUARIO_INVALIDO:
-                  value:
-                    mensaje: Usuario invalido
-                    codigo: 1010
-                    status: 404
-                    timestamp: 2025-04-13T21:00:00
-        '405':
-          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                ENDPOINT_PROTEGIDO:
-                  value:
-                    mensaje: Tiene que tener permiso para acceder aqui.
-                    codigo: 1020
-                    status: 405
-                    timestamp: 2025-04-13T21:00:00
-        '409':
-          description: Esta entidad tiene referencias asociadas que dependen de el
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                REFERENCIAS_DEPENDIENTES:
-                  value:
-                    mensaje: Esta entidad tiene referencias asociadas que dependen de el.
-                    codigo: 1013
-                    status: 409
-                    timestamp: 2025-04-13T21:00:00
-
-  /resi/user/{idUser}/delete/referencies:
-    delete:
-      tags:
-        - User
-      summary: Borrar la relacion usuario.
-      description: Borra y pone a null el parametro relacionado en el registro de juego.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: idUser
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '204':
-          description: Relaciones eliminadas.
-        '400':
-          description: campos nulos/vacios de la variable de la url
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CAMPOS_OBLIGATORIOS:
-                  value:
-                    mensaje: Faltan campos obligatorios
-                    codigo: 1001
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
-        '404':
-          description: Usuario invalido, no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                USUARIO_INVALIDO:
-                  value:
-                    mensaje: Usuario invalido
-                    codigo: 1010
-                    status: 404
-                    timestamp: 2025-04-13T21:00:00
-        '405':
-          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                ENDPOINT_PROTEGIDO:
-                  value:
-                    mensaje: Tiene que tener permiso para acceder aqui.
-                    codigo: 1020
-                    status: 405
-                    timestamp: 2025-04-13T21:00:00
 
   /resi/user/defaultImage:
     get:
@@ -1634,99 +1353,15 @@ paths:
 
 
 
-  /resi/{idResidencia}/juego/add:
-    post:
-      tags:
-        - Modulo - JUEGO
-      summary: Registrar un juego.
-      description: Crea un nuevo Juego validando campos obligatiorios, unicidad y que la residencia donde se guarda exista.
-      parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Juego.Dto'
-      responses:
-        '201':
-          description: Juego registrado con éxisto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Juego.ResponseDto'
-        '400':
-          description: Datos nulos/vacios o del bodyRequest o de la url.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CAMPOS_OBLIGATORIOS:
-                  value:
-                    mensaje: Faltan campos obligatorios
-                    codigo: 1001
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
 
-        '404':
-          description: Residencia invalida, no existe en la base de datos.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                RESIDENCIA_INVALIDO:
-                  value:
-                    mensaje: Residencia invalida
-                    codigo: 1006
-                    status: 404
-                    timestamp: 2025-04-13T21:00:00
-        '405':
-          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                ENDPOINT_PROTEGIDO:
-                  value:
-                    mensaje: Tiene que tener permiso para acceder aqui.
-                    codigo: 1020
-                    status: 405
-                    timestamp: 2025-04-13T21:00:0
-        '409':
-          description: El nombre que se le quiere asignar ya esrta registrado en esa residendcia
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                NOMBRE_DUPLICADO:
-                  value:
-                    mensaje: Nombre ya existente
-                    codigo: 1004
-                    status: 409
-                    timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/juego/{idJuego}/get:
+  /resi/juego/{idJuego}/get:
     get:
       tags:
-        - Modulo - JUEGO
+        - MODULO - JUEGO
       summary: Obtener juego
       description: Devuelve un juego.
       parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
         - name: idJuego
           in: query
           required: true
@@ -1782,19 +1417,12 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/{idResidencia}/juego/getAll:
+  /resi/juego/getAll:
     get:
       tags:
-        - Modulo - JUEGO
+        - MODULO - JUEGO
       summary: Obtener lista de juego
       description: Devuelve una lista de juegos.
-      parameters:
-        - name: idResidencia
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
       requestBody:
         required: true
         content:
@@ -1850,173 +1478,15 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:0
 
-  /resi/{idResidencia}/juego/{idJuego}/delete:
-    delete:
-      tags:
-        - Modulo - JUEGO
-      summary: Eliminar una Juego.
-      description: Elimina un juego en cascada, con todas las entidades relacionadas a el.
-      parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: idJuego
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '204':
-          description: Juego borrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Juego.ResponseDto'
-        '400':
-          description: Datos nulos/vacios de la variable de la url
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CAMPOS_OBLIGATORIOS:
-                  value:
-                    mensaje: Faltan campos obligatorios
-                    codigo: 1001
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
-        '404':
-          description: Juego invalido, no encontrado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                RESIDENCIA_INVALIDO:
-                  value:
-                    mensaje: Juego invalido
-                    codigo: 1008
-                    status: 404
-                    timestamp: 2025-04-13T21:00:00
-        '405':
-          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                ENDPOINT_PROTEGIDO:
-                  value:
-                    mensaje: Tiene que tener permiso para acceder aqui.
-                    codigo: 1020
-                    status: 405
-                    timestamp: 2025-04-13T21:00:00
-
-  /resi/{idResidencia}/juego/{idJuego}/update:
-    patch:
-      tags:
-        - Modulo - JUEGO
-      summary: Actualizar un juego.
-      description: Actualiza el nombre del juego, y la imagen.
-      parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: idJuego
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/JuegoUpdate.Dto'
-      responses:
-        '200':
-          description: Juego actualizado con éxito
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Juego.ResponseDto'
-        '400':
-          description: Datos nulos/vacios de la variable de la url o del bodyRequest
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                CAMPOS_OBLIGATORIOS:
-                  value:
-                    mensaje: Faltan campos obligatorios
-                    codigo: 1001
-                    status: 400
-                    timestamp: 2025-04-13T21:00:00
-
-        '404':
-          description: Juego invalida, no existe en la base de datos.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                RESIDENCIA_INVALIDO:
-                  value:
-                    mensaje: Juego invalida
-                    codigo: 1008
-                    status: 404
-                    timestamp: 2025-04-13T21:00:00
-
-        '405':
-          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                ENDPOINT_PROTEGIDO:
-                  value:
-                    mensaje: Tiene que tener permiso para acceder aqui.
-                    codigo: 1020
-                    status: 405
-                    timestamp: 2025-04-13T21:00:00
-        '409':
-          description: El nombre ya existe en otro evento de la residencia
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error.ResponseDto'
-              example:
-                NOMBRE_DUPLICADO:
-                value:
-                  mensaje: Nombre ya existente
-                  codigo: 1004
-                  status: 409
-                  timestamp: 2025-04-13T21:00:00
-
-  /resi/{idResidencia}/juego/{idJuego}/registro/add:
+  /resi/registro/juego/{idJuego}/add:
     post:
       tags:
-        - Modulo - JUEGO
+        - MODULO - JUEGO
       summary: Registrar un nuevo registro de juego.
       description: Crea un nuevo registro de juego validando campos obligatorios,existencia de las referencias y valores validos.
       security:
         - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: idJuego
           in: path
           required: true
@@ -2115,25 +1585,15 @@ paths:
                     status: 409
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/get:
+  /resi/registro/{idRegistroJuego}/get:
     get:
       tags:
-        - Modulo - JUEGO
+        - MODULO - JUEGO
       summary: Obtener registro de juego
       description: Devuelve los datos de una partida específica.
       security:
         - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: idJuego
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: idRegistroJuego
           in: path
           required: true
@@ -2192,47 +1652,103 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/juego/{idJuego}/dificultad/{dificultad}/getAll:
+  /resi/registro/getAll:
     get:
       tags:
-        - Modulo - JUEGO
+        - MODULO - JUEGO
       summary: Listar registros por dificultad
       description: Lista registros por dificultad y filtros opcionales.
       security:
         - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: idJuego
-          in: path
-          required: true
+          in: query
+          required: false
           schema:
             type: integer
+          description: ID del juego
+        - name: idResidente
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: ID del residente
+        - name: edad
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Edad exacta del residente
+        - name: minEdad
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Edad mínima del residente
+        - name: maxEdad
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Edad máxima del residente
+        - name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha exacta del registro
+        - name: minFecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha mínima del registro
+        - name: maxFecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha máxima del registro
+        - name: promedio
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar por registros con promedio exacto
+        - name: masPromedio
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar por registros con duración mayor al promedio
+        - name: menosPromedio
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar por registros con duración menor al promedio
+        - name: filtrado
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Tipo de filtro personalizado (por enum o string si no está definido como schema)
         - name: dificultad
-          in: path
-          required: true
+          in: query
+          required: false
           schema:
             type: string
             enum: [ FACIL, MEDIO, DIFICIL ]
-        - name: idResidente
+          description: Nivel de dificultad del juego
+        - name: comentado
           in: query
+          required: false
           schema:
-            type: integer
-        - name: idUser
-          in: query
-          schema:
-            type: integer
-        - name: year
-          in: query
-          schema:
-            type: integer
-        - name: month
-          in: query
-          schema:
-            type: integer
+            type: boolean
+          description: Filtrar por registros que tienen comentarios
       responses:
         '200':
           description: Lista de registros encontrada
@@ -2294,25 +1810,15 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/addComment:
+  /resi/registro/{idRegistroJuego}/addComment:
     patch:
       tags:
-        - Modulo - JUEGO
+        - MODULO - JUEGO
       summary: Añadir comentario a registro
       description: Actualiza la observación/comentario del registro.
       security:
         - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: idJuego
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: idRegistroJuego
           in: path
           required: true
@@ -2377,25 +1883,15 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/juego/{idJuego}/registro/{idRegistroJuego}/delete:
+  /resi/registro/{idRegistroJuego}/delete:
     delete:
       tags:
-        - Modulo - JUEGO
+        - MODULO - JUEGO
       summary: Eliminar registro de juego
       description: Elimina un registro de juego de forma permanente.
       security:
         - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: idJuego
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: idRegistroJuego
           in: path
           required: true
@@ -2450,20 +1946,307 @@ paths:
                     status: 405
                     timestamp: 2025-04-13T21:00:00
 
-
-
-  /resi/{idResidencia}/evento/{idSalida}/participante/add:
-    post:
+  /resi/registro/media_duracion:
+    get:
       tags:
-        - Modulo - Eventos
-      summary: Añadir un participante
-      description: Registra un nuevo participante en un evento de salida.
+        - MODULO -JUEGO
+      summary: Obtener media de duración de registros
+      description: lista de registros de juegos y calcula la media de duración. por dia mes año.
+      security:
+        - bearerAuth: [ ]
       parameters:
-        - name: idResidencia
+        - name: tipo
+          in: query
+          required: false
+          schema:
+            type: string
+            default: DIARIO
+            enum: [ DIARIO, MENSUAL, ANUAL ]
+          description: Tipo de agrupación temporal
+        - name: dificultad
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ FACIL, MEDIO, DIFICIL ]
+          description: Nivel de dificultad del juego
+        - name: idJuego
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: ID del juego (si se omite, se consideran todos)
+      responses:
+          '200':
+              description: Media de duración calculada correctamente
+              content:
+                  application/json:
+                      schema:
+                          type: object
+                          properties:
+                              media_duracion:
+                                  type: number
+                                  format: double
+                                  description: Media de duración de los registros de juegos
+
+          '400':
+              description: Datos nulos/vacios .
+              content:
+                  application/json:
+                      schema:
+                          $ref: '#/components/schemas/Error.ResponseDto'
+                      example:
+                          CAMPOS_OBLIGATORIOS:
+                              value:
+                                  mensaje: Faltan campos obligatorios
+                                  codigo: 1001
+                                  status: 400
+                                  timestamp: 2025-04-13T21:00:00
+          '405':
+            description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  ENDPOINT_PROTEGIDO:
+                    value:
+                      mensaje: Tiene que tener permiso para acceder aqui.
+                      codigo: 1020
+                      status: 405
+                      timestamp: 2025-04-13T21:00:00
+
+  /resi/registro/media_num:
+    get:
+      tags:
+        - MODULO - JUEGO
+      summary: lista con media de num de lso registros de juegos
+      description: lista de registros de juegos y calcula la media de num. por dia mes año.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tipo
+          in: query
+          required: false
+          schema:
+            type: string
+            default: DIARIO
+            enum: [ DIARIO, MENSUAL, ANUAL ]
+          description: Tipo de agrupación temporal
+        - name: dificultad
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ FACIL, MEDIO, DIFICIL ]
+          description: Nivel de dificultad del juego
+        - name: idJuego
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: ID del juego (si se omite, se consideran todos)
+      responses:
+        '200':
+          description: Media de duración calculada correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media_duracion:
+                    type: number
+                    format: double
+                    description: Media de duración de los registros de juegos
+
+        '400':
+          description: Datos nulos/vacios .
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
+
+  /resi/registro/resident/{idResidente}/media-duracion:
+      get:
+        tags:
+          - MODULO - JUEGO
+        summary: Obtener media de duración de juegos por residente
+        description: Devuelve una lista con la duración media de los juegos jugados por un residente, agrupados por día, mes o año. Se puede filtrar por dificultad e ID de juego.
+        security:
+          - bearerAuth: []
+        parameters:
+          - name: idResidente
+            in: path
+            required: true
+            schema:
+              type: integer
+            description: ID del residente
+          - name: tipo
+            in: query
+            required: false
+            schema:
+              type: string
+              default: DIARIO
+              enum: [ DIARIO, MENSUAL, ANUAL ]
+            description: Tipo de agrupación temporal
+          - name: dificultad
+            in: query
+            required: false
+            schema:
+              type: string
+              enum: [ FACIL, MEDIO, DIFICIL ]
+            description: Nivel de dificultad del juego
+          - name: idJuego
+            in: query
+            required: false
+            schema:
+              type: integer
+            description: ID del juego (si se omite, se consideran todos)
+        responses:
+          '200':
+            description: Media de duración calculada correctamente
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    media_duracion:
+                      type: number
+                      format: double
+                      description: Media de duración de los registros de juegos
+
+          '400':
+            description: Datos nulos/vacios .
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  CAMPOS_OBLIGATORIOS:
+                    value:
+                      mensaje: Faltan campos obligatorios
+                      codigo: 1001
+                      status: 400
+                      timestamp: 2025-04-13T21:00:00
+          '405':
+            description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  ENDPOINT_PROTEGIDO:
+                    value:
+                      mensaje: Tiene que tener permiso para acceder aqui.
+                      codigo: 1020
+                      status: 405
+                      timestamp: 2025-04-13T21:00:00
+
+  /resident/{idResidente}/media-num:
+    get:
+      tags:
+        - MODULO - JUEGO
+      summary: Obtener media de errores por residente
+      description: Devuelve una lista con el número medio de errores cometidos por un residente en los juegos, agrupados por día, mes o año. Permite filtrar por dificultad e ID de juego.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idResidente
           in: path
           required: true
           schema:
             type: integer
+          description: ID del residente
+        - name: tipo
+          in: query
+          required: false
+          schema:
+            type: string
+            default: DIARIO
+            enum: [DIARIO, MENSUAL, ANUAL]
+          description: Tipo de agrupación temporal
+        - name: dificultad
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [FACIL, MEDIO, DIFICIL]
+          description: Nivel de dificultad del juego
+        - name: idJuego
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: ID del juego (si se omite, se consideran todos)
+      responses:
+        '200':
+          description: Media de duración calculada correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media_duracion:
+                    type: number
+                    format: double
+                    description: Media de duración de los registros de juegos
+
+        '400':
+          description: Datos nulos/vacios .
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                CAMPOS_OBLIGATORIOS:
+                  value:
+                    mensaje: Faltan campos obligatorios
+                    codigo: 1001
+                    status: 400
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
+
+  /resi/evento/{idSalida}/participante/add:
+    post:
+      tags:
+        - MODULO - EVENTO
+      summary: Añadir un participante
+      description: Registra un nuevo participante en un evento de salida.
+      parameters:
         - name: idSalida
           in: path
           required: true
@@ -2520,6 +2303,20 @@ paths:
                     codigo: 1009
                     status: 404
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
         '406':
           description: Este residente ya participa en otro evento ese mismo dia
           content:
@@ -2535,18 +2332,13 @@ paths:
                     timestamp: 2025-04-13T21:00:00
 
 
-  /resi/{idResidencia}/evento/{idSalida}/participante/{idParticipante}/get:
+  /resi/evento/{idSalida}/participante/{idParticipante}/get:
     get:
       tags:
-        - Modulo - Eventos
+        - MODULO - EVENTO
       summary: Obtener un participante
       description: Obtiene los datos de un participante específico en un evento de salida.
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: idSalida
           in: path
           required: true
@@ -2596,29 +2388,83 @@ paths:
                     codigo: 1025
                     status: 404
                     timestamp: 2025-04-13T21:00:00
-  /resi/{idResidencia}/evento/{idSalida}/participante/getAll:
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi/evento/{idSalida}/participante/getAll:
     get:
+      summary: Obtener todos los participantes de una salida
+      description: Devuelve una lista de participantes asociados a una salida, permitiendo aplicar filtros por residente, edad, sexo, opinión y asistencia.
       tags:
-        - Modulo - Eventos
-      summary: Listar participantes
-      description: Lista todos los participantes de un evento de salida, con filtros opcionales.
+        - MODULO - EVENTO
+      security:
+        - bearerAuth: []
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: idSalida
           in: path
           required: true
           schema:
             type: integer
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Participante.GetDto'
+          description: ID de la salida o evento
+        - name: idResidente
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: ID del residente
+        - name: rM
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar por residentes mujeres
+        - name: rH
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar por residentes hombres
+        - name: minEdad
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Edad mínima del residente
+        - name: maxEdad
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Edad máxima del residente
+        - name: preOpinion
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar participantes con opinión previa
+        - name: postOpinion
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar participantes con opinión posterior
+        - name: asistenciPermitida
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filtrar según si la asistencia fue permitida
       responses:
         '200':
           description: Lista de participantes
@@ -2654,19 +2500,27 @@ paths:
                     codigo: 1023
                     status: 404
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/evento/{idSalida}/participante/{idParticipante}/update:
+  /resi/evento/{idSalida}/participante/{idParticipante}/update:
     patch:
       tags:
-        - Modulo - Eventos
+        - MODULO - EVENTO
       summary: Actualizar participante
       description: Actualiza los datos de un participante existente en un evento de salida.
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: idSalida
           in: path
           required: true
@@ -2729,18 +2583,13 @@ paths:
                     status: 404
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/evento/{idSalida}/participante/{idParticipante}/delete:
+  /resi/evento/{idSalida}/participante/{idParticipante}/delete:
     delete:
       tags:
-        - Modulo - Eventos
+        - MODULO - EVENTO
       summary: Eliminar participante
       description: Elimina un participante de un evento de salida.
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: idSalida
           in: path
           required: true
@@ -2773,6 +2622,20 @@ paths:
                     codigo: 1025
                     status: 404
                     timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
         '406':
           description: Participante inmutable
           content:
@@ -2787,19 +2650,411 @@ paths:
                     status: 406
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/evento/add:
-    post:
+  paths:
+    /resi/evento/{idEvento}/participante/{idParticipante}/addPreOpinion:
+      patch:
+        summary: Añadir opinión previa del participante
+        description: Permite asignar una opinión previa de un participante a un evento/salida.
+        tags:
+          - MODULO - EVENTO
+        parameters:
+          - name: idEvento
+            in: path
+            required: true
+            schema:
+              type: integer
+            description: ID del evento o salida
+          - name: idParticipante
+            in: path
+            required: true
+            schema:
+              type: integer
+            description: ID del participante
+          - name: preOpinion
+            in: query
+            required: true
+            schema:
+              type: string
+            description: Texto de la opinión previa del participante
+        responses:
+          '200':
+            description: Opinión previa añadida correctamente
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Participante.ResponseDto'
+          '404':
+            description: Evento/Particicpante Invalido
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                examples:
+                  EVENTO_SALIDA_INVALIDO:
+                    value:
+                      mensaje: Evento de salida invalido
+                      codigo: 1023
+                      status: 404
+                      timestamp: 2025-04-13T21:00:00
+                  PARTICIPANTE_INVALIDO:
+                    value:
+                      mensaje: Participante invalido
+                      codigo: 1025
+                      status: 404
+                      timestamp: 2025-04-13T21:00:00
+          '405':
+            description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  ENDPOINT_PROTEGIDO:
+                    value:
+                      mensaje: Tiene que tener permiso para acceder aqui.
+                      codigo: 1020
+                      status: 405
+                      timestamp: 2025-04-13T21:00:00
+
+          '406':
+            description: Participante inmutable
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  PARTICIPANTE_INMUTABLE:
+                    value:
+                      mensaje: No se puede hacer esta operacion con el participante porque ahora mismo es inmutable
+                      codigo: 1026
+                      status: 406
+                      timestamp: 2025-04-13T21:00:00
+
+  /resi/evento/{idEvento}/participante/{idParticipante}/addPostOpinion:
+    patch:
+      summary: Añadir opinión posterior del participante
+      description: Permite registrar la opinión del participante después de un evento/salida.
       tags:
-        - Modulo - Eventos
-      summary: Crear un nuevo evento de salida
-      description: Crea un nuevo evento de salida asociado a una residencia.
+        - MODULO - EVENTO
       parameters:
-        - name: idResidencia
+        - name: idEvento
           in: path
           required: true
           schema:
             type: integer
-            example: 1
+          description: ID del evento o salida
+        - name: idParticipante
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del participante
+        - name: postOpinion
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Texto de la opinión posterior del participante
+      responses:
+        '200':
+          description: Opinión posterior añadida correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participante.ResponseDto'
+        '404':
+          description: Evento/Particicpante Invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                EVENTO_SALIDA_INVALIDO:
+                  value:
+                    mensaje: Evento de salida invalido
+                    codigo: 1023
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+                PARTICIPANTE_INVALIDO:
+                  value:
+                    mensaje: Participante invalido
+                    codigo: 1025
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+
+        '406':
+          description: Participante inmutable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                PARTICIPANTE_INMUTABLE:
+                  value:
+                    mensaje: No se puede hacer esta operacion con el participante porque ahora mismo es inmutable
+                    codigo: 1026
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+
+
+  /resi/evento/{idEvento}/participante/{idParticipante}/changeRecursos:
+      patch:
+        summary: Cambiar recursos asignados a un participante
+        description: Permite modificar los recuros humanos/materiales
+        tags:
+          - MODULO - EVENTO
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: idEvento
+            in: path
+            required: true
+            schema:
+              type: integer
+            description: ID del evento o salida
+          - name: idParticipante
+            in: path
+            required: true
+            schema:
+              type: integer
+            description: ID del participante
+          - name: rH
+            in: query
+            required: false
+            schema:
+              type: boolean
+            description: Recurso humano asignado
+          - name: rM
+            in: query
+            required: false
+            schema:
+              type: boolean
+            description: Recurso material asignado
+        responses:
+          '200':
+            description: Recursos modificados correctamente
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Participante.ResponseDto'
+          '404':
+            description: Evento/Particicpante Invalido
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                examples:
+                  EVENTO_SALIDA_INVALIDO:
+                    value:
+                      mensaje: Evento de salida invalido
+                      codigo: 1023
+                      status: 404
+                      timestamp: 2025-04-13T21:00:00
+                  PARTICIPANTE_INVALIDO:
+                    value:
+                      mensaje: Participante invalido
+                      codigo: 1025
+                      status: 404
+                      timestamp: 2025-04-13T21:00:00
+          '405':
+            description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  ENDPOINT_PROTEGIDO:
+                    value:
+                      mensaje: Tiene que tener permiso para acceder aqui.
+                      codigo: 1020
+                      status: 405
+                      timestamp: 2025-04-13T21:00:00
+
+          '406':
+            description: Participante inmutable
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  PARTICIPANTE_INMUTABLE:
+                    value:
+                      mensaje: No se puede hacer esta operacion con el participante porque ahora mismo es inmutable
+                      codigo: 1026
+                      status: 406
+                      timestamp: 2025-04-13T21:00:00
+
+  /resi/evento/{idEvento}/participante/{idParticipante}/allow:
+      post:
+        summary: Aceptar participación del participante en evento
+        description: Acepta la participación de un participante en un evento de salida.
+        tags:
+          - MODULO - EVENTO
+        security:
+          - bearerAuth: [ ]
+        parameters:
+          - name: idEvento
+            in: path
+            required: true
+            schema:
+              type: integer
+            description: ID del evento o salida
+          - name: idParticipante
+            in: path
+            required: true
+            schema:
+              type: integer
+            description: ID del participante que se desea aceptar
+        responses:
+          '200':
+            description: Participante aceptado correctamente
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Participante.ResponseDto'
+          '404':
+            description: Evento/Particicpante Invalido
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                examples:
+                  EVENTO_SALIDA_INVALIDO:
+                    value:
+                      mensaje: Evento de salida invalido
+                      codigo: 1023
+                      status: 404
+                      timestamp: 2025-04-13T21:00:00
+                  PARTICIPANTE_INVALIDO:
+                    value:
+                      mensaje: Participante invalido
+                      codigo: 1025
+                      status: 404
+                      timestamp: 2025-04-13T21:00:00
+          '405':
+            description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace  login.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  ENDPOINT_PROTEGIDO:
+                    value:
+                      mensaje: Tiene que tener permiso para acceder aqui.
+                      codigo: 1020
+                      status: 405
+                      timestamp: 2025-04-13T21:00:00
+
+          '406':
+            description: Participante inmutable
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Error.ResponseDto'
+                example:
+                  PARTICIPANTE_INMUTABLE:
+                    value:
+                      mensaje: No se puede hacer esta operacion con el participante porque ahora mismo es inmutable
+                      codigo: 1026
+                      status: 406
+                      timestamp: 2025-04-13T21:00:00
+
+
+  /resi/evento/{idEvento}/participante/{idParticipante}/deny:
+    post:
+      summary: Denegar participación del participante en evento
+      description: Deniega la participación de un participante en un evento de salida.
+      tags:
+        - MODULO - EVENTO
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: idEvento
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del evento o salida
+        - name: idParticipante
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID del participante que se desea denegar
+      responses:
+        '200':
+          description: Participante denegado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participante.ResponseDto'
+        '404':
+          description: Evento/Particicpante Invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              examples:
+                EVENTO_SALIDA_INVALIDO:
+                  value:
+                    mensaje: Evento de salida invalido
+                    codigo: 1023
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+                PARTICIPANTE_INVALIDO:
+                  value:
+                    mensaje: Participante invalido
+                    codigo: 1025
+                    status: 404
+                    timestamp: 2025-04-13T21:00:00
+        '405':
+          description: Este endPoint esta protegido por ciertas cosas, debe tener un token. Que se le proporciona cada vez que hace login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                ENDPOINT_PROTEGIDO:
+                  value:
+                    mensaje: Tiene que tener permiso para acceder aqui.
+                    codigo: 1020
+                    status: 405
+                    timestamp: 2025-04-13T21:00:00
+        '406':
+          description: Participante inmutable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error.ResponseDto'
+              example:
+                PARTICIPANTE_INMUTABLE:
+                  value:
+                    mensaje: No se puede hacer esta operacion con el participante porque ahora mismo es inmutable
+                    codigo: 1026
+                    status: 406
+                    timestamp: 2025-04-13T21:00:00
+
+  /resi//evento/add:
+    post:
+      tags:
+        - MODULO - EVENTO
+      summary: Crear un nuevo evento de salida
+      description: Crea un nuevo evento de salida asociado a una residencia.
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -2865,10 +3120,11 @@ paths:
                     codigo: 1004
                     status: 409
                     timestamp: 2025-04-13T21:00:00
-  /resi/{idResidencia}/evento/{idEventoSalida}/update:
+
+  /resi/evento/{idEventoSalida}/update:
     patch:
       tags:
-        - Modulo - Eventos
+        - MODULO - EVENTO
       summary: Actualizar un evento de salida
       description: Actualiza la fecha y el estado de un evento de salida existente.
       parameters:
@@ -2923,10 +3179,10 @@ paths:
                   codigo: 1023
                   status: 404
                   timestamp: 2025-04-13T21:00:00
-  /resi/{idResidencia}/evento/{idEventoSalida}/delete:
+  /resi/evento/{idEventoSalida}/delete:
     delete:
       tags:
-        - Modulo - Eventos
+        - MODULO - EVENTO
       summary: Eliminar un evento de salida
       description: Elimina un evento de salida, incluyendo sus participantes asociados.
       parameters:
@@ -2970,10 +3226,10 @@ paths:
                     status: 404
                     timestamp: 2025-04-13T21:00:00
 
-  /resi/{idResidencia}/evento/{idEventoSalida}/get:
+  /resi/evento/{idEventoSalida}/get:
     get:
       tags:
-        - Modulo - Eventos
+        - MODULO - EVENTO
       summary: Obtener un evento de salida
       description: Obtiene los datos de un evento de salida específico.
       parameters:
@@ -3025,23 +3281,74 @@ paths:
 
   /resi/{idResidencia}/evento/getAll:
     get:
+      summary: Obtener listado de eventos de salida
+      description: Devuelve todos los eventos de salida filtrados por fecha, estado, participantes y recursos asignados.
       tags:
-        - Modulo - Eventos
-      summary: Listar eventos de salida
-      description: Lista todos los eventos de salida de una residencia, con filtros opcionales.
+        - MODULO - EVENTO
+      security:
+        - bearerAuth: [ ]
       parameters:
-        - name: idResidencia
-          in: path
-          required: true
+        - name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha exacta del evento
+        - name: minFecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha mínima del evento
+        - name: maxFecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha máxima del evento
+        - name: estado
+          in: query
+          required: false
+          description: Estado del evento (PLANIFICADO, REALIZADO, CANCELADO...)
+        - name: idResidente
+          in: query
+          required: false
           schema:
             type: integer
-            example: 1
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EventoSalida.GetDto'
+          description: ID del residente asociado al evento
+        - name: idParticipante
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: ID del participante asociado al evento
+        - name: minRH
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Mínimo de recursos humanos asignados
+        - name: maxRH
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Máximo de recursos humanos asignados
+        - name: minRM
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Mínimo de recursos materiales asignados
+        - name: maxRM
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Máximo de recursos materiales asignados
       responses:
         '200':
           description: Lista de eventos de salida
@@ -3269,6 +3576,17 @@ components:
             type: string
             example: 1234newsecure
 
+    MediaRegistroDTO:
+      type: object
+      properties:
+        fecha:
+          type: string
+          format: date
+          description: Fecha del agrupamiento (día, mes o año)
+        media:
+          type: number
+          format: double
+          description: Media de errores o duración de los registros de juego
 
 
     User.ResponseDto:
@@ -3343,10 +3661,6 @@ components:
           type: integer
           format: int64
           example: 5
-        idUsuario:
-          type: integer
-          format: int64
-          example: 3
         num:
           type: integer
           example: 2
@@ -3538,6 +3852,13 @@ components:
         codigo: 1001
         status: 400
         timestamp: 2025-04-13T21:00:00
+
+    ResidenteFiltrado:
+      type: string
+      enum:
+        - TODOS
+        - ACTIVOS
+        - INACTIVOS
 
   securitySchemes:
     bearerAuth:

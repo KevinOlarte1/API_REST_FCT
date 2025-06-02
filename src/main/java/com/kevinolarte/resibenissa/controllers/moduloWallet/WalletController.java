@@ -15,7 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
-@RequestMapping("/resi/residente/{idResidente}/wallet")
+@RequestMapping("/resi/resident/{idResidente}/wallet")
 @RestController
 @AllArgsConstructor
 public class WalletController {
