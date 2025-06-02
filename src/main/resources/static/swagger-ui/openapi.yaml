@@ -2455,7 +2455,7 @@ paths:
   /resi/{idResidencia}/evento/{idSalida}/participante/add:
     post:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Añadir un participante
       description: Registra un nuevo participante en un evento de salida.
       parameters:
@@ -2538,7 +2538,7 @@ paths:
   /resi/{idResidencia}/evento/{idSalida}/participante/{idParticipante}/get:
     get:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Obtener un participante
       description: Obtiene los datos de un participante específico en un evento de salida.
       parameters:
@@ -2599,7 +2599,7 @@ paths:
   /resi/{idResidencia}/evento/{idSalida}/participante/getAll:
     get:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Listar participantes
       description: Lista todos los participantes de un evento de salida, con filtros opcionales.
       parameters:
@@ -2658,7 +2658,7 @@ paths:
   /resi/{idResidencia}/evento/{idSalida}/participante/{idParticipante}/update:
     patch:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Actualizar participante
       description: Actualiza los datos de un participante existente en un evento de salida.
       parameters:
@@ -2732,7 +2732,7 @@ paths:
   /resi/{idResidencia}/evento/{idSalida}/participante/{idParticipante}/delete:
     delete:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Eliminar participante
       description: Elimina un participante de un evento de salida.
       parameters:
@@ -2790,7 +2790,7 @@ paths:
   /resi/{idResidencia}/evento/add:
     post:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Crear un nuevo evento de salida
       description: Crea un nuevo evento de salida asociado a una residencia.
       parameters:
@@ -2868,7 +2868,7 @@ paths:
   /resi/{idResidencia}/evento/{idEventoSalida}/update:
     patch:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Actualizar un evento de salida
       description: Actualiza la fecha y el estado de un evento de salida existente.
       parameters:
@@ -2926,7 +2926,7 @@ paths:
   /resi/{idResidencia}/evento/{idEventoSalida}/delete:
     delete:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Eliminar un evento de salida
       description: Elimina un evento de salida, incluyendo sus participantes asociados.
       parameters:
@@ -2973,7 +2973,7 @@ paths:
   /resi/{idResidencia}/evento/{idEventoSalida}/get:
     get:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Obtener un evento de salida
       description: Obtiene los datos de un evento de salida específico.
       parameters:
@@ -3026,7 +3026,7 @@ paths:
   /resi/{idResidencia}/evento/getAll:
     get:
       tags:
-        - Modulo Evento Salida
+        - Modulo - Eventos
       summary: Listar eventos de salida
       description: Lista todos los eventos de salida de una residencia, con filtros opcionales.
       parameters:

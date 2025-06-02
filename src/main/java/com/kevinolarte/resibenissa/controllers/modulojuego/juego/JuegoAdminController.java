@@ -134,31 +134,4 @@ public class JuegoAdminController {
         }
     }
 
-    @GetMapping("/{idJuego}/media-duracion")
-    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracion(
-            @PathVariable Long idJuego,
-            @RequestParam(required = false)Dificultad dificultad,
-            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo) {
-        try {
-            return ResponseEntity.ok(registroJuegoService.getMediaDuracionPorJuego(idJuego,tipo, dificultad));
-        } catch (ResiException e) {
-            throw new ApiException(e, e.getMessage());
-        } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
-        }
-    }
-    @GetMapping("/{idJuego}/media-num")
-    public ResponseEntity<List<MediaRegistroDTO>> getMediaNum(
-            @PathVariable Long idJuego,
-            @RequestParam(required = false)Dificultad dificultad,
-            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo) {
-        try {
-            return ResponseEntity.ok(registroJuegoService.getMediaErroresPorJuego(idJuego,tipo, dificultad));
-        } catch (ResiException e) {
-            throw new ApiException(e, e.getMessage());
-        } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
-        }
-    }
-
 }

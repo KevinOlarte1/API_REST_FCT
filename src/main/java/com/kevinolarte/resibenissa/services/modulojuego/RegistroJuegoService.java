@@ -293,13 +293,13 @@ public class RegistroJuegoService {
      *         y el promedio de duración de los juegos jugados en ese grupo.
      * @throws ResiException si el residente no pertenece a la residencia indicada.
      */
-    public List<MediaRegistroDTO> getMediaDuracion(Long idResidencia, Long idResidente, TipoAgrupacion tipo, Dificultad dificultad) {
-        Residente residente = residenteService.getResidente(idResidencia, idResidente);
+    public List<MediaRegistroDTO> getMediaDuracion(Long idResidencia, Long idResidente, TipoAgrupacion tipo, Dificultad dificultad, Long idJuego) {
+        residenteService.getResidente(idResidencia, idResidente);
 
         return switch (tipo) {
-            case DIARIO -> registroJuegoRepository.getMediaDuracionDiaria(idResidente, dificultad);
-            case MENSUAL -> registroJuegoRepository.getMediaDuracionMensual(idResidente, dificultad);
-            case ANUAL -> registroJuegoRepository.getMediaDuracionAnual(idResidente, dificultad);
+            case DIARIO -> registroJuegoRepository.getMediaDuracionDiaria(idResidente, dificultad, idJuego);
+            case MENSUAL -> registroJuegoRepository.getMediaDuracionMensual(idResidente, dificultad, idJuego);
+            case ANUAL -> registroJuegoRepository.getMediaDuracionAnual(idResidente, dificultad, idJuego);
         };
     }
 
@@ -312,50 +312,70 @@ public class RegistroJuegoService {
      * @return Lista de {@link MediaRegistroDTO} con agrupación y promedio de errores.
      * @throws ResiException si el residente no pertenece a la residencia.
      */
-    public List<MediaRegistroDTO> getMediaErrores(Long idResidencia, Long idResidente, TipoAgrupacion tipo, Dificultad dificultad) {
+    public List<MediaRegistroDTO> getMediaErrores(Long idResidencia, Long idResidente, TipoAgrupacion tipo, Dificultad dificultad, Long idJuego) {
         Residente residente = residenteService.getResidente(idResidencia, idResidente);
 
         return switch (tipo) {
-            case DIARIO -> registroJuegoRepository.getMediaErroresDiario(idResidente, dificultad);
-            case MENSUAL -> registroJuegoRepository.getMediaErroresMensual(idResidente, dificultad);
-            case ANUAL -> registroJuegoRepository.getMediaErroresAnual(idResidente, dificultad);
+            case DIARIO -> registroJuegoRepository.getMediaErroresDiario(idResidente, dificultad, idJuego);
+            case MENSUAL -> registroJuegoRepository.getMediaErroresMensual(idResidente, dificultad, idJuego);
+            case ANUAL -> registroJuegoRepository.getMediaErroresAnual(idResidente, dificultad, idJuego);
         };
     }
 
 
-    public List<MediaRegistroDTO> getMediaDuracionPorResidencia(Long idResidencia, TipoAgrupacion tipo, Dificultad dificultad) {
-        Residencia residencia = residenciaService.getResidencia(idResidencia);
+    public List<MediaRegistroDTO> getMediaDuracionPorResidencia(Long idResidencia, TipoAgrupacion tipo, Dificultad dificultad, Long idJuego) {
+        residenciaService.getResidencia(idResidencia);
         return switch (tipo) {
-            case DIARIO -> registroJuegoRepository.getMediaDuracionResidenciaDiaria(idResidencia, dificultad);
-            case MENSUAL -> registroJuegoRepository.getMediaDuracionResidenciaMensual(idResidencia, dificultad);
-            case ANUAL -> registroJuegoRepository.getMediaDuracionResidenciaAnual(idResidencia, dificultad);
+            case DIARIO -> registroJuegoRepository.getMediaDuracionResidenciaDiaria(idResidencia, dificultad, idJuego);
+            case MENSUAL -> registroJuegoRepository.getMediaDuracionResidenciaMensual(idResidencia, dificultad, idJuego);
+            case ANUAL -> registroJuegoRepository.getMediaDuracionResidenciaAnual(idResidencia, dificultad, idJuego);
         };
     }
 
-    public List<MediaRegistroDTO> getMediaErroresPorResidencia(Long idResidencia, TipoAgrupacion tipo, Dificultad dificultad) {
-        Residencia residencia = residenciaService.getResidencia(idResidencia);
+    public List<MediaRegistroDTO> getMediaErroresPorResidencia(Long idResidencia, TipoAgrupacion tipo, Dificultad dificultad, Long idJuego) {
+        residenciaService.getResidencia(idResidencia);
         return switch (tipo) {
-            case DIARIO -> registroJuegoRepository.getMediaErroresResidenciaDiaria(idResidencia, dificultad);
-            case MENSUAL -> registroJuegoRepository.getMediaErroresResidenciaMensual(idResidencia, dificultad);
-            case ANUAL -> registroJuegoRepository.getMediaErroresResidenciaAnual(idResidencia, dificultad);
+            case DIARIO -> registroJuegoRepository.getMediaErroresResidenciaDiaria(idResidencia, dificultad, idJuego);
+            case MENSUAL -> registroJuegoRepository.getMediaErroresResidenciaMensual(idResidencia, dificultad, idJuego);
+            case ANUAL -> registroJuegoRepository.getMediaErroresResidenciaAnual(idResidencia, dificultad, idJuego);
         };
     }
 
-    public List<MediaRegistroDTO> getMediaDuracionGlobal(TipoAgrupacion tipo, Dificultad dificultad) {
+    /**
+     * Calcula el promedio global de duración de los registros de juego del sistema,
+     * agrupado por día, mes o año, con posibilidad de filtrar por dificultad y juego.
+     *
+     * @param tipo       Tipo de agrupación temporal: DIARIO, MENSUAL o ANUAL.
+     * @param dificultad Dificultad del juego (opcional).
+     * @param idJuego    ID del juego a filtrar (opcional, {@code null} para incluir todos).
+     * @return Lista de {@link MediaRegistroDTO} con agrupación, duración promedio y total de registros.
+     */
+    public List<MediaRegistroDTO> getMediaDuracionGlobal(TipoAgrupacion tipo, Dificultad dificultad, Long idJuego) {
         return switch (tipo) {
-            case DIARIO -> registroJuegoRepository.getMediaDuracionGlobalDiaria(dificultad);
-            case MENSUAL -> registroJuegoRepository.getMediaDuracionGlobalMensual(dificultad);
-            case ANUAL -> registroJuegoRepository.getMediaDuracionGlobalAnual(dificultad);
+            case DIARIO -> registroJuegoRepository.getMediaDuracionGlobalDiaria(dificultad, idJuego);
+            case MENSUAL -> registroJuegoRepository.getMediaDuracionGlobalMensual(dificultad, idJuego);
+            case ANUAL -> registroJuegoRepository.getMediaDuracionGlobalAnual(dificultad, idJuego);
         };
     }
 
-    public List<MediaRegistroDTO> getMediaErroresGlobal(TipoAgrupacion tipo, Dificultad dificultad) {
+
+    /**
+     * Calcula el promedio global de errores en los registros de juego del sistema,
+     * agrupado por día, mes o año, con posibilidad de filtrar por dificultad y juego.
+     *
+     * @param tipo       Tipo de agrupación temporal: DIARIO, MENSUAL o ANUAL.
+     * @param dificultad Nivel de dificultad del juego (opcional).
+     * @param idJuego    ID del juego específico a filtrar (opcional).
+     * @return Lista de {@link MediaRegistroDTO} con agrupación, errores promedio y total de registros.
+     */
+    public List<MediaRegistroDTO> getMediaErroresGlobal(TipoAgrupacion tipo, Dificultad dificultad, Long idJuego) {
         return switch (tipo) {
-            case DIARIO -> registroJuegoRepository.getMediaErroresGlobalDiaria(dificultad);
-            case MENSUAL -> registroJuegoRepository.getMediaErroresGlobalMensual(dificultad);
-            case ANUAL -> registroJuegoRepository.getMediaErroresGlobalAnual(dificultad);
+            case DIARIO -> registroJuegoRepository.getMediaErroresGlobalDiaria(dificultad, idJuego);
+            case MENSUAL -> registroJuegoRepository.getMediaErroresGlobalMensual(dificultad, idJuego);
+            case ANUAL -> registroJuegoRepository.getMediaErroresGlobalAnual(dificultad, idJuego);
         };
     }
+
 
     /**
      * Calcula el promedio de errores agrupado por fecha (día, mes o año) para un juego específico,

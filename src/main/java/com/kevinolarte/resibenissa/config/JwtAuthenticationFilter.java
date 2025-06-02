@@ -64,6 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         //Ver si esa cabeza esta nulla o no es un token bearer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
+            filterChain.doFilter(request, response);
             return;
         }
         try{
@@ -79,12 +80,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 //Obtenemos ese userDetail para ver si exsite, busca por correo, configurado en la AplicationConfiguration
                 UserDetails userDetails =this.userDetailsService.loadUserByUsername(userEmail);
+                User user = (User) userDetails;
+                //miras si no esta dado de baja
+                if (user.isBaja()) {
+                    System.out.println("Usuario dado de baja");
+                    exceptionLanzada = true;
+                    handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.USUARIO_BAJA));
+
+                    return;
+                }
                 //Comprobamos si el usuario es admin.
                 System.out.println(request.getRequestURI());
                 if(request.getRequestURI().matches("^/admin/resi/.*")){
 
                     //Si el token es de un usuario normal, lanzamos la exception
-                    User user = (User) userDetails;
+
                     if (!user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))){
 
                         exceptionLanzada = true;
@@ -111,8 +121,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
                 }
             }
+            throw new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO);
 
-            filterChain.doFilter(request, response);
         } catch(Exception e){
             System.out.println(e.getMessage());
             if (!exceptionLanzada)

@@ -309,46 +309,7 @@ public class ResidenteAdminController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping("/{idResidencia}/resident/{idResidente}/media-duracion")
-    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracion(
-            @PathVariable Long idResidencia,
-            @PathVariable Long idResidente,
-            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
 
-
-        List<MediaRegistroDTO> medias;
-        try {
-            medias = registroJuegoService.getMediaDuracion(idResidencia, idResidente, tipo, dificultad);
-        } catch (ResiException e) {
-            throw new ApiException(e, e.getMessage());
-        } catch (Exception e) {
-            System.out.println("Hola desde casasta");
-            System.out.println(e.getMessage());
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO),  e.getMessage());
-        }
-
-        return ResponseEntity.ok(medias);
-    }
-
-    @GetMapping("/{idResidencia}/resident/{idResidente}/media-errores")
-    public ResponseEntity<List<MediaRegistroDTO>> getMediaErrores(
-            @PathVariable Long idResidencia,
-            @PathVariable Long idResidente,
-            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
-
-        List<MediaRegistroDTO> medias;
-        try {
-            medias = registroJuegoService.getMediaErrores(idResidencia, idResidente, tipo, dificultad);
-        } catch (ResiException e) {
-            throw new ApiException(e, e.getMessage());
-        } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
-        }
-
-        return ResponseEntity.ok(medias);
-    }
 
 
 }

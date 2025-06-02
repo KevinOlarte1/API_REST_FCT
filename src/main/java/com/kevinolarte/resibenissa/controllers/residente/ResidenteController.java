@@ -244,47 +244,7 @@ public class ResidenteController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping("/{idResidente}/media-duracion")
-    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracion(
-            @PathVariable Long idResidente,
-            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-
-        List<MediaRegistroDTO> medias;
-        try {
-            medias = registroJuegoService.getMediaDuracion(currentUser.getResidencia().getId(), idResidente, tipo, dificultad);
-        } catch (ResiException e) {
-            throw new ApiException(e, currentUser);
-        } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
-        }
-
-        return ResponseEntity.ok(medias);
-    }
-
-    @GetMapping("/{idResidente}/media-errores")
-    public ResponseEntity<List<MediaRegistroDTO>> getMediaErrores(
-            @PathVariable Long idResidente,
-            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-
-        List<MediaRegistroDTO> medias;
-        try {
-            medias = registroJuegoService.getMediaErrores(currentUser.getResidencia().getId(), idResidente, tipo, dificultad);
-        } catch (ResiException e) {
-            throw new ApiException(e, currentUser);
-        } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
-        }
-
-        return ResponseEntity.ok(medias);
-    }
 
     /**
      * Descarga la imagen por defecto del usuario.

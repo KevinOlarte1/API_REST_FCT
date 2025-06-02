@@ -207,6 +207,7 @@ public class UserController {
      */
     @PatchMapping("/baja")
     public ResponseEntity<Void> baja() {
+        System.out.println("baja");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
         try {

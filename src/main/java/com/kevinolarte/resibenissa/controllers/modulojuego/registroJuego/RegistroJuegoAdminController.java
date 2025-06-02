@@ -18,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.print.attribute.standard.Media;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -228,27 +229,12 @@ public class RegistroJuegoAdminController {
     public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracionPorResidencia(
             @PathVariable Long idResidencia,
             @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Long idJuego) {
 
 
         try{
-            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracionPorResidencia(idResidencia, tipo, dificultad);
-            return ResponseEntity.ok(medias);
-        }catch (ResiException e) {
-            throw new ApiException(e, e.getMessage());
-        } catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
-        }
-    }
-
-    @GetMapping("/registro/media-duracion")
-    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracionPorResidencia(
-            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
-
-
-        try{
-            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracionGlobal(tipo, dificultad);
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracionPorResidencia(idResidencia, tipo, dificultad, idJuego);
             return ResponseEntity.ok(medias);
         }catch (ResiException e) {
             throw new ApiException(e, e.getMessage());
@@ -261,11 +247,12 @@ public class RegistroJuegoAdminController {
     public ResponseEntity<List<MediaRegistroDTO>> getMediaErroresPorResidencia(
             @PathVariable Long idResidencia,
             @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Long idJuego) {
 
 
         try {
-            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErroresPorResidencia(idResidencia, tipo, dificultad);
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErroresPorResidencia(idResidencia, tipo, dificultad, idJuego);
             return ResponseEntity.ok(medias);
         } catch (ResiException e) {
             throw new ApiException(e, e.getMessage());
@@ -274,14 +261,85 @@ public class RegistroJuegoAdminController {
         }
     }
 
+    @GetMapping("{idResidencia}/registro/residente/{idResidente}/media-duracion")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracionPorResidente(@PathVariable Long idResidencia,
+                                                                                 @PathVariable Long idResidente,
+                                                                               @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+                                                                               @RequestParam(required = false) Dificultad dificultad,
+                                                                               @RequestParam(required = false) Long idJuego) {
+        try {
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracion(idResidencia, idResidente, tipo, dificultad, idJuego);
+            return ResponseEntity.ok(medias);
+        } catch (ResiException e) {
+            throw new ApiException(e, e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
+        }
+    }
+
+    @GetMapping("{idResidencia}/registro/residente/{idResidente}/media-num")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaNumPorResidente(@PathVariable Long idResidencia,
+                                                                               @PathVariable Long idResidente,
+                                                                               @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+                                                                               @RequestParam(required = false) Dificultad dificultad,
+                                                                               @RequestParam(required = false) Long idJuego) {
+        try {
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErrores(idResidencia, idResidente, tipo, dificultad, idJuego);
+            return ResponseEntity.ok(medias);
+        } catch (ResiException e) {
+            throw new ApiException(e, e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
+        }
+    }
+
+    /**
+     * Endpoint global que calcula el promedio de duración de los registros de juego
+     * agrupados por día, mes o año, para todos los registros del sistema.
+     *
+     * <p>
+     * Permite filtrar opcionalmente por:
+     * <ul>
+     *   <li><b>Dificultad</b> del juego (FACIL, MEDIO, DIFICIL)</li>
+     *   <li><b>ID del juego</b> específico</li>
+     * </ul>
+     * Si no se proporciona ningún filtro, se devolverá la media de duración de todos los juegos y dificultades del sistema.
+     * </p>
+     *
+     * @param tipo       Tipo de agrupación temporal: DIARIO (por defecto), MENSUAL o ANUAL.
+     * @param dificultad Nivel de dificultad del juego a filtrar (opcional).
+     * @param idJuego    ID del juego a filtrar (opcional).
+     * @return Lista de {@link MediaRegistroDTO} que contienen el agrupamiento temporal (día, mes o año),
+     *         el promedio de duración y el número de registros correspondientes.
+     */
+    @GetMapping("/registro/media-duracion")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracionPorResidencia(
+            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Long idJuego) {
+
+
+        try{
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracionGlobal(tipo, dificultad, idJuego);
+            return ResponseEntity.ok(medias);
+        }catch (ResiException e) {
+            throw new ApiException(e, e.getMessage());
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
+        }
+    }
+
+
+
     @GetMapping("/registro/media-num")
     public ResponseEntity<List<MediaRegistroDTO>> getMediaErroresPorResidencia(
             @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Long idJuego) {
 
 
         try {
-            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErroresGlobal(tipo, dificultad);
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErroresGlobal(tipo, dificultad, idJuego);
             return ResponseEntity.ok(medias);
         } catch (ResiException e) {
             throw new ApiException(e, e.getMessage());

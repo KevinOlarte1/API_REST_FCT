@@ -82,7 +82,6 @@ public class JwtService {
      */
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
 
-        //Un poco feo pero necesario. No uso username. Bean Aplication dice que buscamos por correo.
         if (userDetails instanceof User user) {
             extraClaims.put("email", user.getEmail());
         }

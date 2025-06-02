@@ -25,155 +25,256 @@ public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Lo
 
 
     /**
-     * Obtiene un registro de juego específico mediante su juego
-     * @param juego Juego del que se desea obtener el registro.
-     * @return Lista de registros de juego asociados al juego especificado.
+     * Calcula el promedio diario de duración de los registros de juego de un residente específico.
+     *
+     * <p>
+     * Se agrupan los registros por día (formato YYYY-MM-DD), y se calcula la duración media y el total de registros
+     * por cada día. Permite filtrar por dificultad y por un juego concreto (ambos opcionales).
+     * </p>
+     *
+     * @param idResidente ID del residente a analizar.
+     * @param dificultad  Nivel de dificultad a filtrar (opcional, puede ser {@code null}).
+     * @param idJuego     ID del juego a filtrar (opcional, puede ser {@code null} para incluir todos).
+     * @return Lista de {@link MediaRegistroDTO} con fecha (día), duración media y cantidad de registros por día.
      */
-    List<RegistroJuego> findByJuego(Juego juego);
-
-    /**
-     * Lista de registros de un juego específico y una dificultad concreta.
-     * @param juego Juego del que se desea obtener el registro.
-     * @param dificultad Dificultad del juego que se desea filtrar.
-     * @return Lista de registros de juego asociados al juego y dificultad especificados.
-     */
-    List<RegistroJuego> findByJuegoAndDificultad(Juego juego, Dificultad dificultad);
-
-
     @Query("""
     SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM-DD'), AVG(r.duracion), COUNT(r))
     FROM RegistroJuego r
-    WHERE r.residente.id = :idResidente AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    WHERE r.residente.id = :idResidente
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
-""")
+    """)
     List<MediaRegistroDTO> getMediaDuracionDiaria(@Param("idResidente") Long idResidente,
-                                                  @Param("dificultad") Dificultad dificultad);
+                                                  @Param("dificultad") Dificultad dificultad,
+                                                  @Param("idJuego") Long idJuego);
 
+
+    /**
+     * Calcula el promedio mensual de duración de los registros de juego de un residente específico.
+     *
+     * <p>
+     * Agrupa por mes (formato YYYY-MM), mostrando duración media y número de registros por cada mes.
+     * Se puede filtrar por dificultad y juego (ambos opcionales).
+     * </p>
+     *
+     * @param idResidente ID del residente.
+     * @param dificultad  Dificultad del juego (opcional).
+     * @param idJuego     ID del juego a filtrar (opcional, puede ser {@code null} para todos los juegos).
+     * @return Lista de {@link MediaRegistroDTO} con la media mensual de duración y el total de registros.
+     */
     @Query("""
     SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM'), AVG(r.duracion), COUNT(r))
     FROM RegistroJuego r
-    WHERE r.residente.id = :idResidente AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    WHERE r.residente.id = :idResidente
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM')
-""")
+    """)
     List<MediaRegistroDTO> getMediaDuracionMensual(@Param("idResidente") Long idResidente,
-                                                   @Param("dificultad") Dificultad dificultad);
+                                                   @Param("dificultad") Dificultad dificultad,
+                                                   @Param("idJuego") Long idJuego);
 
+
+    /**
+     * Calcula el promedio anual de duración de los registros de juego de un residente específico.
+     *
+     * <p>
+     * Agrupa por año (YYYY) y devuelve la duración media y el total de registros de cada año.
+     * Se puede aplicar filtro por dificultad y juego.
+     * </p>
+     *
+     * @param idResidente ID del residente cuyos registros se agrupan.
+     * @param dificultad  Dificultad del juego (opcional).
+     * @param idJuego     ID del juego a filtrar (opcional, puede ser {@code null}).
+     * @return Lista de {@link MediaRegistroDTO} con año, duración media y conteo de registros por año.
+     */
     @Query("""
     SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(CAST(EXTRACT(YEAR FROM r.fecha) AS string), AVG(r.duracion), COUNT(r))
     FROM RegistroJuego r
-    WHERE r.residente.id = :idResidente AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    WHERE r.residente.id = :idResidente
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY EXTRACT(YEAR FROM r.fecha)
     ORDER BY EXTRACT(YEAR FROM r.fecha)
-""")
+    """)
     List<MediaRegistroDTO> getMediaDuracionAnual(@Param("idResidente") Long idResidente,
-                                                 @Param("dificultad") Dificultad dificultad);
+                                                 @Param("dificultad") Dificultad dificultad,
+                                                 @Param("idJuego") Long idJuego);
 
 
+
+    /**
+     * Calcula el promedio diario de errores cometidos por un residente específico.
+     *
+     * <p>
+     * Agrupa los registros por día (formato YYYY-MM-DD), y calcula el promedio de errores (`num`)
+     * y el total de registros por día. Permite filtrar por dificultad y juego de forma opcional.
+     * </p>
+     *
+     * @param idResidente ID del residente a analizar.
+     * @param dificultad  Nivel de dificultad del juego (opcional).
+     * @param idJuego     ID del juego a filtrar (opcional, {@code null} para incluir todos).
+     * @return Lista de {@link MediaRegistroDTO} con fecha (día), promedio de errores y número total de registros por día.
+     */
     @Query("""
     SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM-DD'), AVG(r.num), COUNT(r))
     FROM RegistroJuego r
-    WHERE r.residente.id = :idResidente AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    WHERE r.residente.id = :idResidente
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
-""")
+    """)
     List<MediaRegistroDTO> getMediaErroresDiario(@Param("idResidente") Long idResidente,
-                                                @Param("dificultad") Dificultad dificultad);
+                                                 @Param("dificultad") Dificultad dificultad,
+                                                 @Param("idJuego") Long idJuego);
 
+
+    /**
+     * Calcula el promedio mensual de errores cometidos por un residente específico.
+     *
+     * <p>
+     * Agrupa por mes (formato YYYY-MM), y devuelve el promedio de errores (`num`)
+     * junto con el total de registros por cada mes. Se puede filtrar por dificultad y juego.
+     * </p>
+     *
+     * @param idResidente ID del residente.
+     * @param dificultad  Dificultad del juego (opcional).
+     * @param idJuego     ID del juego a filtrar (opcional, {@code null} para incluir todos).
+     * @return Lista de {@link MediaRegistroDTO} con promedio mensual de errores y conteo de registros.
+     */
     @Query("""
     SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM'), AVG(r.num), COUNT(r))
     FROM RegistroJuego r
-    WHERE r.residente.id = :idResidente AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    WHERE r.residente.id = :idResidente
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM')
-""")
+    """)
     List<MediaRegistroDTO> getMediaErroresMensual(@Param("idResidente") Long idResidente,
-                                                 @Param("dificultad") Dificultad dificultad);
+                                                  @Param("dificultad") Dificultad dificultad,
+                                                  @Param("idJuego") Long idJuego);
 
+
+    /**
+     * Calcula el promedio anual de errores cometidos por un residente específico.
+     *
+     * <p>
+     * Agrupa por año (YYYY), devolviendo el promedio de errores (`num`)
+     * y el total de registros por cada año. Admite filtros opcionales por dificultad y juego.
+     * </p>
+     *
+     * @param idResidente ID del residente cuyos registros se analizarán.
+     * @param dificultad  Nivel de dificultad (opcional).
+     * @param idJuego     ID del juego (opcional, {@code null} para todos los juegos).
+     * @return Lista de {@link MediaRegistroDTO} con año, promedio de errores y total de registros por año.
+     */
     @Query("""
     SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(CAST(EXTRACT(YEAR FROM r.fecha) AS string), AVG(r.num), COUNT(r))
     FROM RegistroJuego r
-    WHERE r.residente.id = :idResidente AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    WHERE r.residente.id = :idResidente
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY EXTRACT(YEAR FROM r.fecha)
     ORDER BY EXTRACT(YEAR FROM r.fecha)
-""")
+    """)
     List<MediaRegistroDTO> getMediaErroresAnual(@Param("idResidente") Long idResidente,
-                                               @Param("dificultad") Dificultad dificultad);
+                                                @Param("dificultad") Dificultad dificultad,
+                                                @Param("idJuego") Long idJuego);
 
+
+
+    /**
+     * Calcula el promedio mensual de duración de los juegos jugados por todos los residentes
+     * de una residencia, con opción de filtrar por dificultad.
+     *
+     * @param idResidencia ID de la residencia cuyos residentes serán considerados.
+     * @param dificultad   Dificultad específica a filtrar (puede ser null para ignorar el filtro).
+     * @param idJuego      ID del juego a filtrar (puede ser null para ignorar el filtro).
+     * @return Lista de {@link MediaRegistroDTO} donde cada elemento representa un mes y su promedio de duración.
+     */
+    @Query("""
+    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM'), AVG(r.duracion), COUNT(r))
+    FROM RegistroJuego r
+    WHERE r.residente.residencia.id = :idResidencia
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
+    GROUP BY TO_CHAR(r.fecha, 'YYYY-MM')
+    ORDER BY TO_CHAR(r.fecha, 'YYYY-MM')
+    """)
+    List<MediaRegistroDTO> getMediaDuracionResidenciaMensual(@Param("idResidencia") Long idResidencia,
+                                                             @Param("dificultad") Dificultad dificultad,
+                                                             @Param("idJuego") Long idJuego);
+
+    /**
+     * Calcula el promedio anual de duración de los juegos jugados por todos los residentes
+     * de una residencia, con opción de filtrar por dificultad.
+     *
+     * @param idResidencia ID de la residencia cuyos residentes serán considerados.
+     * @param dificultad   Dificultad específica a filtrar (puede ser null para ignorar el filtro).
+     * @param idJuego      ID del juego a filtrar (puede ser null para ignorar el filtro).
+     * @return Lista de {@link MediaRegistroDTO} donde cada elemento representa un año y su promedio de duración.
+     */
+    @Query("""
+    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(CAST(EXTRACT(YEAR FROM r.fecha) AS string), AVG(r.duracion), COUNT(r))
+    FROM RegistroJuego r
+    WHERE r.residente.residencia.id = :idResidencia
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
+    GROUP BY EXTRACT(YEAR FROM r.fecha)
+    ORDER BY EXTRACT(YEAR FROM r.fecha)
+    """)
+    List<MediaRegistroDTO> getMediaDuracionResidenciaAnual(@Param("idResidencia") Long idResidencia,
+                                                           @Param("dificultad") Dificultad dificultad,
+                                                           @Param("idJuego") Long idJuego);
+
+    /**
+     * Calcula el promedio diario de errores cometidos en los juegos por todos los residentes
+     * de una residencia específica, con opción de filtrar por dificultad.
+     *
+     * @param idResidencia ID de la residencia cuyos residentes se van a considerar.
+     * @param dificultad   Dificultad de los juegos a filtrar (si es null, se consideran todas las dificultades).
+     * @param idJuego      ID del juego a filtrar (puede ser null para ignorar el filtro).
+     * @return Lista de {@link MediaRegistroDTO} donde cada elemento representa un día y el promedio de errores cometidos.
+     */
+    @Query("""
+    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM-DD'), AVG(r.num), COUNT(r))
+    FROM RegistroJuego r
+    WHERE r.residente.residencia.id = :idResidencia
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
+    GROUP BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
+    ORDER BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
+    """)
+    List<MediaRegistroDTO> getMediaErroresResidenciaDiaria(@Param("idResidencia") Long idResidencia,
+                                                           @Param("dificultad") Dificultad dificultad,
+                                                           @Param("idJuego") Long idJuego);
 
     /**
      * Calcula el promedio diario de duración de los juegos jugados por todos los residentes
      * de una residencia, con opción de filtrar por dificultad.
      *
      * @param idResidencia ID de la residencia cuyos residentes serán considerados.
+     * @param idJuego      ID del juego a filtrar (puede ser null para ignorar el filtro).
      * @param dificultad   Dificultad específica a filtrar (puede ser null para ignorar el filtro).
      * @return Lista de {@link MediaRegistroDTO} donde cada elemento representa un día y su promedio de duración.
      */
     @Query("""
     SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM-DD'), AVG(r.duracion), COUNT(r))
     FROM RegistroJuego r
-    WHERE r.residente.residencia.id = :idResidencia AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    WHERE r.residente.residencia.id = :idResidencia
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
-""")
+    """)
     List<MediaRegistroDTO> getMediaDuracionResidenciaDiaria(@Param("idResidencia") Long idResidencia,
-                                                            @Param("dificultad") Dificultad dificultad);
-
-
-    /**
-     * Calcula el promedio mensual de duración de los juegos jugados por todos los residentes
-     * de una residencia, con opción de filtrar por dificultad.
-     *
-     * @param idResidencia ID de la residencia cuyos residentes serán considerados.
-     * @param dificultad   Dificultad específica a filtrar (puede ser null para ignorar el filtro).
-     * @return Lista de {@link MediaRegistroDTO} donde cada elemento representa un mes y su promedio de duración.
-     */
-    @Query("""
-    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM'), AVG(r.duracion), COUNT(r))
-    FROM RegistroJuego r
-    WHERE r.residente.residencia.id = :idResidencia AND (:dificultad IS NULL OR r.dificultad = :dificultad)
-    GROUP BY TO_CHAR(r.fecha, 'YYYY-MM')
-    ORDER BY TO_CHAR(r.fecha, 'YYYY-MM')
-""")
-    List<MediaRegistroDTO> getMediaDuracionResidenciaMensual(@Param("idResidencia") Long idResidencia,
-                                                             @Param("dificultad") Dificultad dificultad);
-
-    /**
-     * Calcula el promedio anual de duración de los juegos jugados por todos los residentes
-     * de una residencia, con opción de filtrar por dificultad.
-     *
-     * @param idResidencia ID de la residencia cuyos residentes serán considerados.
-     * @param dificultad   Dificultad específica a filtrar (puede ser null para ignorar el filtro).
-     * @return Lista de {@link MediaRegistroDTO} donde cada elemento representa un año y su promedio de duración.
-     */
-    @Query("""
-    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(CAST(EXTRACT(YEAR FROM r.fecha) AS string), AVG(r.duracion), COUNT(r))
-    FROM RegistroJuego r
-    WHERE r.residente.residencia.id = :idResidencia AND (:dificultad IS NULL OR r.dificultad = :dificultad)
-    GROUP BY EXTRACT(YEAR FROM r.fecha)
-    ORDER BY EXTRACT(YEAR FROM r.fecha)
-""")
-    List<MediaRegistroDTO> getMediaDuracionResidenciaAnual(@Param("idResidencia") Long idResidencia,
-                                                           @Param("dificultad") Dificultad dificultad);
-
-    /**
-     * Calcula el promedio diario de errores cometidos en los juegos por todos los residentes
-     * de una residencia específica, con opción de filtrar por dificultad.
-     *
-     * @param idResidencia ID de la residencia cuyos residentes se van a considerar.
-     * @param dificultad   Dificultad de los juegos a filtrar (si es null, se consideran todas las dificultades).
-     * @return Lista de {@link MediaRegistroDTO} donde cada elemento representa un día y el promedio de errores cometidos.
-     */
-    @Query("""
-    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM-DD'), AVG(r.num), COUNT(r))
-    FROM RegistroJuego r
-    WHERE r.residente.residencia.id = :idResidencia AND (:dificultad IS NULL OR r.dificultad = :dificultad)
-    GROUP BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
-    ORDER BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
-""")
-    List<MediaRegistroDTO> getMediaErroresResidenciaDiaria(@Param("idResidencia") Long idResidencia,
-                                                          @Param("dificultad") Dificultad dificultad);
+                                                            @Param("dificultad") Dificultad dificultad,
+                                                            @Param("idJuego") Long idJuego);
 
     /**
      * Calcula el promedio mensual de errores cometidos en los juegos por todos los residentes
@@ -181,17 +282,21 @@ public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Lo
      *
      * @param idResidencia ID de la residencia cuyos residentes se van a considerar.
      * @param dificultad   Dificultad de los juegos a filtrar (si es null, se consideran todas las dificultades).
+     * @param idJuego      ID del juego a filtrar (puede ser null para ignorar el filtro).
      * @return Lista de {@link MediaRegistroDTO} donde cada elemento representa un mes y el promedio de errores cometidos.
      */
     @Query("""
     SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM'), AVG(r.num), COUNT(r))
     FROM RegistroJuego r
-    WHERE r.residente.residencia.id = :idResidencia AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    WHERE r.residente.residencia.id = :idResidencia
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM')
-""")
+    """)
     List<MediaRegistroDTO> getMediaErroresResidenciaMensual(@Param("idResidencia") Long idResidencia,
-                                                           @Param("dificultad") Dificultad dificultad);
+                                                            @Param("dificultad") Dificultad dificultad,
+                                                            @Param("idJuego") Long idJuego);
 
     /**
      * Calcula el promedio anual de errores cometidos en los juegos por todos los residentes
@@ -199,115 +304,134 @@ public interface RegistroJuegoRepository extends JpaRepository<RegistroJuego, Lo
      *
      * @param idResidencia ID de la residencia cuyos residentes se van a considerar.
      * @param dificultad   Dificultad de los juegos a filtrar (si es null, se consideran todas las dificultades).
+     * @param idJuego      ID del juego a filtrar (puede ser null para ignorar el filtro).
      * @return Lista de {@link MediaRegistroDTO} donde cada elemento representa un año y el promedio de errores cometidos.
      */
     @Query("""
     SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(CAST(EXTRACT(YEAR FROM r.fecha) AS string), AVG(r.num), COUNT(r))
     FROM RegistroJuego r
-    WHERE r.residente.residencia.id = :idResidencia AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    WHERE r.residente.residencia.id = :idResidencia
+    AND (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY EXTRACT(YEAR FROM r.fecha)
     ORDER BY EXTRACT(YEAR FROM r.fecha)
-""")
+    """)
     List<MediaRegistroDTO> getMediaErroresResidenciaAnual(@Param("idResidencia") Long idResidencia,
-                                                         @Param("dificultad") Dificultad dificultad);
+                                                          @Param("dificultad") Dificultad dificultad,
+                                                          @Param("idJuego") Long idJuego);
 
 
-    /**
-     * Calcula el promedio diario de errores cometidos en los juegos por todos los residentes
-     * del sistema, con opción de filtrar por dificultad.
-     *
-     * @param dificultad Dificultad del juego a filtrar (puede ser null para incluir todas).
-     * @return Lista de {@link MediaRegistroDTO} agrupada por día con el promedio de errores.
-     */
-    @Query("""
-    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM-DD'), AVG(r.num), COUNT(r))
+        /**
+         * Calcula el promedio diario de errores a nivel global,
+         * con posibilidad de filtrar por dificultad y juego.
+         */
+        @Query("""
+    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(
+        TO_CHAR(r.fecha, 'YYYY-MM-DD'),
+        AVG(r.num),
+        COUNT(r))
     FROM RegistroJuego r
     WHERE (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
-""")
-    List<MediaRegistroDTO> getMediaErroresGlobalDiaria(@Param("dificultad") Dificultad dificultad);
+    """)
+    List<MediaRegistroDTO> getMediaErroresGlobalDiaria(@Param("dificultad") Dificultad dificultad,
+                                                       @Param("idJuego") Long idJuego);
+
 
     /**
-     * Calcula el promedio mensual de errores cometidos en los juegos por todos los residentes
-     * del sistema, con opción de filtrar por dificultad.
-     *
-     * @param dificultad Dificultad del juego a filtrar (puede ser null para incluir todas).
-     * @return Lista de {@link MediaRegistroDTO} agrupada por mes con el promedio de errores.
+     * Calcula el promedio mensual de errores a nivel global,
+     * con posibilidad de filtrar por dificultad y juego.
      */
     @Query("""
-    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM'), AVG(r.num), COUNT(r))
+    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(
+        TO_CHAR(r.fecha, 'YYYY-MM'),
+        AVG(r.num),
+        COUNT(r))
     FROM RegistroJuego r
     WHERE (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM')
-""")
-    List<MediaRegistroDTO> getMediaErroresGlobalMensual(@Param("dificultad") Dificultad dificultad);
+    """)
+    List<MediaRegistroDTO> getMediaErroresGlobalMensual(@Param("dificultad") Dificultad dificultad,
+                                                        @Param("idJuego") Long idJuego);
 
     /**
-     * Calcula el promedio anual de errores cometidos en los juegos por todos los residentes
-     * del sistema, con opción de filtrar por dificultad.
-     *
-     * @param dificultad Dificultad del juego a filtrar (puede ser null para incluir todas).
-     * @return Lista de {@link MediaRegistroDTO} agrupada por año con el promedio de errores.
+     * Calcula el promedio anual de errores a nivel global,
+     * con posibilidad de filtrar por dificultad y juego.
      */
     @Query("""
-    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(CAST(EXTRACT(YEAR FROM r.fecha) AS string), AVG(r.num), COUNT(r))
+    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(
+        CAST(EXTRACT(YEAR FROM r.fecha) AS string),
+        AVG(r.num),
+        COUNT(r))
     FROM RegistroJuego r
     WHERE (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY EXTRACT(YEAR FROM r.fecha)
     ORDER BY EXTRACT(YEAR FROM r.fecha)
-""")
-    List<MediaRegistroDTO> getMediaErroresGlobalAnual(@Param("dificultad") Dificultad dificultad);
+    """)
+    List<MediaRegistroDTO> getMediaErroresGlobalAnual(@Param("dificultad") Dificultad dificultad,
+                                                      @Param("idJuego") Long idJuego);
 
 
     /**
-     * Calcula el promedio diario de duración de los juegos jugados por todos los residentes
-     * del sistema, con opción de filtrar por dificultad.
-     *
-     * @param dificultad Dificultad del juego a filtrar (puede ser null para incluir todas).
-     * @return Lista de {@link MediaRegistroDTO} agrupada por día con el promedio de duración.
+     * Calcula la media diaria de duración de juegos a nivel global,
+     * con posibilidad de filtrar por dificultad y juego.
      */
     @Query("""
-    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM-DD'), AVG(r.duracion),COUNT(r))
+    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(
+        TO_CHAR(r.fecha, 'YYYY-MM-DD'),
+        AVG(r.duracion),
+        COUNT(r))
     FROM RegistroJuego r
     WHERE (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM-DD')
-""")
-    List<MediaRegistroDTO> getMediaDuracionGlobalDiaria(@Param("dificultad") Dificultad dificultad);
+    """)
+    List<MediaRegistroDTO> getMediaDuracionGlobalDiaria(@Param("dificultad") Dificultad dificultad,
+                                                        @Param("idJuego") Long idJuego);
 
     /**
-     * Calcula el promedio mensual de duración de los juegos jugados por todos los residentes
-     * del sistema, con opción de filtrar por dificultad.
-     *
-     * @param dificultad Dificultad del juego a filtrar (puede ser null para incluir todas).
-     * @return Lista de {@link MediaRegistroDTO} agrupada por mes con el promedio de duración.
+     * Calcula la media mensual de duración de juegos a nivel global,
+     * con posibilidad de filtrar por dificultad y juego.
      */
     @Query("""
-    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(TO_CHAR(r.fecha, 'YYYY-MM'), AVG(r.duracion), COUNT(r))
+    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(
+        TO_CHAR(r.fecha, 'YYYY-MM'),
+        AVG(r.duracion),
+        COUNT(r))
     FROM RegistroJuego r
     WHERE (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY TO_CHAR(r.fecha, 'YYYY-MM')
     ORDER BY TO_CHAR(r.fecha, 'YYYY-MM')
-""")
-    List<MediaRegistroDTO> getMediaDuracionGlobalMensual(@Param("dificultad") Dificultad dificultad);
+    """)
+    List<MediaRegistroDTO> getMediaDuracionGlobalMensual(@Param("dificultad") Dificultad dificultad,
+                                                         @Param("idJuego") Long idJuego);
+
 
     /**
-     * Calcula el promedio anual de duración de los juegos jugados por todos los residentes
-     * del sistema, con opción de filtrar por dificultad.
-     *
-     * @param dificultad Dificultad del juego a filtrar (puede ser null para incluir todas).
-     * @return Lista de {@link MediaRegistroDTO} agrupada por año con el promedio de duración.
+     * Calcula la media anual de duración de juegos a nivel global,
+     * con posibilidad de filtrar por dificultad y juego.
      */
     @Query("""
-    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(CAST(EXTRACT(YEAR FROM r.fecha) AS string), AVG(r.duracion), COUNT(r))
+    SELECT new com.kevinolarte.resibenissa.dto.out.modulojuego.MediaRegistroDTO(
+        CAST(EXTRACT(YEAR FROM r.fecha) AS string),
+        AVG(r.duracion),
+        COUNT(r))
     FROM RegistroJuego r
     WHERE (:dificultad IS NULL OR r.dificultad = :dificultad)
+    AND (:idJuego IS NULL OR r.juego.id = :idJuego)
     GROUP BY EXTRACT(YEAR FROM r.fecha)
     ORDER BY EXTRACT(YEAR FROM r.fecha)
-""")
-    List<MediaRegistroDTO> getMediaDuracionGlobalAnual(@Param("dificultad") Dificultad dificultad);
+    """)
+    List<MediaRegistroDTO> getMediaDuracionGlobalAnual(@Param("dificultad") Dificultad dificultad,
+                                                       @Param("idJuego") Long idJuego);
+
 
 
     /**

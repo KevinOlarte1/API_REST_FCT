@@ -52,7 +52,7 @@ public class StartupDataLoader {
 
         Residencia residenciaDefault = residenciaRepository.save(new Residencia("Residencia Benissa", "resibenissa@gmail.com"));
         Residencia residenciaAdmin = residenciaRepository.save(new Residencia("Residencia Admin", "resiAdmin@gmail.com"));
-        User user = new User("Kevin", "olarte", "dafult@gmail.com", passwordEncoder.encode("default"), Role.ADMIN);
+        User user = new User("Kevin", "olarte", "dafault@gmail.com", passwordEncoder.encode("default"), Role.ADMIN);
         User sender = new User("Kevin", "olarte", "sender@gmail.com", passwordEncoder.encode("sender"), Role.SENDER);
         user.setResidencia(residenciaAdmin);
         user.setEnabled(true);

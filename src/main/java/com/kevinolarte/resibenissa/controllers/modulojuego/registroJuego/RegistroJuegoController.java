@@ -182,13 +182,14 @@ public class RegistroJuegoController {
     @GetMapping("/media-duracion")
     public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracionPorResidencia(
             @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Long idJuego) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
 
         try{
-            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracionPorResidencia(currentUser.getResidencia().getId(), tipo, dificultad);
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaDuracionPorResidencia(currentUser.getResidencia().getId(), tipo, dificultad, idJuego);
             return ResponseEntity.ok(medias);
         }catch (ResiException e) {
             throw new ApiException(e, currentUser);
@@ -200,13 +201,14 @@ public class RegistroJuegoController {
     @GetMapping("/media-num")
     public ResponseEntity<List<MediaRegistroDTO>> getMediaErroresPorResidencia(
             @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
-            @RequestParam(required = false) Dificultad dificultad) {
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Long idJuego) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
 
         try {
-            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErroresPorResidencia(currentUser.getResidencia().getId(), tipo, dificultad);
+            List<MediaRegistroDTO> medias = registroJuegoService.getMediaErroresPorResidencia(currentUser.getResidencia().getId(), tipo, dificultad, idJuego);
             return ResponseEntity.ok(medias);
         } catch (ResiException e) {
             throw new ApiException(e, currentUser);
@@ -214,6 +216,53 @@ public class RegistroJuegoController {
             throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
         }
     }
+
+
+    @GetMapping("/residente/{idResidente}/media-duracion")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaDuracion(
+            @PathVariable Long idResidente,
+            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Long idJuego) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+
+        List<MediaRegistroDTO> medias;
+        try {
+            medias = registroJuegoService.getMediaDuracion(currentUser.getResidencia().getId(), idResidente, tipo, dificultad, idJuego);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+        }
+
+        return ResponseEntity.ok(medias);
+    }
+
+    @GetMapping("/residente/{idResidente}/media-num")
+    public ResponseEntity<List<MediaRegistroDTO>> getMediaErrores(
+            @PathVariable Long idResidente,
+            @RequestParam(required = false, defaultValue = "DIARIO") TipoAgrupacion tipo,
+            @RequestParam(required = false) Dificultad dificultad,
+            @RequestParam(required = false) Long idJuego) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+
+        List<MediaRegistroDTO> medias;
+        try {
+            medias = registroJuegoService.getMediaErrores(currentUser.getResidencia().getId(), idResidente, tipo, dificultad, idJuego);
+        } catch (ResiException e) {
+            throw new ApiException(e, currentUser);
+        } catch (Exception e) {
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), currentUser, e.getMessage());
+        }
+
+        return ResponseEntity.ok(medias);
+    }
+
+
 
 
 

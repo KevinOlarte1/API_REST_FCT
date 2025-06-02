@@ -41,9 +41,9 @@ public class PublicController {
             return ResponseEntity.ok("✅ Permiso registrado correctamente.");
 
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         }catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO), e.getMessage());
         }
     }
 
@@ -63,9 +63,9 @@ public class PublicController {
             return ResponseEntity.ok("✅ Denegación registrada correctamente.");
 
         } catch (ResiException e) {
-            throw new ApiException(e, null);
+            throw new ApiException(e, e.getMessage());
         }catch (Exception e) {
-            throw new ApiException(new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO), null);
+            throw new ApiException(new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO), e.getMessage());
         }
     }
 }
