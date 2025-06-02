@@ -74,7 +74,7 @@ public class StartupDataLoader {
     public void cargarRegistrosJuegosPrueba() {
         List<Residente> residentes = residenteRepository.findAll();
         List<Juego> juegos = juegoRepository.findAll();
-
+        List<User>  user = userRepository.findAll();
         if (residentes.isEmpty() || juegos.isEmpty()) {
             System.out.println("⚠️ No hay residentes o juegos cargados en la base de datos.");
             return;
@@ -90,7 +90,7 @@ public class StartupDataLoader {
                 registro.setDuracion(30 + random.nextDouble() * 90); // Entre 30 y 120 segundos
                 registro.setDificultad(Dificultad.values()[random.nextInt(Dificultad.values().length)]);
                 registro.setObservacion("Prueba generada automáticamente");
-
+                registro.setUsuario(user.get(0));
                 registroJuegoRepository.save(registro);
             }
         }
