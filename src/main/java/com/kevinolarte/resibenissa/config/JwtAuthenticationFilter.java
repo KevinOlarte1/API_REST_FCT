@@ -1,6 +1,7 @@
 package com.kevinolarte.resibenissa.config;
 
 import com.kevinolarte.resibenissa.exceptions.ApiErrorCode;
+import com.kevinolarte.resibenissa.exceptions.ApiException;
 import com.kevinolarte.resibenissa.exceptions.ResiException;
 import com.kevinolarte.resibenissa.models.User;
 import com.kevinolarte.resibenissa.services.JwtService;
@@ -59,55 +60,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-        boolean exceptionLanzada = false;
         final String authHeader = request.getHeader("Authorization");
-        //Ver si esa cabeza esta nulla o no es un token bearer
+
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
-            filterChain.doFilter(request, response);
+            handlerExceptionResolver.resolveException(
+                    request,
+                    response,
+                    null,
+                    new ApiException(new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO), "Falta el token de autorización.")
+            );
             return;
         }
-        try{
-            //Sacamos el token
+
+        try {
             final String jwt = authHeader.substring(7);
-            //Sacamos el email del mismo token
             final String userEmail = jwtService.extrtractEmail(jwt);
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            //Tenemos que tener el correo y no tener la authorizacion para dale la authorizacion
-            if (userEmail != null && authentication == null){
+            if (userEmail != null && authentication == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
-                //Obtenemos ese userDetail para ver si exsite, busca por correo, configurado en la AplicationConfiguration
-                UserDetails userDetails =this.userDetailsService.loadUserByUsername(userEmail);
-                User user = (User) userDetails;
-                //miras si no esta dado de baja
-                if (user.isBaja()) {
-                    System.out.println("Usuario dado de baja");
-                    exceptionLanzada = true;
-                    handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.USUARIO_BAJA));
-
-                    return;
-                }
-                //Comprobamos si el usuario es admin.
-                System.out.println(request.getRequestURI());
-                if(request.getRequestURI().matches("^/admin/resi/.*")){
-
-                    //Si el token es de un usuario normal, lanzamos la exception
-
-                    if (!user.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))){
-
-                        exceptionLanzada = true;
-                        handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
-                        filterChain.doFilter(request, response);
-                        return;
-
-
-                    }
-                }
-                //Comprobamos si ese token es de ese usario y no esta expirado
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    //Damos authorizacion
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -116,19 +91,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
-                else {
-                    //Si no es valido, lanzamos la exception
-                    handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
+            }
+
+            String uri = request.getRequestURI();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (uri.startsWith("/admin/resi") && auth != null && auth.isAuthenticated()) {
+                boolean isAdmin = auth.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+                if (!isAdmin) {
+                    handlerExceptionResolver.resolveException(
+                            request,
+                            response,
+                            null,
+                            new ApiException(new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO), "Falta el token de autorización.")
+                    );
+                    return;
                 }
             }
-            throw new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO);
 
+            filterChain.doFilter(request, response);
         } catch(Exception e){
-            System.out.println(e.getMessage());
-            if (!exceptionLanzada)
-                handlerExceptionResolver.resolveException(request, response, null, new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO));
-
+            handlerExceptionResolver.resolveException(request, response, null, new ApiException(new ResiException(ApiErrorCode.ENDPOINT_PROTEGIDO), e.getMessage()));
         }
+
 
 
     }

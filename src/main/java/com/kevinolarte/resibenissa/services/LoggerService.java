@@ -33,15 +33,15 @@ public class LoggerService {
     }
 
     public void registrarLogError(String descripcion) {
-        Logger father = loggerRepository.findById(LogContext.getCurrentLogId()).orElseThrow(() -> new RuntimeException("Log not found"));
-        Logger log = new Logger(
-                null,
-                null,
-                descripcion
-        );
+        Logger log = new Logger(null, null, descripcion);
 
-        log.setPadre(father);
-        Logger saved = loggerRepository.save(log);
+        Long logId = LogContext.getCurrentLogId();
+        if (logId != null) {
+            loggerRepository.findById(logId).ifPresent(log::setPadre);
+        }
+
+        loggerRepository.save(log);
     }
+
 
 }

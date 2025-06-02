@@ -57,7 +57,22 @@ public class ResidenciaController {
         return ResponseEntity.ok(residencia);
     }
 
-
+    /**
+     * Obtiene todas las residencias.
+     *
+     * @return {@link ResponseEntity} con estado {@code 200 OK} y una lista de DTOs de residencias.
+     * @throws ApiException si ocurre un error al obtener las residencias.
+     */
+    @GetMapping("/getAll")
+    public ResponseEntity<List<ResidenciaPublicResponseDto>> getAll() {
+        List<ResidenciaPublicResponseDto> residencias;
+        try{
+            residencias = residenciaService.getAll();
+        }catch (Exception e){
+            throw new ApiException(new ResiException(ApiErrorCode.PROBLEMA_INTERNO), e.getMessage());
+        }
+        return ResponseEntity.ok(residencias);
+    }
 
 
 
